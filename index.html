@@ -277,16 +277,6 @@ table { width: 100%; border-collapse: collapse; } th, td { padding: 14px 10px; t
   font-size: 13px;
   white-space: pre-wrap;
 }
-
-/* ===== FINAL GLOBAL MODAL STACK FIX =====
-   When a child popup opens, the previous popup is temporarily hidden.
-   Closing the child restores the previous popup at the same scroll position. */
-.modal.modal-suspended{
-  opacity:0!important;
-  pointer-events:none!important;
-  visibility:hidden!important;
-}
-.modal{isolation:isolate;}
 </style>
 
 <style id="customer-control-center-css">
@@ -698,83 +688,6 @@ input,select,textarea{max-width:100%;}
   }
 }
 </style>
-
-<style id="final-popup-position-and-offline-font-fix">
-/* Keep new-order popup high on the screen for fast repeated handling */
-#new-customer-order-alert{
-  align-items:flex-start!important;
-  justify-content:center!important;
-  padding-top:max(34px,calc(env(safe-area-inset-top) + 26px))!important;
-}
-#new-customer-order-alert .nco-box{
-  margin:0 auto!important;
-}
-@media(max-width:420px){
-  #new-customer-order-alert{
-    padding-top:max(26px,calc(env(safe-area-inset-top) + 18px))!important;
-  }
-}
-/* Intro typography must not change when Google Fonts load/unload. */
-#intro-screen .splash-kicker{
-  font-family:serif!important;
-}
-#intro-screen .splash-signature{
-  font-family:cursive!important;
-}
-#intro-screen .splash-tagline,
-#intro-screen .dev-name-splash{
-  font-family:sans-serif!important;
-}
-</style>
-
-
-<style id="final-item-image-quality-fix">
-/* Keep uploaded menu images clear and uncropped. */
-.p-icon img{object-fit:contain!important;background:#16070b!important;}
-</style>
-
-<style id="admin-final-item-image-quality-fix">
-/* Admin POS item images: keep full image visible, but fill empty side space with a soft blurred copy. */
-.admin-item-img-wrap{
-  width:100%;height:150px;position:relative;overflow:hidden;border-radius:10px;
-  background:#16070b;isolation:isolate;display:flex;align-items:center;justify-content:center;
-}
-.admin-item-img-wrap::before{
-  content:"";position:absolute;inset:-16px;z-index:-2;
-  background-image:var(--item-bg);background-size:cover;background-position:center;
-  filter:blur(16px) brightness(.48) saturate(1.08);transform:scale(1.12);opacity:.82;
-}
-.admin-item-img-wrap::after{
-  content:"";position:absolute;inset:0;z-index:-1;
-  background:linear-gradient(180deg,rgba(10,2,4,.10),rgba(10,2,4,.28));
-}
-.admin-item-img{
-  width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important;
-  display:block;background:transparent!important;image-rendering:auto;
-}
-@media (min-width:430px){.admin-item-img-wrap{height:165px;}}
-</style>
-
-<style id="exact-4x3-menu-image-lock">
-/* Exact 4:3 menu image frame. Upload 1200x900 or 800x600 for edge-to-edge display. */
-.admin-item-img-wrap{width:100%!important;height:auto!important;aspect-ratio:4/3!important;overflow:hidden!important;}
-.admin-item-img{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important;}
-</style>
-
-<style id="final-large-full-item-image">
-/* Larger square image area: show the whole product without cropping */
-.admin-item-img-wrap{width:100%!important;height:auto!important;aspect-ratio:1/1!important;overflow:hidden!important;background:#16070b!important;}
-.admin-item-img{width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important;}
-</style>
-
-
-<style id="nco-live-popup-hard-fix">
-/* Hard fix: this element is a real page-level popup, not print-only markup. */
-#new-customer-order-alert{display:none!important;}
-#new-customer-order-alert.nco-visible{display:flex!important;}
-#new-customer-order-alert.nco-visible .nco-box{animation:ncoPopIn .22s cubic-bezier(.2,.9,.25,1.15) both;}
-@keyframes ncoPopIn{from{opacity:0;transform:translateY(-10px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
-</style>
 </head>
 <body>
 
@@ -894,7 +807,7 @@ input,select,textarea{max-width:100%;}
 
       <!-- CUSTOMER CONTROL CENTER -->
       <div class="customer-control-grid">
-        <div class="customer-control-card" onclick="openCustomerControl('notifications')"><div class="cc-icon">🔔</div><div class="cc-title">Notifications</div><div class="cc-count" id="cc-notif-count">Offers</div></div>
+        <div class="customer-control-card" onclick="cngOpenAdminInbox()"><div class="cc-icon">💬</div><div class="cc-title">Inbox</div><div class="cc-count" id="cc-inbox-home-count">Messages</div></div>
         <div class="customer-control-card" onclick="openCustomerControl('pending')"><div class="cc-icon">⏳</div><div class="cc-title">Pending</div><div class="cc-count" id="cc-pending-count">0 new</div></div>
         <div class="customer-control-card" onclick="openCustomerControl('active')"><div class="cc-icon">🔥</div><div class="cc-title">Active</div><div class="cc-count" id="cc-active-count">0 active</div></div>
         <div class="customer-control-card" onclick="openCustomerControl('history')"><div class="cc-icon">📜</div><div class="cc-title">History</div><div class="cc-count" id="cc-history-count">0 orders</div></div>
@@ -984,6 +897,7 @@ input,select,textarea{max-width:100%;}
     <section id="page-admin" class="page" style="padding-bottom: 90px;">
       <h3 style="margin-bottom:16px;font-size:16px;font-weight:900;color:var(--orange);" data-i18n="admin_modules">⚙️ Admin Modules</h3>
       <div class="quick-grid" style="grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px;">
+        <div class="quick-card" id="admin-card-customer-notifications" onclick="openCustomerControl('notifications')"><div class="quick-icon" style="color:var(--orange);">🔔</div><span style="font-size:12px;font-weight:700;">Customer Notifications</span></div>
         <div class="quick-card" id="admin-card-stock" onclick="openAdminModal('stock')"><div class="quick-icon" style="color:var(--orange);">📥</div><span style="font-size:12px;font-weight:700;">Stock Receive</span></div>
         <div class="quick-card" id="admin-card-owner" onclick="openAdminModal('owner')"><div class="quick-icon" style="color:var(--orange);">📝</div><span style="font-size:12px;font-weight:700;" data-i18n="owner_rpt">Owner Report</span></div>
         <div class="quick-card" id="admin-card-items" onclick="openAdminModal('items')"><div class="quick-icon" style="color:var(--green);">📦</div><span style="font-size:12px;font-weight:700;" data-i18n="item_mgmt">Item Mgmt</span></div>
@@ -1306,7 +1220,7 @@ input,select,textarea{max-width:100%;}
 
 <div id="about-modal" class="modal"><div class="modal-box" style="text-align:center;"><div class="modal-body"><div class="intro-logo" style="margin:auto; width:75px;height:75px;font-size:38px;border-radius:22px;margin-bottom:15px;animation:none;">☕</div><h3 style="color:var(--orange);font-size:19px;font-weight:900;margin-bottom:10px;">Cup And Go POS Pro</h3><p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:22px;">Enterprise POS with Live Cloud Sync.<br><br><b>Developer:</b> Mohammed Ashik<br><span style="display:inline-block;margin-top:10px;padding:4px 10px;background:rgba(229,193,88,0.15);border-radius:8px;font-weight:bold;color:var(--orange);">Version 13.0 (Enterprise)</span></p><button class="btn btn-primary" style="width:100%;border-radius:18px;" onclick="closeModal('about-modal')">Close</button></div></div></div>
 
-<div id="order-detail-modal" class="modal"><div class="modal-box" style="max-width:350px;"><div class="modal-body" style="padding:15px; color:#000;"><div class="invoice-wrap" id="receipt-content"><div style="text-align:center;margin-bottom:12px;"><h3 class="dyn-shopname" style="font-size:18px;font-weight:900;text-transform:uppercase;margin:0;">Cup And Go</h3><p style="font-size:10px;line-height:1.4;margin:4px 0;">Hafar Al Batin - Saudi Arabia<br>0554998306</p><div id="rcpt-online-label" style="display:none;margin:7px auto 2px;padding:5px 12px;border:1.5px solid #000;border-radius:7px;width:max-content;font-size:11px;font-weight:900;letter-spacing:1px;">ONLINE ORDER</div><p style="font-size:12px;font-weight:bold;margin-top:8px;border-top:1px solid #000;padding-top:5px;">Simplified Tax Invoice</p></div><div style="border-bottom:1px dashed #000;padding-bottom:8px;margin-bottom:10px;font-size:11px;line-height:1.6;"><div style="display:flex;justify-content:space-between;"><span>Inv: <b id="rcpt-inv"></b></span></div><div style="display:flex;justify-content:space-between;"><span>Date: <span id="rcpt-date"></span></span></div><div style="display:flex;justify-content:space-between;"><span>Cashier: <span id="rcpt-cashier-print"></span></span></div></div><table style="width:100%;font-size:11px;margin-bottom:10px;border-bottom:1px solid #000;"><thead><tr style="border-bottom:1px solid #000;"><th style="padding:4px 0;color:#000;">Item</th><th style="text-align:center;color:#000;">Qty</th><th style="text-align:right;color:#000;">Amt</th></tr></thead><tbody id="rcpt-items"></tbody></table><div style="font-size:11px;font-weight:bold;display:flex;justify-content:space-between;padding:5px 0;"><span>Total:</span><span><span id="rcpt-due" style="font-size:14px;"></span> <span class="dyn-currency" style="font-size:9px;">SR</span></span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:4px;color:#333;"><span id="rcpt-cash-paid">CASH: 0.00</span><span id="rcpt-card-paid">CARD: 0.00</span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:4px;color:#333;"><span id="rcpt-change">METHOD: </span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:6px;border-top:1px dashed #000;padding-top:4px;"><span>💰 Paid:</span><span id="rcpt-paid">0.00</span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:6px;color:var(--green);"><span>🔄 Return:</span><span id="rcpt-return">0.00</span></div><div style="text-align:center; margin-top:10px; font-size:16px; letter-spacing:3px;">|||||| ||||| |||||||</div><div style="text-align:center; margin-top:15px; padding-top:10px; border-top:1px dashed #000;"><p style="font-size:12px; font-weight:bold; margin-bottom:4px; margin-top:0;">Thank you!</p></div></div></div><div class="modal-footer"><button class="btn btn-primary" style="flex:1;font-size:12px;" onclick="printContent('receipt-content')">🖨️ Print</button><button class="btn btn-success" style="flex:1;font-size:12px;" onclick="shareTextReceipt()">📤 Share</button><button class="btn" style="flex:1;background:rgba(229,193,88,0.2);color:#B89730;font-size:12px;" onclick="downloadReceiptPDF()">📥 PDF</button><button class="btn" style="flex:1;background:rgba(255,255,255,0.1);color:var(--text);font-size:12px;" onclick="closeModal('order-detail-modal')">Close</button></div></div></div>
+<div id="order-detail-modal" class="modal"><div class="modal-box" style="max-width:350px;"><div class="modal-body" style="padding:15px; color:#000;"><div class="invoice-wrap" id="receipt-content"><div style="text-align:center;margin-bottom:12px;"><h3 class="dyn-shopname" style="font-size:18px;font-weight:900;text-transform:uppercase;margin:0;">Cup And Go</h3><p style="font-size:10px;line-height:1.4;margin:4px 0;">Hafar Al Batin - Saudi Arabia<br>0554998306</p><p style="font-size:12px;font-weight:bold;margin-top:8px;border-top:1px solid #000;padding-top:5px;">Simplified Tax Invoice</p></div><div style="border-bottom:1px dashed #000;padding-bottom:8px;margin-bottom:10px;font-size:11px;line-height:1.6;"><div style="display:flex;justify-content:space-between;"><span>Inv: <b id="rcpt-inv"></b></span></div><div style="display:flex;justify-content:space-between;"><span>Date: <span id="rcpt-date"></span></span></div><div style="display:flex;justify-content:space-between;"><span>Cashier: <span id="rcpt-cashier-print"></span></span></div></div><table style="width:100%;font-size:11px;margin-bottom:10px;border-bottom:1px solid #000;"><thead><tr style="border-bottom:1px solid #000;"><th style="padding:4px 0;color:#000;">Item</th><th style="text-align:center;color:#000;">Qty</th><th style="text-align:right;color:#000;">Amt</th></tr></thead><tbody id="rcpt-items"></tbody></table><div style="font-size:11px;font-weight:bold;display:flex;justify-content:space-between;padding:5px 0;"><span>Total:</span><span><span id="rcpt-due" style="font-size:14px;"></span> <span class="dyn-currency" style="font-size:9px;">SR</span></span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:4px;color:#333;"><span id="rcpt-cash-paid">CASH: 0.00</span><span id="rcpt-card-paid">CARD: 0.00</span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:4px;color:#333;"><span id="rcpt-change">METHOD: </span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:6px;border-top:1px dashed #000;padding-top:4px;"><span>💰 Paid:</span><span id="rcpt-paid">0.00</span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:6px;color:var(--green);"><span>🔄 Return:</span><span id="rcpt-return">0.00</span></div><div style="text-align:center; margin-top:10px; font-size:16px; letter-spacing:3px;">|||||| ||||| |||||||</div><div style="text-align:center; margin-top:15px; padding-top:10px; border-top:1px dashed #000;"><p style="font-size:12px; font-weight:bold; margin-bottom:4px; margin-top:0;">Thank you!</p></div></div></div><div class="modal-footer"><button class="btn btn-primary" style="flex:1;font-size:12px;" onclick="printContent('receipt-content')">🖨️ Print</button><button class="btn btn-success" style="flex:1;font-size:12px;" onclick="shareTextReceipt()">📤 Share</button><button class="btn" style="flex:1;background:rgba(229,193,88,0.2);color:#B89730;font-size:12px;" onclick="downloadReceiptPDF()">📥 PDF</button><button class="btn" style="flex:1;background:rgba(255,255,255,0.1);color:var(--text);font-size:12px;" onclick="closeModal('order-detail-modal')">Close</button></div></div></div>
 
 <div id="report-preview-modal" class="modal"><div class="modal-box" style="max-width:400px; width:95%;"><div class="modal-body" style="background:var(--brand-bg); padding:15px;"><div id="pdf-report-content" style="background:#fff; color:#000; font-family:monospace; font-size:12px; line-height:1.5; width:100%; padding:15px; border-radius:12px;"></div></div><div class="modal-footer"><button class="btn btn-primary" style="flex:1;font-size:12px;" onclick="printContent('pdf-report-content')">🖨️ Print</button><button class="btn btn-success" style="flex:1;font-size:12px;" onclick="shareTextReport()">📤 Share</button><button class="btn" style="flex:1;background:rgba(229,193,88,0.2);color:var(--orange);font-size:12px;" onclick="executeReportDownload()">📥 PDF</button><button class="btn" style="flex:1;background:rgba(255,255,255,0.1);color:var(--text);font-size:12px;" onclick="closeModal('report-preview-modal')">Close</button></div></div></div>
 
@@ -1458,60 +1372,8 @@ function resetAdminScrollTop(target){
     document.body.scrollTop=0;
   }catch(e){}
 }
-// ===== FINAL GLOBAL POPUP / MODAL MANAGER =====
-// Prevents the previous popup from staying visually on top when another popup opens.
-const cngModalStack=[];
-const cngModalScrollState=new Map();
-function cngCaptureModalScroll(m){
-  if(!m)return;
-  const body=m.querySelector('.modal-body'), box=m.querySelector('.modal-box');
-  cngModalScrollState.set(m.id,{body:body?body.scrollTop:0,box:box?box.scrollTop:0});
-}
-function cngRestoreModalScroll(m){
-  if(!m)return;
-  const st=cngModalScrollState.get(m.id)||{body:0,box:0};
-  requestAnimationFrame(()=>{
-    const body=m.querySelector('.modal-body'), box=m.querySelector('.modal-box');
-    if(body)body.scrollTop=st.body||0;
-    if(box)box.scrollTop=st.box||0;
-  });
-}
-function cngSuspendVisibleModals(exceptId){
-  document.querySelectorAll('.modal.show').forEach(x=>{
-    if(x.id!==exceptId){cngCaptureModalScroll(x);x.classList.add('modal-suspended');}
-  });
-}
-function cngResumeTopModal(){
-  while(cngModalStack.length){
-    const id=cngModalStack[cngModalStack.length-1], m=document.getElementById(id);
-    if(m&&m.classList.contains('show')){
-      m.classList.remove('modal-suspended');
-      m.style.zIndex=String(99999+cngModalStack.length*10);
-      cngRestoreModalScroll(m);
-      return;
-    }
-    cngModalStack.pop();
-  }
-}
-function openModal(id){
-  const m=document.getElementById(id); if(!m)return;
-  cngSuspendVisibleModals(id);
-  const existing=cngModalStack.indexOf(id); if(existing!==-1)cngModalStack.splice(existing,1);
-  cngModalStack.push(id);
-  m.classList.remove('modal-suspended','hidden');
-  m.style.zIndex=String(99999+cngModalStack.length*10);
-  // New popup always starts from its top.
-  resetAdminScrollTop(m);
-  setTimeout(()=>{m.classList.add('show');resetAdminScrollTop(m);},10);
-}
-function closeModal(id){
-  const m=document.getElementById(id); if(!m)return;
-  m.classList.remove('show','modal-suspended');
-  const i=cngModalStack.lastIndexOf(id); if(i!==-1)cngModalStack.splice(i,1);
-  setTimeout(()=>m.classList.add('hidden'),150);
-  setTimeout(cngResumeTopModal,20);
-}
-
+function openModal(id) { let m = document.getElementById(id); if(!m) return; m.classList.remove('hidden'); resetAdminScrollTop(m); setTimeout(()=>{m.classList.add('show');resetAdminScrollTop(m);}, 10); }
+function closeModal(id) { let m = document.getElementById(id); if(!m) return; m.classList.remove('show'); setTimeout(()=>m.classList.add('hidden'), 150); }
 function confirmAction(title, text, callback) { safeSet('confirm-title', 'innerText', title); safeSet('confirm-text', 'innerText', text); pendingAction = callback; openModal('custom-confirm-modal'); }
 function closeConfirm(res) { closeModal('custom-confirm-modal'); }
 document.getElementById('confirm-ok-btn').addEventListener('click', () => { closeModal('custom-confirm-modal'); if(pendingAction) pendingAction(); });
@@ -1848,7 +1710,14 @@ function printContent(elementId) {
     document.body.appendChild(iframe);
     let doc = iframe.contentWindow.document;
     doc.open();
-    doc.write(`<html><head><style>@page{margin:0.2in}body{font-family:monospace;color:#000;background:#fff;}*{direction:ltr!important;}</style></head><body>${contentHtml}</body></html>`);
+    doc.write(`<html><head><style>@page{margin:0.2in}body{font-family:monospace;color:#000;background:#fff;}*{direction:ltr!important;}</style></head><body>${contentHtml}
+<!-- CUSTOMER CONTROL MODAL -->
+<div id="customer-control-modal" class="modal"><div class="modal-box"><div class="modal-header"><h3 id="cc-modal-title" style="color:var(--orange);font-size:16px;font-weight:900;">Customer Control</h3><button class="btn" style="padding:4px 10px;border-radius:10px;" onclick="closeModal('customer-control-modal')">✕</button></div><div class="modal-body" id="cc-modal-body"></div></div></div>
+
+<!-- NEW CUSTOMER ORDER ALERT -->
+<div id="new-customer-order-alert"><div class="nco-box"><div class="nco-head"><b>🔔 NEW CUSTOMER ORDER</b><button class="btn" style="padding:5px 9px;border-radius:9px;" onclick="dismissNewCustomerOrder()">✕</button></div><div id="nco-content"></div></div></div>
+
+</body></html>`);
     doc.close();
     setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); setTimeout(() => document.body.removeChild(iframe), 1000); }, 500);
     return;
@@ -2520,7 +2389,6 @@ function viewOrder(id) {
   }
   
   activeOrderForShare = o; 
-  const onlineLabel=document.getElementById('rcpt-online-label'); if(onlineLabel) onlineLabel.style.display='none';
   
   safeSet('rcpt-inv','innerText', o.id); 
   safeSet('rcpt-date','innerText', o.time); 
@@ -2613,7 +2481,7 @@ function loadStockForSelectedDate() {
     let lowStockClass = isLow ? 'border:2px solid var(--red); background:rgba(255,59,48,0.15);' : '';
     container.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:8px 12px; border-radius:12px; ${lowStockClass} background:rgba(255,255,255,0.05);" id="stock-row-${actualIdx}">
       <span style="font-size:12px; font-weight:700; color:#fff; flex:1;">${item} ${isLow ? '⚠️' : ''}</span>
-      <input type="number" id="stock-in-${actualIdx}" value="${val}" placeholder="0" style="width:75px; padding:6px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); color:var(--orange); font-weight:bold; text-align:center;">
+      <input type="number" id="stock-in-${actualIdx}" value="" placeholder="0" style="width:75px; padding:6px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); color:var(--orange); font-weight:bold; text-align:center;">
     </div>`;
   });
   let summary = document.getElementById('stock-summary');
@@ -2801,7 +2669,7 @@ function openCashierPerms(idx) { closeModal('modal-security'); currentPermIdx=id
 function closeCashierPerms() { closeModal('modal-perms'); setTimeout(()=>openModal('modal-security'),250); }
 function saveCashierPerms() { let c=appSettings.cashiers[currentPermIdx]; c.permissions={}; permList.forEach(p=>{ c.permissions[p.id]=document.getElementById('perm-'+p.id).checked; }); saveData(); closeModal('modal-perms'); showToast("Permissions Saved!"); setTimeout(()=>openModal('modal-security'),250); }
 function applyPermissionsUI(role, cashierName) { if(role==='admin') { permList.forEach(p=>{ let el=document.getElementById('admin-card-'+p.id); if(el) el.style.display='block'; }); } else { let cData=appSettings.cashiers.find(x=>x.name===cashierName); let perms=(cData&&cData.permissions)?cData.permissions:{}; permList.forEach(p=>{ let el=document.getElementById('admin-card-'+p.id); if(el) el.style.display=perms[p.id]?'block':'none'; }); } document.getElementById('admin-card-about').style.display='block'; }
-function renderCashiersUI() { let cDiv=document.getElementById('cashiers-container'); if(!cDiv) return; cDiv.innerHTML=''; appSettings.cashiers.forEach((c,idx)=>{ cDiv.innerHTML+=`<div style="background:rgba(0,0,0,0.25);border:1px solid var(--glass-border);border-radius:14px;padding:12px;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:11px;color:var(--orange);font-weight:800;">👤 Cashier ${idx+1}</span><div><button class="btn btn-edit" style="padding:4px 8px;font-size:11px;margin-right:5px;" onclick="openCashierPerms(${idx})">⚙️ Perms</button><button class="btn btn-delete" style="padding:4px 8px;font-size:11px;" onclick="removeCashierUI(${idx})">🗑️</button></div></div><div style="display:flex;flex-direction:column;gap:8px;"><input type="text" id="cname-${idx}" value="${c.name}" placeholder="Name" style="width:100%;"><input type="number" id="cpin-${idx}" value="${c.pin}" placeholder="PIN" style="width:100%;"></div></div>`; }); }
+function renderCashiersUI() { let cDiv=document.getElementById('cashiers-container'); if(!cDiv) return; cDiv.innerHTML=''; appSettings.cashiers.forEach((c,idx)=>{ cDiv.innerHTML+=`<div style="background:rgba(0,0,0,0.25);border:1px solid var(--glass-border);border-radius:14px;padding:12px;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:11px;color:var(--orange);font-weight:800;">👤 Cashier ${idx+1}</span><div><button class="btn btn-edit" style="padding:4px 8px;font-size:11px;margin-right:5px;" onclick="openCashierPerms(${idx})">⚙️ Perms</button><button class="btn btn-delete" style="padding:4px 8px;font-size:11px;" onclick="removeCashierUI(${idx})">🗑️</button></div></div><div style="display:flex;flex-direction:column;gap:8px;"><input type="text" id="cname-${idx}" value="${c.name}" placeholder="Name" style="width:100%;"><input type="number" id="cpin-${idx}" value="" placeholder="PIN" style="width:100%;"></div></div>`; }); }
 window.addCashierUI = function() { appSettings.cashiers.push({name:'',pin:'',permissions:{}}); renderCashiersUI(); }
 window.removeCashierUI = function(idx) { if(appSettings.cashiers.length<=1) return showToast("❌ 1 cashier required!"); appSettings.cashiers.splice(idx,1); renderCashiersUI(); }
 
@@ -2937,8 +2805,8 @@ function updateCart() {
 }
 
 // ======= HISTORY =======
-function updateHistory() { let tb=document.getElementById('history-table'); if(!tb) return; tb.innerHTML=''; if(history30Days.length===0){ tb.innerHTML=`<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted);font-size:12px;">No records</td></tr>`; return; } history30Days.forEach((h,idx)=>{ tb.innerHTML+=`<tr><td style="padding:10px 0;"><b style="font-size:12px;">${h.date.split('T')[0]||h.date}</b><br><span style="font-size:9px;color:var(--muted);">${h.timeStr||''}</span></td><td><span style="background:rgba(229,193,88,0.1);padding:4px 8px;border-radius:10px;font-size:11px;">${h.orders}</span></td><td><b style="color:var(--orange);font-size:13px;">${appSettings.currency} ${h.rev.toFixed(2)}</b></td><td style="text-align:right;"><div style="display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap;"><button class="btn btn-primary" style="padding:4px 8px;border-radius:10px;font-size:10px;" onclick="viewHistoryReport(${idx})">👁️ View</button><button class="btn" style="padding:4px 8px;border-radius:10px;font-size:10px;background:rgba(255,255,255,.10);color:#fff;" onclick="printHistoryReport(${idx})">🖨️ Print</button><button class="btn" style="padding:4px 8px;border-radius:10px;font-size:10px;background:rgba(229,193,88,.18);color:var(--orange);" onclick="pdfHistoryReport(${idx})">📥 PDF</button></div></td></tr>`; }); }
-function filterHistory() { let s=document.getElementById('date-search'), tb=document.getElementById('history-table'); if(!s||!tb) return; let q=s.value.toLowerCase(); tb.innerHTML=''; history30Days.forEach((h,idx)=>{ if(h.date.toLowerCase().includes(q)){ tb.innerHTML+=`<tr><td style="padding:10px 0;"><b style="font-size:12px;">${h.date}</b><br><span style="font-size:9px;color:var(--muted);">${h.timeStr||''}</span></td><td><span style="background:rgba(229,193,88,0.1);padding:4px 8px;border-radius:10px;font-size:11px;">${h.orders}</span></td><td><b style="color:var(--orange);font-size:13px;">${appSettings.currency} ${h.rev.toFixed(2)}</b></td><td style="text-align:right;"><div style="display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap;"><button class="btn btn-primary" style="padding:4px 8px;border-radius:10px;font-size:10px;" onclick="viewHistoryReport(${idx})">👁️ View</button><button class="btn" style="padding:4px 8px;border-radius:10px;font-size:10px;background:rgba(255,255,255,.10);color:#fff;" onclick="printHistoryReport(${idx})">🖨️ Print</button><button class="btn" style="padding:4px 8px;border-radius:10px;font-size:10px;background:rgba(229,193,88,.18);color:var(--orange);" onclick="pdfHistoryReport(${idx})">📥 PDF</button></div></td></tr>`; } }); }
+function updateHistory() { let tb=document.getElementById('history-table'); if(!tb) return; tb.innerHTML=''; if(history30Days.length===0){ tb.innerHTML=`<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted);font-size:12px;">No records</td></tr>`; return; } history30Days.forEach((h,idx)=>{ tb.innerHTML+=`<tr><td style="padding:10px 0;"><b style="font-size:12px;">${h.date.split('T')[0]||h.date}</b><br><span style="font-size:9px;color:var(--muted);">${h.timeStr||''}</span></td><td><span style="background:rgba(229,193,88,0.1);padding:4px 8px;border-radius:10px;font-size:11px;">${h.orders}</span></td><td><b style="color:var(--orange);font-size:13px;">${appSettings.currency} ${h.rev.toFixed(2)}</b></td><td style="text-align:right;"><button class="btn btn-primary" style="padding:4px 10px;border-radius:10px;font-size:10px;" onclick="viewHistoryReport(${idx})">👁️ View</button></td></tr>`; }); }
+function filterHistory() { let s=document.getElementById('date-search'), tb=document.getElementById('history-table'); if(!s||!tb) return; let q=s.value.toLowerCase(); tb.innerHTML=''; history30Days.forEach((h,idx)=>{ if(h.date.toLowerCase().includes(q)){ tb.innerHTML+=`<tr><td style="padding:10px 0;"><b style="font-size:12px;">${h.date}</b><br><span style="font-size:9px;color:var(--muted);">${h.timeStr||''}</span></td><td><span style="background:rgba(229,193,88,0.1);padding:4px 8px;border-radius:10px;font-size:11px;">${h.orders}</span></td><td><b style="color:var(--orange);font-size:13px;">${appSettings.currency} ${h.rev.toFixed(2)}</b></td><td style="text-align:right;"><button class="btn btn-primary" style="padding:4px 10px;border-radius:10px;font-size:10px;" onclick="viewHistoryReport(${idx})">👁️ View</button></td></tr>`; } }); }
 
 // ======= CLOSING =======
 function proceedToClosingPin() { if(orders.length===0) return showToast("No sales!"); closeModal('modal-closing'); safeSet('closing-admin-pin','value',''); setTimeout(()=>openModal('closing-pin-modal'),200); }
@@ -2994,21 +2862,6 @@ function viewHistoryReport(idx, directData=null) {
   reportTextForShare=`*${appSettings.shopName} - Report*\nDate: ${currentReportDate}\n\n*Items Sold:*\n${textShareItems}\n*Total Cash:* ${totalCash.toFixed(2)}\n*Total Card:* ${totalCard.toFixed(2)}\n*Total Return:* ${returnAmt.toFixed(2)}\n*Net Revenue:* ${netRev.toFixed(2)} ${appSettings.currency}`;
   document.getElementById('pdf-report-content').innerHTML=reportHTML;
   openModal('report-preview-modal');
-}
-
-
-// ======= HISTORY QUICK ACTIONS =======
-function printHistoryReport(idx){
-  viewHistoryReport(idx);
-  setTimeout(()=>{
-    printContent('pdf-report-content');
-  },180);
-}
-function pdfHistoryReport(idx){
-  viewHistoryReport(idx);
-  setTimeout(()=>{
-    executeReportDownload();
-  },220);
 }
 
 // ======= MONTHLY REPORT =======
@@ -3230,7 +3083,7 @@ function initUI() {
         html += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">`;
                                 catProds.forEach(p => {
               let icn = (p.icon && p.icon.length > 10) 
-                  ? `<div class="admin-item-img-wrap" style="--item-bg:url('${p.icon.replace(/'/g,"%27")}')"><img class="admin-item-img" src="${p.icon}" alt="${p.name||''}"></div>` 
+                  ? `<img src="${p.icon}" style="width:100%; height:110px; object-fit:cover; border-radius:10px; display:block;">` 
                   : `<div style="width:100%; height:110px; background:rgba(255,255,255,0.05); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:40px;">${p.icon || '☕'}</div>`;
               
               html += `<div class="product-card" id="card-${p.id}" onclick="addToCart(${p.id})" style="padding:8px; text-align:center;">
@@ -3249,7 +3102,7 @@ function initUI() {
     let catProds = products.filter(p => p.category === currentCategory);
     html += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">`;
     catProds.forEach(p => {
-      let icn = (p.icon && p.icon.length > 10) ? `<div class="admin-item-img-wrap" style="--item-bg:url('${p.icon.replace(/'/g,"%27")}')"><img class="admin-item-img" src="${p.icon}" alt="${p.name||''}"></div>` : (p.icon || '☕');
+      let icn = (p.icon && p.icon.length > 10) ? `<img src="${p.icon}" style="width:100%; height:110px; object-fit:cover; border-radius:8px; display:block;">` : (p.icon || '☕');
       html += `<div class="product-card" id="card-${p.id}" onclick="addToCart(${p.id})" style="padding:10px; text-align:center;">
         <div>${icn}</div>
         <b style="font-size:13px; display:block; margin-top:8px; margin-bottom:5px;">${p.name}</b>
@@ -3476,7 +3329,6 @@ console.log('✅ All Reports Unlimited - Never Delete Until You Delete!');
 let customerOrdersCache = [];
 let customerOrderHistoryCache = [];
 let customerOrderListenerStarted = false;
-let customerOrderPopupChildListenerStarted = false;
 let customerOrderInitialLoaded = false;
 let newCustomerOrderQueue = [];
 let activeNewCustomerOrder = null;
@@ -3489,7 +3341,14 @@ let lateOrderTimer = null;
 function escCC(v){ return String(v ?? '').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
 function customerOrdersArray(v){ if(!v) return []; return Array.isArray(v)?v:Object.values(v); }
 function isCustomerOrder(o){ return !!(o && (o.customerPhone || o.orderSource==='customer' || o.source==='customer')); }
-function customerOrderStatus(o){ return String(o?.status||'pending').toLowerCase(); }
+function customerOrderStatus(o){
+  const s = String(o?.status || 'pending').toLowerCase().trim();
+  if(s === 'new' || s === 'pending') return 'pending';
+  if(s === 'accepted' || s === 'processing' || s === 'preparing') return 'active';
+  if(s === 'complete' || s === 'done') return 'completed';
+  if(s === 'canceled') return 'cancelled';
+  return s;
+}
 function customerOrderItemsText(o){ return (o?.items||[]).map(i=>`${i.qty||1}× ${i.name||'Item'}`).join(' • '); }
 function customerOrderBaseTime(o){
   const candidates=[o?.timestamp,o?.createdAt,o?.orderTimestamp,o?.id];
@@ -3530,16 +3389,6 @@ function startCustomerOrderMonitor(){
     if(!lateOrderTimer) lateOrderTimer=setInterval(checkLateCustomerOrders,30000);
     customerOrderInitialLoaded=true;
   });
-  // Dedicated realtime new-order watcher. This guarantees the cashier/admin popup
-  // appears immediately for every newly appended customer order instead of only
-  // relying on a full-array value diff. Duplicate protection remains in queueNewCustomerOrder().
-  if(!customerOrderPopupChildListenerStarted){
-    customerOrderPopupChildListenerStarted=true;
-    db.ref('/customerOrders').on('child_added', snap=>{
-      const o=snap.val();
-      if(isCustomerOrder(o) && customerOrderStatus(o)==='pending') queueNewCustomerOrder(o);
-    });
-  }
   db.ref('/customerOrderHistory').on('value', snap=>{
     customerOrderHistoryCache=customerOrdersArray(snap.val());
     updateCustomerControlCounts();
@@ -3579,7 +3428,7 @@ function reconcileCustomerOrderAlert(customers){
   const pendingIds=new Set(customers.filter(o=>customerOrderStatus(o)==='pending').map(o=>String(o.id)));
   newCustomerOrderQueue=newCustomerOrderQueue.filter(o=>pendingIds.has(String(o?.id)));
   if(activeNewCustomerOrder && !pendingIds.has(String(activeNewCustomerOrder.id))){
-    const el=document.getElementById('new-customer-order-alert'); if(el){el.classList.remove('nco-visible');el.style.display='none';}
+    const el=document.getElementById('new-customer-order-alert'); if(el)el.style.display='none';
     stopCustomerAlertRinging(); activeNewCustomerOrder=null; setTimeout(showNextCustomerOrder,80);
   }
 }
@@ -3596,9 +3445,9 @@ function showNextCustomerOrder(){
   activeNewCustomerOrder=newCustomerOrderQueue.shift()||null; if(!activeNewCustomerOrder)return;
   const o=activeNewCustomerOrder; const el=document.getElementById('new-customer-order-alert'); const c=document.getElementById('nco-content'); if(!el||!c)return;
   c.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:6px;"><button id="nco-sound-btn" onclick="toggleCustomerAlertSound()" style="border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:#fff;border-radius:9px;padding:5px 9px;font-size:13px;">${customerAlertSoundEnabled?'🔊':'🔇'}</button></div><div class="nco-customer"><b>👤 ${escCC(o.customerName||((o.cashier||'').replace(/^.*?: /,''))||'Guest')}</b><br>📞 ${escCC(o.customerPhone||'—')} &nbsp; 🚗 ${escCC(o.carNumber||'Walk-in')}</div><div class="nco-items">${(o.items||[]).map(i=>`<div class="nco-item"><span>${escCC(i.name||'Item')} × ${i.qty||1}</span><b>${((i.price||0)*(i.qty||1)).toFixed(2)} ${escCC(appSettings.currency||'SR')}</b></div>`).join('')}<div style="display:flex;justify-content:space-between;margin-top:8px;font-size:14px;font-weight:900;color:var(--orange);"><span>Total</span><span>${parseFloat(o.total||0).toFixed(2)} ${escCC(appSettings.currency||'SR')}</span></div></div><div class="nco-actions"><button class="nco-cancel" onclick="cancelCustomerOrderFromAlert()">❌ CANCEL</button><button class="nco-accept" onclick="acceptCustomerOrderFromAlert()">✅ ACCEPT</button></div>`;
-  el.classList.add('nco-visible'); el.style.display='flex'; resetAdminScrollTop(el); const nbox=el.querySelector('.nco-box'); if(nbox)nbox.scrollTop=0; const ncontent=el.querySelector('#nco-content'); if(ncontent)ncontent.scrollTop=0; requestAnimationFrame(()=>{ resetAdminScrollTop(el); if(nbox)nbox.scrollTop=0; if(ncontent)ncontent.scrollTop=0; }); startCustomerAlertRinging();
+  el.style.display='block'; resetAdminScrollTop(el); const nbox=el.querySelector('.nco-box'); if(nbox)nbox.scrollTop=0; startCustomerAlertRinging();
 }
-function dismissNewCustomerOrder(){ const el=document.getElementById('new-customer-order-alert');if(el){el.classList.remove('nco-visible');el.style.display='none';const c=el.querySelector('#nco-content');if(c)c.scrollTop=0;const b=el.querySelector('.nco-box');if(b)b.scrollTop=0;}stopCustomerAlertRinging();activeNewCustomerOrder=null;resetAdminScrollTop(document.getElementById('customer-control-modal'));setTimeout(()=>{showNextCustomerOrder();const alert=document.getElementById('new-customer-order-alert');if(alert){resetAdminScrollTop(alert);const c=alert.querySelector('#nco-content');if(c)c.scrollTop=0;const b=alert.querySelector('.nco-box');if(b)b.scrollTop=0;}},120); }
+function dismissNewCustomerOrder(){ const el=document.getElementById('new-customer-order-alert');if(el)el.style.display='none';stopCustomerAlertRinging();activeNewCustomerOrder=null;resetAdminScrollTop(document.getElementById('customer-control-modal'));setTimeout(()=>{showNextCustomerOrder();const alert=document.getElementById('new-customer-order-alert');if(alert)resetAdminScrollTop(alert);},120); }
 async function updateHeldCustomerOrder(id,patch){
   let found=false;
   const result=await db.ref('/customerOrders').transaction(current=>{
@@ -3610,20 +3459,18 @@ async function updateHeldCustomerOrder(id,patch){
 }
 async function acceptCustomerOrderFromAlert(){ if(!activeNewCustomerOrder)return; const o=activeNewCustomerOrder; try{ await updateHeldCustomerOrder(o.id,{status:'active',acceptedAt:Date.now(),acceptedBy:sessionStorage.getItem('cng_active_cashier')||'Admin'}); showToast('✅ Customer order accepted'); dismissNewCustomerOrder(); }catch(e){showToast('❌ Could not accept order');} }
 function chooseCustomerCancelReason(){
+  if(typeof cngSuspendOrderAlertForChild==='function') cngSuspendOrderAlertForChild();
   return new Promise(resolve=>{
     const old=document.getElementById('cancel-reason-overlay'); if(old) old.remove();
-    const orderAlert=document.getElementById('new-customer-order-alert');
-    const wasOrderVisible=!!(orderAlert && getComputedStyle(orderAlert).display!=='none');
-    if(wasOrderVisible) orderAlert.style.display='none';
     const overlay=document.createElement('div'); overlay.id='cancel-reason-overlay';
-    overlay.style.cssText='position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.76);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:max(18px,calc(env(safe-area-inset-top) + 14px)) 18px max(18px,calc(env(safe-area-inset-bottom) + 14px));overflow-y:auto;overscroll-behavior:contain;';
+    overlay.style.cssText='position:fixed;inset:0;z-index:1000000;background:rgba(0,0,0,.76);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:18px;';
     const reasons=[
       {en:'Item unavailable',ar:'الصنف غير متوفر',icon:'☕'},
       {en:'Order will be delayed',ar:'الطلب سيتأخر',icon:'⏳'},
       {en:'Shop is very busy',ar:'المتجر مشغول جداً',icon:'🔥'},
       {en:'Technical issue',ar:'مشكلة تقنية',icon:'⚠️'}
     ];
-    overlay.innerHTML=`<div style="width:min(390px,100%);max-height:calc(100dvh - 44px);overflow-y:auto;margin:0 auto;background:linear-gradient(180deg,#22090f,#120407);border:1px solid rgba(229,193,88,.55);border-radius:24px;padding:20px;box-shadow:0 25px 70px rgba(0,0,0,.75);color:#fff;">
+    overlay.innerHTML=`<div style="width:min(390px,100%);background:linear-gradient(180deg,#22090f,#120407);border:1px solid rgba(229,193,88,.55);border-radius:24px;padding:20px;box-shadow:0 25px 70px rgba(0,0,0,.75);color:#fff;">
       <div style="font-size:18px;font-weight:900;color:var(--orange);margin-bottom:5px;">❌ Cancellation Reason</div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:14px;">Choose a reason. The customer will see it instantly.</div>
       <div id="cancel-reason-buttons" style="display:grid;gap:9px;"></div>
@@ -3635,9 +3482,9 @@ function chooseCustomerCancelReason(){
     </div>`;
     document.body.appendChild(overlay);
     const box=overlay.querySelector('#cancel-reason-buttons');
-    reasons.forEach(r=>{const b=document.createElement('button');b.style.cssText='padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.07);color:#fff;text-align:left;font-weight:800;';b.textContent=`${r.icon} ${r.en}`;b.onclick=()=>{overlay.remove();resolve(r);};box.appendChild(b);});
-    overlay.querySelector('#cancel-reason-other-btn').onclick=()=>{const v=overlay.querySelector('#cancel-reason-other').value.trim();if(!v){showToast('⚠️ Write a reason first');return;} overlay.remove();resolve({en:v,ar:v,icon:'📝'});};
-    overlay.querySelector('#cancel-reason-close').onclick=()=>{overlay.remove();if(wasOrderVisible&&orderAlert){orderAlert.style.display='block';requestAnimationFrame(()=>{const c=orderAlert.querySelector('#nco-content');if(c)c.scrollTop=0;});}resolve(null);};
+    reasons.forEach(r=>{const b=document.createElement('button');b.style.cssText='padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.07);color:#fff;text-align:left;font-weight:800;';b.textContent=`${r.icon} ${r.en}`;b.onclick=()=>{overlay.remove();if(typeof cngRestoreOrderAlertAfterChild==='function')cngRestoreOrderAlertAfterChild();resolve(r);};box.appendChild(b);});
+    overlay.querySelector('#cancel-reason-other-btn').onclick=()=>{const v=overlay.querySelector('#cancel-reason-other').value.trim();if(!v){showToast('⚠️ Write a reason first');return;} overlay.remove();if(typeof cngRestoreOrderAlertAfterChild==='function')cngRestoreOrderAlertAfterChild();resolve({en:v,ar:v,icon:'📝'});};
+    overlay.querySelector('#cancel-reason-close').onclick=()=>{overlay.remove();if(typeof cngRestoreOrderAlertAfterChild==='function')cngRestoreOrderAlertAfterChild();resolve(null);};
   });
 }
 async function cancelCustomerOrderFromAlert(){ if(!activeNewCustomerOrder)return; const o=activeNewCustomerOrder; const reason=await chooseCustomerCancelReason(); if(!reason)return; try{ await moveCustomerOrderToHistory(o,'cancelled',{cancelReasonEn:reason.en,cancelReasonAr:reason.ar,cancelReason:reason.en,cancelledAt:Date.now()}); showToast('❌ Order cancelled — customer notified'); dismissNewCustomerOrder(); }catch(e){showToast('❌ Could not cancel order');} }
@@ -3671,46 +3518,8 @@ function renderOrderRows(list,mode){
     const late=customerOrderLateMinutes(o), status=customerOrderStatus(o), wait=Math.max(1,parseInt(appSettings.waitTime||15));
     const elapsed=Math.max(0,Math.floor((Date.now()-customerOrderBaseTime(o))/60000));
     const lateBadge=late>0?`<span class="late-badge">⚠️ LATE ${late}m</span>`:'';
-    return `<div class="customer-order-row ${late>0?'is-late':''}"><div class="cor-top"><span class="cor-name">👤 ${escCC(o.customerName||'Guest')}</span><span><span class="cor-status">${escCC(status.toUpperCase())}</span>${lateBadge}</span></div><div style="font-size:10px;color:var(--muted);margin-top:3px;">#${escCC(o.id)} · ${escCC(o.time||'')} · ${escCC(o.customerPhone||'')}</div><div style="font-size:9px;color:${late>0?'#ff6b6b':'var(--muted)'};margin-top:4px;font-weight:${late>0?'900':'700'};">⏱ ${elapsed} min elapsed · Target ${wait} min</div><div class="cor-items">${escCC(customerOrderItemsText(o))}</div><div style="font-size:12px;font-weight:900;color:var(--orange);margin-top:7px;">${parseFloat(o.total||0).toFixed(2)} ${escCC(appSettings.currency||'SR')}</div>${mode==='pending'?`<div class="cor-actions"><button class="btn btn-delete" onclick="adminCancelCustomerOrder('${escCC(o.id)}')">❌ Cancel</button><button class="btn btn-success" onclick="adminAcceptCustomerOrder('${escCC(o.id)}')">✅ Accept</button></div>`:''}${mode==='active'?`<div class="cor-actions">${status!=='ready'?`<button class="btn btn-primary" onclick="markCustomerOrderReady('${escCC(o.id)}')">🔔 Ready</button>`:`<button class="btn" disabled style="opacity:.7;">✅ Ready</button>`}<button class="btn btn-success" onclick="completeCustomerOrder('${escCC(o.id)}')">✅ Complete</button></div>`:''}${mode==='history'?`<div class="cor-actions" style="margin-top:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;"><button class="btn btn-primary" style="font-size:10px;padding:8px 5px;" onclick="viewCustomerHistoryOrder('${escCC(o.id)}')">👁 View</button><button class="btn" style="font-size:10px;padding:8px 5px;background:rgba(255,255,255,.10);color:#fff;" onclick="printCustomerHistoryOrder('${escCC(o.id)}')">🖨 Print</button><button class="btn" style="font-size:10px;padding:8px 5px;background:rgba(229,193,88,.18);color:var(--orange);" onclick="pdfCustomerHistoryOrder('${escCC(o.id)}')">📥 PDF</button></div>`:''}</div>`;
+    return `<div class="customer-order-row ${late>0?'is-late':''}"><div class="cor-top"><span class="cor-name">👤 ${escCC(o.customerName||'Guest')}</span><span><span class="cor-status">${escCC(status.toUpperCase())}</span>${lateBadge}</span></div><div style="font-size:10px;color:var(--muted);margin-top:3px;">#${escCC(o.id)} · ${escCC(o.time||'')} · ${escCC(o.customerPhone||'')}</div><div style="font-size:9px;color:${late>0?'#ff6b6b':'var(--muted)'};margin-top:4px;font-weight:${late>0?'900':'700'};">⏱ ${elapsed} min elapsed · Target ${wait} min</div><div class="cor-items">${escCC(customerOrderItemsText(o))}</div><div style="font-size:12px;font-weight:900;color:var(--orange);margin-top:7px;">${parseFloat(o.total||0).toFixed(2)} ${escCC(appSettings.currency||'SR')}</div>${mode==='pending'?`<div class="cor-actions"><button class="btn btn-delete" onclick="adminCancelCustomerOrder('${escCC(o.id)}')">❌ Cancel</button><button class="btn btn-success" onclick="adminAcceptCustomerOrder('${escCC(o.id)}')">✅ Accept</button></div>`:''}${mode==='active'?`<div class="cor-actions">${status!=='ready'?`<button class="btn btn-primary" onclick="markCustomerOrderReady('${escCC(o.id)}')">🔔 Ready</button>`:`<button class="btn" disabled style="opacity:.7;">✅ Ready</button>`}<button class="btn btn-success" onclick="completeCustomerOrder('${escCC(o.id)}')">✅ Complete</button></div>`:''}</div>`;
   }).join('');
-}
-function fillOnlineCustomerReceipt(o){
-  if(!o)return false;
-  activeOrderForShare=o;
-  const onlineLabel=document.getElementById('rcpt-online-label'); if(onlineLabel) onlineLabel.style.display='block';
-  safeSet('rcpt-inv','innerText',o.id||'');
-  safeSet('rcpt-date','innerText',o.time||new Date(o.timestamp||o.createdAt||Date.now()).toLocaleString());
-  safeSet('rcpt-cashier-print','innerText',`Online Order${o.customerName?' · '+o.customerName:''}`);
-  const total=parseFloat(o.total||0).toFixed(2);
-  safeSet('rcpt-due','innerText',total);
-  safeSet('rcpt-cash-paid','innerText','CASH: 0.00');
-  safeSet('rcpt-card-paid','innerText','CARD: 0.00');
-  safeSet('rcpt-change','innerText','METHOD: ONLINE ORDER');
-  safeSet('rcpt-paid','innerText',`${total} ${appSettings.currency||'SR'}`);
-  safeSet('rcpt-return','innerText',`0.00 ${appSettings.currency||'SR'}`);
-  const ret=document.getElementById('rcpt-return'); if(ret)ret.style.color='#000';
-  const tb=document.getElementById('rcpt-items'); if(tb){
-    tb.innerHTML='';
-    (Array.isArray(o.items)?o.items:[]).forEach(i=>{
-      const qty=parseFloat(i.qty||1), price=parseFloat(i.price||0);
-      tb.innerHTML+=`<tr><td style="padding:4px 0;color:#000;">${escCC(i.name||'Item')}</td><td style="text-align:center;color:#000;">${qty}</td><td style="text-align:right;color:#000;">${(price*qty).toFixed(2)}</td></tr>`;
-    });
-  }
-  return true;
-}
-function getCustomerHistoryOrder(id){return customerOrderHistoryCache.find(x=>String(x.id)===String(id));}
-function viewCustomerHistoryOrder(id){
-  const o=getCustomerHistoryOrder(id); if(!o)return showToast('Order not found!');
-  fillOnlineCustomerReceipt(o);
-  openModal('order-detail-modal');
-}
-function printCustomerHistoryOrder(id){
-  const o=getCustomerHistoryOrder(id); if(!o)return showToast('Order not found!');
-  fillOnlineCustomerReceipt(o); printContent('receipt-content');
-}
-function pdfCustomerHistoryOrder(id){
-  const o=getCustomerHistoryOrder(id); if(!o)return showToast('Order not found!');
-  fillOnlineCustomerReceipt(o); downloadReceiptPDF();
 }
 async function adminAcceptCustomerOrder(id){const o=customerOrdersCache.find(x=>String(x.id)===String(id));if(!o)return;await updateHeldCustomerOrder(id,{status:'active',acceptedAt:Date.now(),acceptedBy:sessionStorage.getItem('cng_active_cashier')||'Admin'});showToast('✅ Accepted');renderCustomerControlIfOpen();}
 async function adminCancelCustomerOrder(id){const o=customerOrdersCache.find(x=>String(x.id)===String(id));if(!o)return;const reason=await chooseCustomerCancelReason();if(!reason)return;await moveCustomerOrderToHistory(o,'cancelled',{cancelReasonEn:reason.en,cancelReasonAr:reason.ar,cancelReason:reason.en,cancelledAt:Date.now()});showToast('❌ Cancelled — customer notified');renderCustomerControlIfOpen();}
@@ -3720,7 +3529,7 @@ function renderCustomerControl(mode){
   const titles={notifications:'🔔 Notifications / Offers',pending:'⏳ Pending Orders',active:'🔥 Active / Processing Orders',history:'📜 All Customer History'}; if(title)title.innerText=titles[mode]||'Customer Control';
   if(mode==='notifications'){
     body.innerHTML=`<div class="cc-section"><h4>📢 Send Notification</h4><div class="cc-field"><label>Title</label><input id="cc-notif-title" placeholder="New Offer"></div><div class="cc-field"><label>Message</label><textarea id="cc-notif-message" placeholder="Write your offer or announcement..."></textarea></div><button class="cc-send" onclick="sendCustomerNotification()">🚀 SEND NOW</button><div class="cc-note">Customer app will receive this in real time.</div><div class="cc-note" style="margin-top:8px;">⚠️ Late-order warning automatically uses the waiting-time value below.</div></div>
-    <div class="cc-section"><h4>🎨 Customer App Controls</h4><div class="cc-row"><div class="cc-field"><label>Order Waiting Time / Late Warning (minutes)</label><input id="cc-wait-time" type="number" min="1" max="180" value="${parseInt(appSettings.waitTime||15)}"></div><div class="cc-field"><label>Shop Location</label><input id="cc-location" value="${escCC(appSettings.location||'')}"></div></div><button class="cc-send" onclick="saveCustomerAppControls()">💾 SAVE CUSTOMER SETTINGS</button></div>
+    <div class="cc-section"><h4>🎨 Customer App Controls</h4><div class="cc-row"><div class="cc-field"><label>Order Waiting Time / Late Warning (minutes)</label><input id="cc-wait-time" type="number" min="1" max="180" value="15"></div><div class="cc-field"><label>Shop Location</label><input id="cc-location" value="${escCC(appSettings.location||'')}"></div></div><button class="cc-send" onclick="saveCustomerAppControls()">💾 SAVE CUSTOMER SETTINGS</button></div>
     <div class="cc-section"><h4>🖼️ Customer Home Banners</h4><div class="cc-note" style="margin-bottom:10px;">Upload up to 3 photos directly from your phone. No image link needed. Photos are compressed automatically for fast loading.</div><label class="cc-send" style="display:block;text-align:center;cursor:pointer;">📷 CHOOSE UP TO 3 PHOTOS<input type="file" accept="image/*" multiple style="display:none;" onchange="handlePromoBannerFiles(event)"></label><div id="cc-banner-preview" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;"></div></div>
     <div class="cc-section"><h4>🎬 Launch Intro Ad</h4><div class="cc-note" style="margin-bottom:10px;">Optional full-screen opening image, like a premium shopping app.</div><div class="cc-row"><div class="cc-field"><label>Show Intro</label><select id="cc-intro-enabled"><option value="yes" ${appSettings.introAd?.enabled?'selected':''}>ON</option><option value="no" ${!appSettings.introAd?.enabled?'selected':''}>OFF</option></select></div><div class="cc-field"><label>Duration (seconds)</label><input id="cc-intro-duration" type="number" min="2" max="10" value="${parseInt(appSettings.introAd?.duration||4)}"></div></div><label class="cc-send" style="display:block;text-align:center;cursor:pointer;">📱 UPLOAD INTRO PHOTO<input type="file" accept="image/*" style="display:none;" onchange="handleIntroAdFile(event)"></label><div id="cc-intro-preview" style="margin-top:10px;"></div><button class="cc-send" style="margin-top:10px;background:rgba(255,255,255,.08);color:#fff;" onclick="saveIntroAdSettings()">💾 SAVE INTRO SETTINGS</button></div>`;
     setTimeout(()=>{renderPromoBannerPreview();renderIntroPreview();},0);
@@ -3820,45 +3629,97 @@ async function removeIntroAdImage(){
 // Ensure online order monitoring starts after Firebase is ready.
 setTimeout(startCustomerOrderMonitor,500);
 
-// If the cashier returns to the tab/app while a pending order exists, restore the alert popup.
-function restorePendingCustomerOrderAlert(){
-  if(activeNewCustomerOrder) return;
-  const pending=customerOrdersCache.filter(o=>customerOrderStatus(o)==='pending');
-  if(!pending.length) return;
-  pending.sort((x,y)=>customerOrderBaseTime(x)-customerOrderBaseTime(y));
-  pending.forEach(queueNewCustomerOrder);
-}
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(restorePendingCustomerOrderAlert,150);});
-window.addEventListener('focus',()=>setTimeout(restorePendingCustomerOrderAlert,150));
-// Mobile/file:// fallback: periodically reconcile pending orders so a new cashier popup cannot be missed.
-setInterval(()=>{
-  try{
-    if(document.hidden) return;
-    db.ref('/customerOrders').once('value').then(snap=>{
-      const customers=customerOrdersArray(snap.val()).filter(isCustomerOrder);
-      customerOrdersCache=customers;
-      const pending=customers.filter(o=>customerOrderStatus(o)==='pending').sort((a,b)=>customerOrderBaseTime(a)-customerOrderBaseTime(b));
-      if(!activeNewCustomerOrder && pending.length){
-        pending.forEach(queueNewCustomerOrder);
-      }
-      updateCustomerControlCounts();
-    }).catch(()=>{});
-  }catch(e){}
-},1800);
-
 
 </script>
 
 <!-- LIVE CUSTOMER CONTROL MODAL -->
 <div id="customer-control-modal" class="modal"><div class="modal-box"><div class="modal-header"><h3 id="cc-modal-title" style="color:var(--orange);font-size:16px;font-weight:900;">Customer Control</h3><button class="btn" style="padding:4px 10px;border-radius:10px;" onclick="closeModal('customer-control-modal')">✕</button></div><div class="modal-body" id="cc-modal-body"></div></div></div>
 
-<!-- REAL-TIME NEW CUSTOMER ORDER POPUP -->
-<div id="new-customer-order-alert" aria-live="assertive" aria-modal="true" role="dialog">
-  <div class="nco-box">
-    <div class="nco-head"><b>🔔 NEW CUSTOMER ORDER</b><button class="btn" style="padding:5px 9px;border-radius:9px;" onclick="dismissNewCustomerOrder()">✕</button></div>
-    <div id="nco-content"></div>
-  </div>
-</div>
+<!-- LIVE NEW CUSTOMER ORDER ALERT -->
+<div id="new-customer-order-alert" style="display:none;"><div class="nco-box"><div class="nco-head"><b>🔔 NEW CUSTOMER ORDER</b><button class="btn" style="padding:5px 9px;border-radius:9px;" onclick="dismissNewCustomerOrder()">✕</button></div><div id="nco-content"></div></div></div>
 
+<style id="cng-chat-admin-css">
+#cngAdminInboxFab{display:none!important;position:fixed;right:18px;bottom:105px;z-index:15000;width:54px;height:54px;border:0;border-radius:18px;background:linear-gradient(145deg,#6d4ce7,#8d68f2);color:#fff;font-size:23px;box-shadow:0 12px 30px rgba(109,76,231,.38)}
+#cngAdminInboxBadge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 4px;border-radius:10px;background:#ff3b30;color:#fff;border:2px solid #fff;font:800 10px/16px Arial;display:none;align-items:center;justify-content:center}
+#cngAdminInboxModal .modal-box{width:min(390px,calc(100vw - 26px))!important;max-width:390px!important;height:min(650px,82vh)!important;max-height:82vh!important;padding:0!important;overflow:hidden!important;border-radius:24px!important;background:#fff!important;color:#171c28!important;display:flex!important;flex-direction:column!important}
+.cngAiHead{display:flex;align-items:center;gap:10px;padding:15px 16px;border-bottom:1px solid #eceef2;background:#fff}.cngAiTitle{font-size:17px;font-weight:900;color:#171c28}.cngAiSub{font-size:9px;color:#8d949f}.cngAiClose,.cngAiBack{width:34px;height:34px;border:0;border-radius:50%;background:#f2f4f7}
+#cngAdminThreads{flex:1;overflow-y:auto;background:#f7f8fa;padding:10px}.cngThread{display:flex;gap:10px;align-items:center;background:#fff;border:1px solid #e7e9ee;border-radius:16px;padding:11px;margin-bottom:8px}.cngAvatar{width:39px;height:39px;border-radius:13px;background:#efe8ff;display:flex;align-items:center;justify-content:center}.cngThreadMain{min-width:0;flex:1}.cngThreadName{font-size:13px;font-weight:900}.cngThreadPhone{font-size:9px;color:#9299a4}.cngThreadLast{font-size:10px;color:#626a76;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cngUnread{display:inline-flex;min-width:18px;height:18px;padding:0 5px;border-radius:10px;background:#ff3b30;color:#fff;align-items:center;justify-content:center;font-size:9px;font-weight:900}
+#cngAdminChatView{display:none;flex:1;min-height:0;flex-direction:column}#cngAdminChatMessages{flex:1;overflow-y:auto;padding:14px;background:#f6f7f9}.cngAMsgRow{display:flex;margin:6px 0}.cngAMsgRow.me{justify-content:flex-end}.cngAMsgRow.them{justify-content:flex-start}.cngAMsg{max-width:78%;padding:9px 11px;border-radius:15px;font-size:12px;line-height:1.45}.me .cngAMsg{background:#6d4ce7;color:#fff}.them .cngAMsg{background:#fff;border:1px solid #e3e6eb}.cngATime{font-size:8px;opacity:.6;margin-top:4px}
+.cngQuick{display:flex;gap:6px;overflow-x:auto;padding:7px 10px}.cngQuick button{flex:0 0 auto;border:1px solid #e1e4ea;background:#f7f8fa;border-radius:12px;padding:7px 9px;font-size:9px}#cngAdminChatComposer{display:flex;gap:8px;padding:10px 12px;border-top:1px solid #eceef2}#cngAdminChatInput{flex:1;min-width:0;border:1px solid #e0e4ea;background:#f7f8fa;border-radius:14px;padding:11px 12px}#cngAdminChatSend{width:44px;border:0;border-radius:14px;background:#6d4ce7;color:#fff}
+</style>
+<button id="cngAdminInboxFab" onclick="cngOpenAdminInbox()">💬<span id="cngAdminInboxBadge">0</span></button>
+<div class="modal" id="cngAdminInboxModal"><div class="modal-box" onclick="event.stopPropagation()">
+<div class="cngAiHead"><button id="cngAdminChatBack" class="cngAiBack" onclick="cngAdminBackToThreads()" style="display:none">‹</button><div style="flex:1"><div id="cngAdminInboxTitle" class="cngAiTitle">Customer Inbox</div><div id="cngAdminInboxSub" class="cngAiSub">Live messages from customers</div></div><button class="cngAiClose" onclick="closeModal('cngAdminInboxModal')">×</button></div>
+<div id="cngAdminThreads"></div>
+<div id="cngAdminChatView"><div id="cngAdminChatMessages"></div><div class="cngQuick"><button onclick="cngAdminQuickReply('Your order is being prepared ☕')">Preparing ☕</button><button onclick="cngAdminQuickReply('About 5 minutes more, please.')">5 min</button><button onclick="cngAdminQuickReply('Your order is ready for pickup ✅')">Ready ✅</button><button onclick="cngAdminQuickReply('Sorry, this item is unavailable right now.')">Unavailable</button></div><div id="cngAdminChatComposer"><input id="cngAdminChatInput" maxlength="500" placeholder="Reply to customer..."><button id="cngAdminChatSend" onclick="cngAdminSendMessage()">➤</button></div></div>
+</div></div>
+<script id="cng-chat-admin-js">
+(function(){
+ var threadsRef=null,threadsListener=null,currentKey='',currentRef=null,currentListener=null;
+ function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+ function tm(t){try{return new Date(Number(t)||Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
+ function badge(n){n=Number(n)||0;var b=document.getElementById('cngAdminInboxBadge');if(b){b.textContent=n>99?'99+':n;b.style.display=n>0?'flex':'none';}var h=document.getElementById('cc-inbox-home-count');if(h)h.textContent=n>0?((n>99?'99+':n)+' unread'):'Messages';}
+ function renderThreads(data){var a=document.getElementById('cngAdminThreads');if(!a)return;var rows=[];Object.keys(data||{}).forEach(function(k){var v=data[k]||{};v._key=k;rows.push(v);});rows.sort(function(x,y){return(y.updatedAt||0)-(x.updatedAt||0);});var total=0,h='';rows.forEach(function(r){var unread=Number(r.unreadAdmin)||0;total+=unread;h+='<div class="cngThread" data-k="'+encodeURIComponent(r._key)+'" onclick="cngAdminOpenThread(decodeURIComponent(this.dataset.k))"><div class="cngAvatar">👤</div><div class="cngThreadMain"><div class="cngThreadName">'+esc(r.customerName||'Customer')+'</div><div class="cngThreadPhone">'+esc(r.customerPhone||'')+'</div><div class="cngThreadLast">'+esc(r.lastMessage||'')+'</div></div><div>'+(unread>0?'<span class="cngUnread">'+(unread>99?'99+':unread)+'</span>':'')+'</div></div>';});badge(total);a.innerHTML=h||'<div style="text-align:center;color:#8f96a1;padding:55px 20px;font-size:12px">💬 No customer messages yet.</div>';}
+ function listenThreads(){if(threadsRef&&threadsListener)threadsRef.off('value',threadsListener);threadsRef=db.ref('/customerChats');threadsListener=function(s){renderThreads(s.val()||{});};threadsRef.on('value',threadsListener);}
+ function renderMessages(d){var a=document.getElementById('cngAdminChatMessages');if(!a)return;var m=d&&d.messages?Object.values(d.messages):[];m.sort(function(x,y){return(x.timestamp||0)-(y.timestamp||0);});var h='';m.forEach(function(x){h+='<div class="cngAMsgRow '+(x.sender==='admin'?'me':'them')+'"><div class="cngAMsg"><div>'+esc(x.text)+'</div><div class="cngATime">'+tm(x.timestamp)+'</div></div></div>';});a.innerHTML=h||'<div style="text-align:center;color:#8f96a1;padding:50px 20px">No messages.</div>';setTimeout(function(){a.scrollTop=a.scrollHeight;},0);}
+ window.cngOpenAdminInbox=function(){document.getElementById('cngAdminThreads').style.display='block';document.getElementById('cngAdminChatView').style.display='none';document.getElementById('cngAdminChatBack').style.display='none';document.getElementById('cngAdminInboxTitle').textContent='Customer Inbox';document.getElementById('cngAdminInboxSub').textContent='Live messages from customers';openModal('cngAdminInboxModal');listenThreads();};
+ window.cngAdminOpenThread=function(k){currentKey=k;document.getElementById('cngAdminThreads').style.display='none';document.getElementById('cngAdminChatView').style.display='flex';document.getElementById('cngAdminChatBack').style.display='block';if(currentRef&&currentListener)currentRef.off('value',currentListener);currentRef=db.ref('/customerChats/'+k);currentListener=function(s){var d=s.val()||{};renderMessages(d);document.getElementById('cngAdminInboxTitle').textContent=d.customerName||'Customer';document.getElementById('cngAdminInboxSub').textContent=d.customerPhone||'';if(Number(d.unreadAdmin)>0)currentRef.update({unreadAdmin:0});};currentRef.on('value',currentListener);};
+ window.cngAdminBackToThreads=function(){if(currentRef&&currentListener){currentRef.off('value',currentListener);currentRef=null;currentListener=null;}currentKey='';document.getElementById('cngAdminThreads').style.display='block';document.getElementById('cngAdminChatView').style.display='none';document.getElementById('cngAdminChatBack').style.display='none';document.getElementById('cngAdminInboxTitle').textContent='Customer Inbox';document.getElementById('cngAdminInboxSub').textContent='Live messages from customers';listenThreads();};
+ window.cngAdminSendMessage=function(){if(!currentKey)return;var i=document.getElementById('cngAdminChatInput'),m=(i.value||'').trim();if(!m)return;i.value='';var r=db.ref('/customerChats/'+currentKey),now=Date.now();r.child('messages').push({sender:'admin',text:m,timestamp:now});r.transaction(function(d){d=d||{};d.updatedAt=now;d.lastMessage=m;d.lastSender='admin';d.unreadCustomer=(Number(d.unreadCustomer)||0)+1;d.unreadAdmin=0;return d;});};
+ window.cngAdminQuickReply=function(t){var i=document.getElementById('cngAdminChatInput');i.value=t;cngAdminSendMessage();};
+ document.addEventListener('DOMContentLoaded',listenThreads);setTimeout(listenThreads,900);
+})();
+</script>
+
+<style id="cng-admin-modal-stack-final-fix">
+/* Child popup always appears above its parent, Customer-app style */
+.cng-modal-parent-suspended{visibility:hidden!important;pointer-events:none!important}
+#cancel-reason-overlay{z-index:2147483647!important}
+#cngAdminInboxModal{z-index:2147483647!important}
+</style>
+<script id="cng-admin-modal-stack-final-js">
+(function(){
+  var modalStack=[];
+  var originalOpen=window.openModal;
+  var originalClose=window.closeModal;
+
+  window.openModal=function(id){
+    var child=document.getElementById(id);
+    if(!child)return;
+    var visible=Array.from(document.querySelectorAll('.modal.show')).filter(function(x){return x!==child && !x.classList.contains('cng-modal-parent-suspended');});
+    var parent=visible.length?visible[visible.length-1]:null;
+    if(parent){
+      parent.classList.add('cng-modal-parent-suspended');
+      child.dataset.cngParentModal=parent.id||'';
+    }
+    modalStack.push(id);
+    if(originalOpen)originalOpen(id);
+    child.style.zIndex='2147483647';
+  };
+
+  window.closeModal=function(id){
+    var child=document.getElementById(id);
+    var parentId=child?child.dataset.cngParentModal:'';
+    if(originalClose)originalClose(id);
+    setTimeout(function(){
+      if(child){child.style.zIndex='';delete child.dataset.cngParentModal;}
+      if(parentId){
+        var p=document.getElementById(parentId);
+        if(p){p.classList.remove('cng-modal-parent-suspended');if(typeof resetAdminScrollTop==='function')resetAdminScrollTop(p);}
+      }
+    },170);
+    modalStack=modalStack.filter(function(x){return x!==id;});
+  };
+
+  window.cngSuspendOrderAlertForChild=function(){
+    var p=document.getElementById('new-customer-order-alert');
+    if(p && p.style.display!=='none')p.classList.add('cng-modal-parent-suspended');
+  };
+  window.cngRestoreOrderAlertAfterChild=function(){
+    var p=document.getElementById('new-customer-order-alert');
+    if(p)p.classList.remove('cng-modal-parent-suspended');
+  };
+})();
+</script>
 </body>
 </html>
