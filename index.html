@@ -2620,7 +2620,36 @@ function downloadStockPDF() {
 </style>`;
 
   // ৩. পিডিএফের জন্য 1050px চওড়া একটি কন্টেইনার বানানো হলো
-  let fullHtmlString = `<html><head><meta charset="UTF-8">${style}</head><body><div style="width: 1050px; margin: auto;">${cleanHTML}</div></body></html>`;
+  let fullHtmlString = `<html><head><meta charset="UTF-8">${style}
+<style id="final-matched-product-image-display">
+/* FINAL: Customer/Admin matched product-image frame. No crop, no forced zoom. */
+.admin-product-img-wrap{
+  width:100%!important;
+  height:auto!important;
+  aspect-ratio:4/3!important;
+  overflow:hidden!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:#f1f2f4!important;
+  border-radius:12px!important;
+}
+.admin-product-img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  display:block!important;
+  margin:0!important;
+  padding:0!important;
+  background:#f1f2f4!important;
+  image-rendering:auto!important;
+  -webkit-transform:translateZ(0);
+  transform:translateZ(0);
+  backface-visibility:hidden;
+}
+</style>
+</head><body><div style="width: 1050px; margin: auto;">${cleanHTML}</div></body></html>`;
 
   let opt = {
     margin:       [0.3, 0.3, 0.3, 0.3],
@@ -3108,7 +3137,7 @@ function initUI() {
         html += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">`;
                                 catProds.forEach(p => {
               let icn = (p.icon && p.icon.length > 10) 
-                  ? `<img src="${p.icon}" style="width:100%; height:110px; object-fit:cover; border-radius:10px; display:block;">` 
+                  ? `<div class="admin-product-img-wrap"><img src="${p.icon}" class="admin-product-img" loading="lazy" decoding="async"></div>` 
                   : `<div style="width:100%; height:110px; background:rgba(255,255,255,0.05); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:40px;">${p.icon || '☕'}</div>`;
               
               html += `<div class="product-card" id="card-${p.id}" onclick="addToCart(${p.id})" style="padding:8px; text-align:center;">
@@ -3127,7 +3156,7 @@ function initUI() {
     let catProds = products.filter(p => p.category === currentCategory);
     html += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">`;
     catProds.forEach(p => {
-      let icn = (p.icon && p.icon.length > 10) ? `<img src="${p.icon}" style="width:100%; height:110px; object-fit:cover; border-radius:8px; display:block;">` : (p.icon || '☕');
+      let icn = (p.icon && p.icon.length > 10) ? `<div class="admin-product-img-wrap"><img src="${p.icon}" class="admin-product-img" loading="lazy" decoding="async"></div>` : (p.icon || '☕');
       html += `<div class="product-card" id="card-${p.id}" onclick="addToCart(${p.id})" style="padding:10px; text-align:center;">
         <div>${icn}</div>
         <b style="font-size:13px; display:block; margin-top:8px; margin-bottom:5px;">${p.name}</b>
