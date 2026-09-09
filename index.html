@@ -3873,8 +3873,17 @@ setTimeout(startCustomerOrderMonitor,500);
   }
 
   function itemsOf(o){
-    if(Array.isArray(o?.items)) return o.items;
-    if(Array.isArray(o?.cart)) return o.cart;
+    const normalize = (v)=>{
+      if(Array.isArray(v)) return v.filter(Boolean);
+      if(v && typeof v === 'object') return Object.values(v).filter(Boolean);
+      return [];
+    };
+    let a = normalize(o?.items);
+    if(a.length) return a;
+    a = normalize(o?.cart);
+    if(a.length) return a;
+    a = normalize(o?.orderItems);
+    if(a.length) return a;
     return [];
   }
 
@@ -3903,21 +3912,34 @@ setTimeout(startCustomerOrderMonitor,500);
 
     const tbody=document.getElementById('chr-items');
     if(tbody){
-      tbody.innerHTML='';
       const its=itemsOf(o);
-      if(!its.length){
-        tbody.innerHTML='<tr><td colspan="3" style="padding:10px 0;text-align:center;color:#777;">No item details</td></tr>';
-      }else{
-        its.forEach(i=>{
-          const qty=Number(i.qty||i.quantity||1);
-          const price=Number(i.price||0);
-          tbody.innerHTML += `<tr style="border-bottom:1px solid #eee;">
-            <td style="padding:7px 0;">${esc(i.name||i.item||'Item')}</td>
-            <td style="text-align:center;">${qty}</td>
-            <td style="text-align:right;">${(price*qty).toFixed(2)}</td>
+      let rows='';
+      if(its.length){
+        rows = its.map(i=>{
+          const qty=Number(i?.qty ?? i?.quantity ?? 1) || 1;
+          const name=i?.name ?? i?.item ?? i?.title ?? 'Item';
+          const unit=Number(i?.price ?? i?.unitPrice ?? i?.amount ?? 0) || 0;
+          const lineTotal=Number(i?.lineTotal ?? i?.total ?? (unit*qty)) || 0;
+          return `<tr style="border-bottom:1px solid #eee;">
+            <td style="padding:8px 0;color:#111;font-weight:700;">${esc(name)}</td>
+            <td style="text-align:center;color:#111;">${qty}</td>
+            <td style="text-align:right;color:#111;">${lineTotal.toFixed(2)}</td>
           </tr>`;
-        });
+        }).join('');
+      } else {
+        /* Old/legacy history fallback: the history card may already contain a readable item string. */
+        let txt='';
+        try{
+          if(typeof customerOrderItemsText==='function') txt=customerOrderItemsText(o)||'';
+        }catch(e){}
+        txt = txt || o?.itemsText || o?.itemText || o?.orderItemsText || '';
+        if(txt){
+          rows = `<tr><td colspan="3" style="padding:9px 0;color:#111;font-weight:700;line-height:1.6;">${esc(txt)}</td></tr>`;
+        }else{
+          rows = '<tr><td colspan="3" style="padding:10px 0;text-align:center;color:#777;">No item details</td></tr>';
+        }
       }
+      tbody.innerHTML=rows;
     }
 
     openModal('customer-history-detail-modal');
