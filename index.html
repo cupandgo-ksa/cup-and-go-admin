@@ -767,6 +767,14 @@ input,select,textarea{max-width:100%;}
 .admin-item-img{width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important;}
 </style>
 
+
+<style id="nco-live-popup-hard-fix">
+/* Hard fix: this element is a real page-level popup, not print-only markup. */
+#new-customer-order-alert{display:none!important;}
+#new-customer-order-alert.nco-visible{display:flex!important;}
+#new-customer-order-alert.nco-visible .nco-box{animation:ncoPopIn .22s cubic-bezier(.2,.9,.25,1.15) both;}
+@keyframes ncoPopIn{from{opacity:0;transform:translateY(-10px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+</style>
 </head>
 <body>
 
@@ -1840,14 +1848,7 @@ function printContent(elementId) {
     document.body.appendChild(iframe);
     let doc = iframe.contentWindow.document;
     doc.open();
-    doc.write(`<html><head><style>@page{margin:0.2in}body{font-family:monospace;color:#000;background:#fff;}*{direction:ltr!important;}</style></head><body>${contentHtml}
-<!-- CUSTOMER CONTROL MODAL -->
-<div id="customer-control-modal" class="modal"><div class="modal-box"><div class="modal-header"><h3 id="cc-modal-title" style="color:var(--orange);font-size:16px;font-weight:900;">Customer Control</h3><button class="btn" style="padding:4px 10px;border-radius:10px;" onclick="closeModal('customer-control-modal')">✕</button></div><div class="modal-body" id="cc-modal-body"></div></div></div>
-
-<!-- NEW CUSTOMER ORDER ALERT -->
-<div id="new-customer-order-alert"><div class="nco-box"><div class="nco-head"><b>🔔 NEW CUSTOMER ORDER</b><button class="btn" style="padding:5px 9px;border-radius:9px;" onclick="dismissNewCustomerOrder()">✕</button></div><div id="nco-content"></div></div></div>
-
-</body></html>`);
+    doc.write(`<html><head><style>@page{margin:0.2in}body{font-family:monospace;color:#000;background:#fff;}*{direction:ltr!important;}</style></head><body>${contentHtml}</body></html>`);
     doc.close();
     setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); setTimeout(() => document.body.removeChild(iframe), 1000); }, 500);
     return;
@@ -3475,6 +3476,7 @@ console.log('✅ All Reports Unlimited - Never Delete Until You Delete!');
 let customerOrdersCache = [];
 let customerOrderHistoryCache = [];
 let customerOrderListenerStarted = false;
+let customerOrderPopupChildListenerStarted = false;
 let customerOrderInitialLoaded = false;
 let newCustomerOrderQueue = [];
 let activeNewCustomerOrder = null;
@@ -3528,6 +3530,16 @@ function startCustomerOrderMonitor(){
     if(!lateOrderTimer) lateOrderTimer=setInterval(checkLateCustomerOrders,30000);
     customerOrderInitialLoaded=true;
   });
+  // Dedicated realtime new-order watcher. This guarantees the cashier/admin popup
+  // appears immediately for every newly appended customer order instead of only
+  // relying on a full-array value diff. Duplicate protection remains in queueNewCustomerOrder().
+  if(!customerOrderPopupChildListenerStarted){
+    customerOrderPopupChildListenerStarted=true;
+    db.ref('/customerOrders').on('child_added', snap=>{
+      const o=snap.val();
+      if(isCustomerOrder(o) && customerOrderStatus(o)==='pending') queueNewCustomerOrder(o);
+    });
+  }
   db.ref('/customerOrderHistory').on('value', snap=>{
     customerOrderHistoryCache=customerOrdersArray(snap.val());
     updateCustomerControlCounts();
@@ -3567,7 +3579,7 @@ function reconcileCustomerOrderAlert(customers){
   const pendingIds=new Set(customers.filter(o=>customerOrderStatus(o)==='pending').map(o=>String(o.id)));
   newCustomerOrderQueue=newCustomerOrderQueue.filter(o=>pendingIds.has(String(o?.id)));
   if(activeNewCustomerOrder && !pendingIds.has(String(activeNewCustomerOrder.id))){
-    const el=document.getElementById('new-customer-order-alert'); if(el)el.style.display='none';
+    const el=document.getElementById('new-customer-order-alert'); if(el){el.classList.remove('nco-visible');el.style.display='none';}
     stopCustomerAlertRinging(); activeNewCustomerOrder=null; setTimeout(showNextCustomerOrder,80);
   }
 }
@@ -3584,9 +3596,9 @@ function showNextCustomerOrder(){
   activeNewCustomerOrder=newCustomerOrderQueue.shift()||null; if(!activeNewCustomerOrder)return;
   const o=activeNewCustomerOrder; const el=document.getElementById('new-customer-order-alert'); const c=document.getElementById('nco-content'); if(!el||!c)return;
   c.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:6px;"><button id="nco-sound-btn" onclick="toggleCustomerAlertSound()" style="border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:#fff;border-radius:9px;padding:5px 9px;font-size:13px;">${customerAlertSoundEnabled?'🔊':'🔇'}</button></div><div class="nco-customer"><b>👤 ${escCC(o.customerName||((o.cashier||'').replace(/^.*?: /,''))||'Guest')}</b><br>📞 ${escCC(o.customerPhone||'—')} &nbsp; 🚗 ${escCC(o.carNumber||'Walk-in')}</div><div class="nco-items">${(o.items||[]).map(i=>`<div class="nco-item"><span>${escCC(i.name||'Item')} × ${i.qty||1}</span><b>${((i.price||0)*(i.qty||1)).toFixed(2)} ${escCC(appSettings.currency||'SR')}</b></div>`).join('')}<div style="display:flex;justify-content:space-between;margin-top:8px;font-size:14px;font-weight:900;color:var(--orange);"><span>Total</span><span>${parseFloat(o.total||0).toFixed(2)} ${escCC(appSettings.currency||'SR')}</span></div></div><div class="nco-actions"><button class="nco-cancel" onclick="cancelCustomerOrderFromAlert()">❌ CANCEL</button><button class="nco-accept" onclick="acceptCustomerOrderFromAlert()">✅ ACCEPT</button></div>`;
-  el.style.display='block'; resetAdminScrollTop(el); const nbox=el.querySelector('.nco-box'); if(nbox)nbox.scrollTop=0; const ncontent=el.querySelector('#nco-content'); if(ncontent)ncontent.scrollTop=0; requestAnimationFrame(()=>{ resetAdminScrollTop(el); if(nbox)nbox.scrollTop=0; if(ncontent)ncontent.scrollTop=0; }); startCustomerAlertRinging();
+  el.classList.add('nco-visible'); el.style.display='flex'; resetAdminScrollTop(el); const nbox=el.querySelector('.nco-box'); if(nbox)nbox.scrollTop=0; const ncontent=el.querySelector('#nco-content'); if(ncontent)ncontent.scrollTop=0; requestAnimationFrame(()=>{ resetAdminScrollTop(el); if(nbox)nbox.scrollTop=0; if(ncontent)ncontent.scrollTop=0; }); startCustomerAlertRinging();
 }
-function dismissNewCustomerOrder(){ const el=document.getElementById('new-customer-order-alert');if(el){el.style.display='none';const c=el.querySelector('#nco-content');if(c)c.scrollTop=0;const b=el.querySelector('.nco-box');if(b)b.scrollTop=0;}stopCustomerAlertRinging();activeNewCustomerOrder=null;resetAdminScrollTop(document.getElementById('customer-control-modal'));setTimeout(()=>{showNextCustomerOrder();const alert=document.getElementById('new-customer-order-alert');if(alert){resetAdminScrollTop(alert);const c=alert.querySelector('#nco-content');if(c)c.scrollTop=0;const b=alert.querySelector('.nco-box');if(b)b.scrollTop=0;}},120); }
+function dismissNewCustomerOrder(){ const el=document.getElementById('new-customer-order-alert');if(el){el.classList.remove('nco-visible');el.style.display='none';const c=el.querySelector('#nco-content');if(c)c.scrollTop=0;const b=el.querySelector('.nco-box');if(b)b.scrollTop=0;}stopCustomerAlertRinging();activeNewCustomerOrder=null;resetAdminScrollTop(document.getElementById('customer-control-modal'));setTimeout(()=>{showNextCustomerOrder();const alert=document.getElementById('new-customer-order-alert');if(alert){resetAdminScrollTop(alert);const c=alert.querySelector('#nco-content');if(c)c.scrollTop=0;const b=alert.querySelector('.nco-box');if(b)b.scrollTop=0;}},120); }
 async function updateHeldCustomerOrder(id,patch){
   let found=false;
   const result=await db.ref('/customerOrders').transaction(current=>{
@@ -3808,11 +3820,45 @@ async function removeIntroAdImage(){
 // Ensure online order monitoring starts after Firebase is ready.
 setTimeout(startCustomerOrderMonitor,500);
 
+// If the cashier returns to the tab/app while a pending order exists, restore the alert popup.
+function restorePendingCustomerOrderAlert(){
+  if(activeNewCustomerOrder) return;
+  const pending=customerOrdersCache.filter(o=>customerOrderStatus(o)==='pending');
+  if(!pending.length) return;
+  pending.sort((x,y)=>customerOrderBaseTime(x)-customerOrderBaseTime(y));
+  pending.forEach(queueNewCustomerOrder);
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(restorePendingCustomerOrderAlert,150);});
+window.addEventListener('focus',()=>setTimeout(restorePendingCustomerOrderAlert,150));
+// Mobile/file:// fallback: periodically reconcile pending orders so a new cashier popup cannot be missed.
+setInterval(()=>{
+  try{
+    if(document.hidden) return;
+    db.ref('/customerOrders').once('value').then(snap=>{
+      const customers=customerOrdersArray(snap.val()).filter(isCustomerOrder);
+      customerOrdersCache=customers;
+      const pending=customers.filter(o=>customerOrderStatus(o)==='pending').sort((a,b)=>customerOrderBaseTime(a)-customerOrderBaseTime(b));
+      if(!activeNewCustomerOrder && pending.length){
+        pending.forEach(queueNewCustomerOrder);
+      }
+      updateCustomerControlCounts();
+    }).catch(()=>{});
+  }catch(e){}
+},1800);
+
 
 </script>
 
 <!-- LIVE CUSTOMER CONTROL MODAL -->
 <div id="customer-control-modal" class="modal"><div class="modal-box"><div class="modal-header"><h3 id="cc-modal-title" style="color:var(--orange);font-size:16px;font-weight:900;">Customer Control</h3><button class="btn" style="padding:4px 10px;border-radius:10px;" onclick="closeModal('customer-control-modal')">✕</button></div><div class="modal-body" id="cc-modal-body"></div></div></div>
+
+<!-- REAL-TIME NEW CUSTOMER ORDER POPUP -->
+<div id="new-customer-order-alert" aria-live="assertive" aria-modal="true" role="dialog">
+  <div class="nco-box">
+    <div class="nco-head"><b>🔔 NEW CUSTOMER ORDER</b><button class="btn" style="padding:5px 9px;border-radius:9px;" onclick="dismissNewCustomerOrder()">✕</button></div>
+    <div id="nco-content"></div>
+  </div>
+</div>
 
 </body>
 </html>
