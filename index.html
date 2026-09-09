@@ -3632,10 +3632,20 @@ async function removePromoBanner(index){
   localStorage.setItem('cng_settings',JSON.stringify(appSettings));
   try{await db.ref('/settings').update({promoBanners:arr});renderPromoBannerPreview();showToast('✅ Banner removed');}catch(e){showToast('❌ Could not remove banner');}
 }
-function renderIntroPreview(){
-  const el=document.getElementById('cc-intro-preview');if(!el)return;const intro=appSettings.introAd||{};
-  const type=intro.mediaType||(intro.video?'video':(intro.image?'image':''));
-  const src=type==='video'?(intro.video||intro.media||''):(intro.image||intro.media||'');
+async function renderIntroPreview(){
+  const el=document.getElementById('cc-intro-preview');if(!el)return;
+  let intro=appSettings.introAd||{};
+  let type=intro.mediaType||'';
+  let src='';
+  try{
+    const cfg=(await db.ref('/customerIntroAd/config').once('value')).val()||{};
+    const media=(await db.ref('/customerIntroAd/media').once('value')).val()||'';
+    if(cfg.mediaType){ intro=cfg; type=cfg.mediaType; src=media; }
+  }catch(e){}
+  if(!src){
+    type=type||(intro.video?'video':(intro.image?'image':''));
+    src=type==='video'?(intro.video||intro.media||''):(intro.image||intro.media||'');
+  }
   if(!src){el.innerHTML='<div style="text-align:center;color:var(--muted);font-size:10px;padding:10px;">No intro ad selected</div>';return;}
   const media=type==='video'
     ? `<video src="${src}" muted playsinline controls style="width:100%;height:100%;object-fit:cover;background:#000;"></video>`
@@ -3651,32 +3661,88 @@ async function handleIntroAdFile(event){
   const f=event.target.files?.[0];if(!f)return;
   try{
     const isVideo=(f.type||'').startsWith('video/');
-    if(isVideo){
-      if(f.size>4*1024*1024){showToast('❌ Video too large — use a file under 4 MB');event.target.value='';return;}
-      showToast('⏳ Preparing intro video...');
-      const video=await readFileAsDataURL(f);
-      appSettings.introAd={...(appSettings.introAd||{}),mediaType:'video',video:video,image:'',media:'',enabled:true,duration:parseInt(document.getElementById('cc-intro-duration')?.value||4)};
-      localStorage.setItem('cng_settings',JSON.stringify(appSettings));
-      await db.ref('/settings/introAd').set(appSettings.introAd);renderIntroPreview();showToast('✅ Intro video updated');
-    }else{
-      showToast('⏳ Preparing intro photo...');
-      const img=await compressCustomerImage(f,1080,1600,.76);
-      appSettings.introAd={...(appSettings.introAd||{}),mediaType:'image',image:img,video:'',media:'',enabled:true,duration:parseInt(document.getElementById('cc-intro-duration')?.value||4)};
-      localStorage.setItem('cng_settings',JSON.stringify(appSettings));
-      await db.ref('/settings/introAd').set(appSettings.introAd);renderIntroPreview();showToast('✅ Intro photo updated');
+    if(isVideo && f.size>4*1024*1024){
+      showToast('❌ Video too large — use a file under 4 MB');
+      showIntroSavePopup('❌ Video is too large');
+      event.target.value=''; return;
     }
-  }catch(e){console.error(e);showToast('❌ Could not upload intro ad');}
+
+    showToast(isVideo?'⏳ Uploading intro video...':'⏳ Uploading intro photo...');
+    const media=isVideo ? await readFileAsDataURL(f) : await compressCustomerImage(f,1080,1600,.76);
+    const config={
+      enabled:true,
+      duration:Math.max(2,Math.min(10,parseInt(document.getElementById('cc-intro-duration')?.value||4))),
+      mediaType:isVideo?'video':'image',
+      updatedAt:Date.now()
+    };
+
+    // Save large media separately so /settings stays lightweight and the customer can load config first.
+    await db.ref('/customerIntroAd/media').set(media);
+    await db.ref('/customerIntroAd/config').set(config);
+
+    // Keep only lightweight compatibility metadata under settings (no base64 media here).
+    appSettings.introAd={...config,image:'',video:'',media:''};
+    localStorage.setItem('cng_settings',JSON.stringify(appSettings));
+    await db.ref('/settings/introAd').set(appSettings.introAd);
+
+    // Keep local preview without bloating settings.
+    window.__cngIntroLocalPreview={...config,media};
+    const preview=document.getElementById('cc-intro-preview');
+    if(preview){
+      const tag=isVideo
+        ? `<video src="${media}" muted playsinline controls style="width:100%;height:100%;object-fit:cover;background:#000;"></video>`
+        : `<img src="${media}" style="width:100%;height:100%;object-fit:cover;">`;
+      preview.innerHTML=`<div style="position:relative;max-width:170px;margin:auto;aspect-ratio:9/14;border-radius:16px;overflow:hidden;border:1px solid var(--glass-border);">${tag}<button onclick="removeIntroAdImage()" style="position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.72);color:#fff;z-index:3;">✕</button><span style="position:absolute;bottom:7px;left:7px;background:rgba(0,0,0,.72);color:#fff;padding:3px 7px;border-radius:8px;font-size:9px;z-index:3;">${isVideo?'VIDEO':'PHOTO'}</span></div>`;
+    }
+
+    const on=document.getElementById('cc-intro-enabled'); if(on) on.value='yes';
+    showToast(isVideo?'✅ Intro video saved':'✅ Intro photo saved');
+    showIntroSavePopup(isVideo?'✅ Video saved — Customer intro ad is ON':'✅ Photo saved — Customer intro ad is ON');
+  }catch(e){
+    console.error(e);
+    showToast('❌ Could not save intro ad');
+    showIntroSavePopup('❌ Intro ad save failed');
+  }
   event.target.value='';
 }
+
 async function saveIntroAdSettings(){
-  appSettings.introAd={...(appSettings.introAd||{}),enabled:document.getElementById('cc-intro-enabled')?.value==='yes',duration:Math.max(2,Math.min(10,parseInt(document.getElementById('cc-intro-duration')?.value||4)))};
-  localStorage.setItem('cng_settings',JSON.stringify(appSettings));
-  try{await db.ref('/settings/introAd').set(appSettings.introAd);showToast('✅ Intro ad settings saved');}catch(e){showToast('❌ Could not save intro settings');}
+  try{
+    const enabled=document.getElementById('cc-intro-enabled')?.value==='yes';
+    const duration=Math.max(2,Math.min(10,parseInt(document.getElementById('cc-intro-duration')?.value||4)));
+    const oldCfgSnap=await db.ref('/customerIntroAd/config').once('value');
+    const oldCfg=oldCfgSnap.val()||{};
+    const config={...oldCfg,enabled,duration,updatedAt:Date.now()};
+    await db.ref('/customerIntroAd/config').set(config);
+
+    appSettings.introAd={...(appSettings.introAd||{}),...config,image:'',video:'',media:''};
+    localStorage.setItem('cng_settings',JSON.stringify(appSettings));
+    await db.ref('/settings/introAd').set(appSettings.introAd);
+
+    showToast('✅ Intro ad settings saved');
+    showIntroSavePopup(enabled?'✅ Intro Ad saved and ON':'✅ Intro Ad saved and OFF');
+  }catch(e){
+    console.error(e);
+    showToast('❌ Could not save intro settings');
+    showIntroSavePopup('❌ Intro settings save failed');
+  }
 }
+
 async function removeIntroAdImage(){
-  appSettings.introAd={...(appSettings.introAd||{}),image:'',video:'',media:'',mediaType:'',enabled:false};
-  localStorage.setItem('cng_settings',JSON.stringify(appSettings));
-  try{await db.ref('/settings/introAd').set(appSettings.introAd);renderIntroPreview();const s=document.getElementById('cc-intro-enabled');if(s)s.value='no';showToast('✅ Intro ad removed');}catch(e){showToast('❌ Could not remove intro ad');}
+  try{
+    await db.ref('/customerIntroAd').remove();
+    appSettings.introAd={enabled:false,duration:4,mediaType:'',image:'',video:'',media:''};
+    localStorage.setItem('cng_settings',JSON.stringify(appSettings));
+    await db.ref('/settings/introAd').set(appSettings.introAd);
+    renderIntroPreview();
+    const s=document.getElementById('cc-intro-enabled');if(s)s.value='no';
+    showToast('✅ Intro ad removed');
+    showIntroSavePopup('✅ Intro Ad removed');
+  }catch(e){
+    console.error(e);
+    showToast('❌ Could not remove intro ad');
+    showIntroSavePopup('❌ Could not remove Intro Ad');
+  }
 }
 
 // Ensure online order monitoring starts after Firebase is ready.
@@ -4041,6 +4107,28 @@ setTimeout(startCustomerOrderMonitor,500);
   #customer-history-detail-modal .modal-footer .btn{padding:10px 8px!important}
 }
 </style>
+
+
+<style id="cng-intro-save-popup-css">
+#cngIntroSavePopup{
+  position:fixed;top:max(18px,env(safe-area-inset-top));left:50%;transform:translate(-50%,-18px);
+  z-index:2147483647;background:#fff;color:#172033;border:1px solid #e8c458;border-radius:18px;
+  padding:13px 18px;min-width:min(320px,calc(100vw - 28px));max-width:420px;
+  box-shadow:0 18px 45px rgba(0,0,0,.32);font-size:13px;font-weight:900;text-align:center;
+  opacity:0;pointer-events:none;transition:.22s ease;
+}
+#cngIntroSavePopup.show{opacity:1;transform:translate(-50%,0)}
+</style>
+<div id="cngIntroSavePopup">✅ Saved</div>
+<script>
+function showIntroSavePopup(message){
+  const el=document.getElementById('cngIntroSavePopup'); if(!el)return;
+  el.textContent=message||'✅ Saved';
+  el.classList.add('show');
+  clearTimeout(window.__cngIntroPopupTimer);
+  window.__cngIntroPopupTimer=setTimeout(()=>el.classList.remove('show'),2200);
+}
+</script>
 
 </body>
 </html>
