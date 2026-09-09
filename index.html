@@ -1700,31 +1700,56 @@ function updateStatusUI() {
 
 // ======= PRINT & SHARE =======
 function printContent(elementId) {
-  let content = document.getElementById(elementId);
+  const content = document.getElementById(elementId);
   if(!content) return showToast("Nothing to print!");
-  let printWindow = window.open('', '_blank', 'width=800,height=600');
-  if(!printWindow) {
-    let contentHtml = content.innerHTML;
-    let iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed'; iframe.style.right = '-10000px';
-    document.body.appendChild(iframe);
-    let doc = iframe.contentWindow.document;
-    doc.open();
-    doc.write(`<html><head><style>@page{margin:0.2in}body{font-family:monospace;color:#000;background:#fff;}*{direction:ltr!important;}</style></head><body>${contentHtml}
-<!-- CUSTOMER CONTROL MODAL -->
-<div id="customer-control-modal" class="modal"><div class="modal-box"><div class="modal-header"><h3 id="cc-modal-title" style="color:var(--orange);font-size:16px;font-weight:900;">Customer Control</h3><button class="btn" style="padding:4px 10px;border-radius:10px;" onclick="closeModal('customer-control-modal')">✕</button></div><div class="modal-body" id="cc-modal-body"></div></div></div>
 
-<!-- NEW CUSTOMER ORDER ALERT -->
-<div id="new-customer-order-alert"><div class="nco-box"><div class="nco-head"><b>🔔 NEW CUSTOMER ORDER</b><button class="btn" style="padding:5px 9px;border-radius:9px;" onclick="dismissNewCustomerOrder()">✕</button></div><div id="nco-content"></div></div></div>
+  const html = `<!doctype html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Cup And Go Receipt</title>
+    <style>
+      @page{margin:8mm}
+      html,body{background:#fff!important;color:#000!important}
+      body{font-family:Arial,"Courier New",monospace;margin:0;padding:10px}
+      *{box-sizing:border-box;direction:ltr!important}
+      .print-shell{max-width:420px;margin:0 auto}
+      img{max-width:100%}
+      button{display:none!important}
+    </style>
+  </head>
+  <body><div class="print-shell">${content.innerHTML}</div></body>
+  </html>`;
 
-</body></html>`);
-    doc.close();
-    setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); setTimeout(() => document.body.removeChild(iframe), 1000); }, 500);
+  let w = null;
+  try { w = window.open('', '_blank'); } catch(e) {}
+
+  if(w){
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+    setTimeout(()=>{
+      try{
+        w.focus();
+        w.print();
+        w.onafterprint = ()=>{ try{w.close();}catch(e){} };
+      }catch(e){ try{w.close();}catch(_){} }
+    },350);
     return;
   }
-  printWindow.document.write(`<html><head><title>Print</title><style>@page{margin:0.2in}body{font-family:monospace;color:#000;background:#fff;padding:20px;}*{direction:ltr!important;}</style></head><body>${content.innerHTML}</body></html>`);
-  printWindow.document.close(); printWindow.focus(); printWindow.print();
-  printWindow.onafterprint = function() { printWindow.close(); };
+
+  // Mobile/WebView fallback when popup windows are blocked.
+  const iframe=document.createElement('iframe');
+  iframe.setAttribute('aria-hidden','true');
+  iframe.style.cssText='position:fixed;width:1px;height:1px;right:-9999px;bottom:-9999px;border:0;opacity:0;';
+  document.body.appendChild(iframe);
+  const doc=iframe.contentWindow.document;
+  doc.open(); doc.write(html); doc.close();
+  setTimeout(()=>{
+    try{iframe.contentWindow.focus();iframe.contentWindow.print();}catch(e){showToast("❌ Print not supported in this browser");}
+    setTimeout(()=>iframe.remove(),1500);
+  },450);
 }
 
 function shareTextReceipt() { if(!activeOrderForShare) return; let txt = `*${appSettings.shopName}*\nInv: #${activeOrderForShare.id}\nDate: ${activeOrderForShare.time}\nCashier: ${activeOrderForShare.cashier}\n\n`; activeOrderForShare.items.forEach(i => { txt += `${i.name} x${i.qty} = ${(i.price*i.qty).toFixed(2)}\n`; }); txt += `\nTotal: ${activeOrderForShare.total}\nPaid: ${activeOrderForShare.paidAmount || activeOrderForShare.total}\nReturn: ${activeOrderForShare.returnAmount || '0.00'}\nMethod: ${activeOrderForShare.method}\n\nThank you! ☕`; if(navigator.share) { navigator.share({text:txt}).catch(e=>{}); } else { navigator.clipboard.writeText(txt); showToast("✅ Bill Copied!"); } }
@@ -2669,7 +2694,7 @@ function openCashierPerms(idx) { closeModal('modal-security'); currentPermIdx=id
 function closeCashierPerms() { closeModal('modal-perms'); setTimeout(()=>openModal('modal-security'),250); }
 function saveCashierPerms() { let c=appSettings.cashiers[currentPermIdx]; c.permissions={}; permList.forEach(p=>{ c.permissions[p.id]=document.getElementById('perm-'+p.id).checked; }); saveData(); closeModal('modal-perms'); showToast("Permissions Saved!"); setTimeout(()=>openModal('modal-security'),250); }
 function applyPermissionsUI(role, cashierName) { if(role==='admin') { permList.forEach(p=>{ let el=document.getElementById('admin-card-'+p.id); if(el) el.style.display='block'; }); } else { let cData=appSettings.cashiers.find(x=>x.name===cashierName); let perms=(cData&&cData.permissions)?cData.permissions:{}; permList.forEach(p=>{ let el=document.getElementById('admin-card-'+p.id); if(el) el.style.display=perms[p.id]?'block':'none'; }); } document.getElementById('admin-card-about').style.display='block'; }
-function renderCashiersUI() { let cDiv=document.getElementById('cashiers-container'); if(!cDiv) return; cDiv.innerHTML=''; appSettings.cashiers.forEach((c,idx)=>{ cDiv.innerHTML+=`<div style="background:rgba(0,0,0,0.25);border:1px solid var(--glass-border);border-radius:14px;padding:12px;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:11px;color:var(--orange);font-weight:800;">👤 Cashier ${idx+1}</span><div><button class="btn btn-edit" style="padding:4px 8px;font-size:11px;margin-right:5px;" onclick="openCashierPerms(${idx})">⚙️ Perms</button><button class="btn btn-delete" style="padding:4px 8px;font-size:11px;" onclick="removeCashierUI(${idx})">🗑️</button></div></div><div style="display:flex;flex-direction:column;gap:8px;"><input type="text" id="cname-${idx}" value="${c.name}" placeholder="Name" style="width:100%;"><input type="number" id="cpin-${idx}" value="" placeholder="PIN" style="width:100%;"></div></div>`; }); }
+function renderCashiersUI() { let cDiv=document.getElementById('cashiers-container'); if(!cDiv) return; cDiv.innerHTML=''; appSettings.cashiers.forEach((c,idx)=>{ cDiv.innerHTML+=`<div style="background:rgba(0,0,0,0.25);border:1px solid var(--glass-border);border-radius:14px;padding:12px;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:11px;color:var(--orange);font-weight:800;">👤 Cashier ${idx+1}</span><div><button class="btn btn-edit" style="padding:4px 8px;font-size:11px;margin-right:5px;" onclick="openCashierPerms(${idx})">⚙️ Perms</button><button class="btn btn-delete" style="padding:4px 8px;font-size:11px;" onclick="removeCashierUI(${idx})">🗑️</button></div></div><div style="display:flex;flex-direction:column;gap:8px;"><input type="text" id="cname-${idx}" value="${c.name}" placeholder="Name" style="width:100%;"><input type="number" id="cpin-${idx}" value="${c.pin || ''}" placeholder="PIN" style="width:100%;"></div></div>`; }); }
 window.addCashierUI = function() { appSettings.cashiers.push({name:'',pin:'',permissions:{}}); renderCashiersUI(); }
 window.removeCashierUI = function(idx) { if(appSettings.cashiers.length<=1) return showToast("❌ 1 cashier required!"); appSettings.cashiers.splice(idx,1); renderCashiersUI(); }
 
@@ -3671,55 +3696,298 @@ setTimeout(startCustomerOrderMonitor,500);
 })();
 </script>
 
+
 <style id="cng-admin-modal-stack-final-fix">
-/* Child popup always appears above its parent, Customer-app style */
 .cng-modal-parent-suspended{visibility:hidden!important;pointer-events:none!important}
-#cancel-reason-overlay{z-index:2147483647!important}
-#cngAdminInboxModal{z-index:2147483647!important}
+#cancel-reason-overlay{z-index:2147483646!important}
+#cngAdminInboxModal{z-index:2147483500!important}
 </style>
 <script id="cng-admin-modal-stack-final-js">
 (function(){
-  var modalStack=[];
-  var originalOpen=window.openModal;
-  var originalClose=window.closeModal;
+  var originalOpen = window.openModal;
+  var originalClose = window.closeModal;
+  var stack = [];
+  var BASE_Z = 2147483200;
 
-  window.openModal=function(id){
-    var child=document.getElementById(id);
-    if(!child)return;
-    var visible=Array.from(document.querySelectorAll('.modal.show')).filter(function(x){return x!==child && !x.classList.contains('cng-modal-parent-suspended');});
-    var parent=visible.length?visible[visible.length-1]:null;
+  function activeVisibleModals(exceptEl){
+    return Array.from(document.querySelectorAll('.modal.show')).filter(function(el){
+      return el !== exceptEl && !el.classList.contains('cng-modal-parent-suspended');
+    });
+  }
+
+  window.openModal = function(id){
+    var child = document.getElementById(id);
+    if(!child) return;
+
+    var visible = activeVisibleModals(child);
+    var parent = visible.length ? visible[visible.length - 1] : null;
+
     if(parent){
       parent.classList.add('cng-modal-parent-suspended');
-      child.dataset.cngParentModal=parent.id||'';
+      child.dataset.cngParentModal = parent.id || '';
     }
-    modalStack.push(id);
-    if(originalOpen)originalOpen(id);
-    child.style.zIndex='2147483647';
+
+    stack = stack.filter(function(x){ return x !== id; });
+    stack.push(id);
+
+    if(originalOpen) originalOpen(id);
+
+    /* Each newly opened popup gets a higher layer than the previous one. */
+    child.style.zIndex = String(Math.min(BASE_Z + stack.length * 20, 2147483600));
+    child.scrollTop = 0;
+    var box = child.querySelector('.modal-box,.modal-body,.nco-box');
+    if(box) box.scrollTop = 0;
   };
 
-  window.closeModal=function(id){
-    var child=document.getElementById(id);
-    var parentId=child?child.dataset.cngParentModal:'';
-    if(originalClose)originalClose(id);
+  window.closeModal = function(id){
+    var child = document.getElementById(id);
+    var parentId = child ? (child.dataset.cngParentModal || '') : '';
+
+    if(originalClose) originalClose(id);
+
+    stack = stack.filter(function(x){ return x !== id; });
+
     setTimeout(function(){
-      if(child){child.style.zIndex='';delete child.dataset.cngParentModal;}
+      if(child){
+        child.style.zIndex = '';
+        delete child.dataset.cngParentModal;
+      }
       if(parentId){
-        var p=document.getElementById(parentId);
-        if(p){p.classList.remove('cng-modal-parent-suspended');if(typeof resetAdminScrollTop==='function')resetAdminScrollTop(p);}
+        var parent = document.getElementById(parentId);
+        if(parent){
+          parent.classList.remove('cng-modal-parent-suspended');
+          parent.style.zIndex = String(Math.min(BASE_Z + Math.max(stack.length,1) * 20, 2147483580));
+          if(typeof resetAdminScrollTop === 'function') resetAdminScrollTop(parent);
+        }
       }
     },170);
-    modalStack=modalStack.filter(function(x){return x!==id;});
   };
 
-  window.cngSuspendOrderAlertForChild=function(){
-    var p=document.getElementById('new-customer-order-alert');
-    if(p && p.style.display!=='none')p.classList.add('cng-modal-parent-suspended');
+  window.cngSuspendOrderAlertForChild = function(){
+    var p = document.getElementById('new-customer-order-alert');
+    if(p && p.style.display !== 'none'){
+      p.classList.add('cng-modal-parent-suspended');
+    }
   };
-  window.cngRestoreOrderAlertAfterChild=function(){
-    var p=document.getElementById('new-customer-order-alert');
-    if(p)p.classList.remove('cng-modal-parent-suspended');
+
+  window.cngRestoreOrderAlertAfterChild = function(){
+    var p = document.getElementById('new-customer-order-alert');
+    if(p){
+      p.classList.remove('cng-modal-parent-suspended');
+      p.style.zIndex = '2147483000';
+    }
   };
 })();
 </script>
+
+
+<style id="cng-global-popup-layer-fix">
+/* FINAL GLOBAL POPUP LAYER FIX
+   Toasts/feedback always above modals.
+   Child modals always above their parent.
+   Dynamic cancel popup stays above the order popup.
+*/
+#toast-msg{
+  z-index:2147483647!important;
+  position:fixed!important;
+  top:max(18px,env(safe-area-inset-top))!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:auto!important;
+  transform:translateX(-50%) translateY(-20px)!important;
+}
+#toast-msg.show{
+  transform:translateX(-50%) translateY(0)!important;
+}
+#cancel-reason-overlay{
+  z-index:2147483646!important;
+}
+#new-customer-order-alert{
+  z-index:2147483000!important;
+}
+.modal.show{
+  position:fixed!important;
+}
+.cng-modal-parent-suspended{
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+</style>
+
+
+<style id="cng-admin-intro-online-offline-font-match">
+/* Match Customer intro font behavior online + offline */
+#intro-screen .splash-kicker{font-family:serif!important;}
+#intro-screen .splash-signature{font-family:cursive!important;}
+#intro-screen .splash-tagline,
+#intro-screen .dev-name-splash{font-family:sans-serif!important;}
+</style>
+
+
+<!-- CUSTOMER HISTORY RECEIPT / ONLINE ORDER -->
+<div id="customer-history-detail-modal" class="modal">
+  <div class="modal-box" style="max-width:390px;">
+    <div class="modal-header">
+      <h3 style="color:var(--orange);font-size:16px;font-weight:900;">🌐 Online Order</h3>
+      <button class="btn" style="padding:4px 10px;border-radius:10px;" onclick="closeModal('customer-history-detail-modal')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:14px;">
+      <div id="customer-history-receipt" style="background:#fff;color:#111;border-radius:16px;padding:18px;font-family:Arial,'Courier New',monospace;box-shadow:0 8px 26px rgba(0,0,0,.18);">
+        <div style="text-align:center;border-bottom:1px dashed #777;padding-bottom:10px;margin-bottom:12px;">
+          <div style="font-size:20px;font-weight:900;letter-spacing:.4px;">CUP AND GO</div>
+          <div style="margin-top:5px;display:inline-block;padding:4px 10px;border:1px solid #111;border-radius:999px;font-size:10px;font-weight:900;">🌐 ONLINE ORDER</div>
+          <div id="chr-status" style="font-size:11px;font-weight:900;margin-top:7px;"></div>
+        </div>
+        <div style="font-size:11px;line-height:1.65;border-bottom:1px dashed #aaa;padding-bottom:10px;margin-bottom:10px;">
+          <div><b>Order:</b> <span id="chr-id"></span></div>
+          <div><b>Date/Time:</b> <span id="chr-time"></span></div>
+          <div><b>Customer:</b> <span id="chr-name"></span></div>
+          <div><b>Phone:</b> <span id="chr-phone"></span></div>
+          <div id="chr-cancel-row" style="display:none;"><b>Cancel reason:</b> <span id="chr-cancel-reason"></span></div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px;">
+          <thead><tr style="border-bottom:1px solid #111;"><th style="text-align:left;padding:5px 0;">Item</th><th style="text-align:center;">Qty</th><th style="text-align:right;">Amount</th></tr></thead>
+          <tbody id="chr-items"></tbody>
+        </table>
+        <div style="border-top:1px dashed #777;margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;font-size:14px;font-weight:900;">
+          <span>Total</span><span id="chr-total"></span>
+        </div>
+        <div style="text-align:center;margin-top:16px;padding-top:10px;border-top:1px dashed #aaa;font-size:10px;">Thank you ☕</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" style="flex:1;font-size:12px;" onclick="printContent('customer-history-receipt')">🖨️ Print</button>
+      <button class="btn" style="flex:1;background:rgba(229,193,88,.18);color:var(--orange);font-size:12px;" onclick="downloadCustomerHistoryPDF()">📥 PDF</button>
+      <button class="btn" style="flex:1;font-size:12px;" onclick="closeModal('customer-history-detail-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+
+<script id="cng-customer-history-view-print-final">
+(function(){
+  window.cngCustomerHistorySelected = null;
+
+  function esc(s){
+    return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function itemsOf(o){
+    if(Array.isArray(o?.items)) return o.items;
+    if(Array.isArray(o?.cart)) return o.cart;
+    return [];
+  }
+
+  window.viewCustomerHistoryOrder = function(orderId){
+    const list = (typeof customerOrderHistoryCache !== 'undefined' && Array.isArray(customerOrderHistoryCache))
+      ? customerOrderHistoryCache : [];
+    const o = list.find(x=>String(x.id)===String(orderId));
+    if(!o) return showToast('❌ Order not found');
+
+    window.cngCustomerHistorySelected = o;
+    const status=String(o.status||'completed').toUpperCase();
+    const currency=(window.appSettings&&appSettings.currency)||'SAR';
+
+    const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+    set('chr-id','#'+(o.id||''));
+    set('chr-time',o.time||o.date||new Date(o.timestamp||Date.now()).toLocaleString());
+    set('chr-name',o.customerName||o.name||'Guest');
+    set('chr-phone',o.customerPhone||o.phone||'—');
+    set('chr-status',status);
+    set('chr-total',Number(o.total||0).toFixed(2)+' '+currency);
+
+    const reason=o.cancelReason||o.cancelReasonEn||'';
+    const rr=document.getElementById('chr-cancel-row');
+    if(rr) rr.style.display=reason?'block':'none';
+    set('chr-cancel-reason',reason);
+
+    const tbody=document.getElementById('chr-items');
+    if(tbody){
+      tbody.innerHTML='';
+      const its=itemsOf(o);
+      if(!its.length){
+        tbody.innerHTML='<tr><td colspan="3" style="padding:10px 0;text-align:center;color:#777;">No item details</td></tr>';
+      }else{
+        its.forEach(i=>{
+          const qty=Number(i.qty||i.quantity||1);
+          const price=Number(i.price||0);
+          tbody.innerHTML += `<tr style="border-bottom:1px solid #eee;">
+            <td style="padding:7px 0;">${esc(i.name||i.item||'Item')}</td>
+            <td style="text-align:center;">${qty}</td>
+            <td style="text-align:right;">${(price*qty).toFixed(2)}</td>
+          </tr>`;
+        });
+      }
+    }
+
+    openModal('customer-history-detail-modal');
+  };
+
+  window.downloadCustomerHistoryPDF = function(){
+    const el=document.getElementById('customer-history-receipt');
+    const o=window.cngCustomerHistorySelected;
+    if(!el||!o) return showToast('❌ Open an order first');
+    if(typeof html2pdf!=='function') return showToast('❌ PDF service not available');
+    const filename='Online_Order_'+String(o.id||Date.now()).replace(/[^\w-]/g,'_')+'.pdf';
+    html2pdf().set({
+      margin:0.22,
+      filename,
+      image:{type:'jpeg',quality:1},
+      html2canvas:{scale:2.5,useCORS:true,backgroundColor:'#ffffff'},
+      jsPDF:{unit:'in',format:'a4',orientation:'portrait'},
+      pagebreak:{mode:['avoid-all','css','legacy']}
+    }).from(el).save().then(()=>showToast('✅ PDF downloaded')).catch(()=>showToast('❌ PDF download failed'));
+  };
+
+  // Replace only HISTORY rows with an action-enabled renderer.
+  const oldRenderOrderRows = window.renderOrderRows;
+  window.renderOrderRows = function(list,mode){
+    if(mode!=='history') return oldRenderOrderRows(list,mode);
+    if(!Array.isArray(list)||!list.length) return '<div class="cc-note">No history yet.</div>';
+
+    return list.slice().sort((a,b)=>(b.timestamp||b.id||0)-(a.timestamp||a.id||0)).map(o=>{
+      const status=String(typeof customerOrderStatus==='function'?customerOrderStatus(o):(o.status||'completed'));
+      const wait=Math.max(1,parseInt((window.appSettings&&appSettings.waitTime)||15));
+      const base=(typeof customerOrderBaseTime==='function'?customerOrderBaseTime(o):(o.timestamp||Date.now()));
+      const elapsed=Math.max(0,Math.floor((Date.now()-base)/60000));
+      const items=(typeof customerOrderItemsText==='function'?customerOrderItemsText(o):'');
+      const currency=(window.appSettings&&appSettings.currency)||'SAR';
+      return `<div class="customer-order-row">
+        <div class="cor-top">
+          <span class="cor-name">👤 ${esc(o.customerName||o.name||'Guest')}</span>
+          <span class="cor-status">${esc(status.toUpperCase())}</span>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px;">#${esc(o.id||'')} · ${esc(o.time||'')} · ${esc(o.customerPhone||o.phone||'')}</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:4px;">⏱ ${elapsed} min elapsed · Target ${wait} min</div>
+        <div class="cor-items">${esc(items)}</div>
+        <div style="font-size:12px;font-weight:900;color:var(--orange);margin-top:7px;">${Number(o.total||0).toFixed(2)} ${esc(currency)}</div>
+        <div class="cor-actions" style="grid-template-columns:1fr 1fr;">
+          <button class="btn btn-primary" onclick="viewCustomerHistoryOrder('${esc(o.id)}')">👁️ View</button>
+          <button class="btn" onclick="viewCustomerHistoryOrder('${esc(o.id)}');setTimeout(()=>printContent('customer-history-receipt'),250)">🖨️ Print</button>
+        </div>
+      </div>`;
+    }).join('');
+  };
+
+  // If History is already open when this script loads/updates, re-render it.
+  try{
+    if(typeof openCCMode!=='undefined' && openCCMode==='history' && typeof renderCustomerControl==='function') renderCustomerControl('history');
+  }catch(e){}
+})();
+</script>
+
+
+<style id="cng-customer-history-receipt-final-style">
+#customer-history-detail-modal{z-index:2147483550!important}
+#customer-history-detail-modal .modal-box{max-height:88dvh!important}
+#customer-history-detail-modal .modal-body{overflow-y:auto!important;-webkit-overflow-scrolling:touch!important}
+@media(max-width:420px){
+  #customer-history-detail-modal{padding:10px!important}
+  #customer-history-detail-modal .modal-box{width:calc(100vw - 18px)!important;border-radius:22px!important}
+  #customer-history-detail-modal .modal-footer{gap:7px!important}
+  #customer-history-detail-modal .modal-footer .btn{padding:10px 8px!important}
+}
+</style>
+
 </body>
 </html>
