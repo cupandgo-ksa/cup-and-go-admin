@@ -282,25 +282,199 @@ table { width: 100%; border-collapse: collapse; } th, td { padding: 14px 10px; t
 <style id="customer-control-center-css">
 /* ===== CUSTOMER CONTROL CENTER ===== */
 #page-home .legacy-home-analytics{display:none!important}
-#page-home .customer-control-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px}
-#page-home .customer-control-card{border:1px solid var(--glass-border);background:linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.035));border-radius:18px;padding:16px 12px;cursor:pointer;min-height:105px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;box-shadow:0 8px 25px rgba(0,0,0,.12)}
-#page-home .customer-control-card:active{transform:scale(.98)}
-#page-home .customer-control-card .cc-icon{font-size:29px;margin-bottom:7px}.cc-title{font-size:12px;font-weight:900}.cc-count{font-size:10px;color:var(--muted);margin-top:4px}
-#new-customer-order-alert{position:fixed;left:12px;right:12px;top:76px;z-index:99999;display:none}.nco-box{background:linear-gradient(145deg,#211719,#0e0e10);border:2px solid var(--orange);border-radius:24px;padding:18px;box-shadow:0 18px 60px rgba(0,0,0,.65)}
-.nco-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.nco-head b{font-size:18px;color:var(--orange)}.nco-customer{font-size:13px;line-height:1.7}.nco-items{margin:10px 0;padding:10px;border-radius:14px;background:rgba(255,255,255,.05);max-height:180px;overflow:auto}.nco-item{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px dashed rgba(255,255,255,.08);font-size:12px}.nco-item:last-child{border-bottom:0}.nco-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.nco-actions button{border-radius:15px;padding:12px;font-weight:900;border:0}.nco-cancel{background:rgba(255,59,48,.18);color:var(--red)}.nco-accept{background:linear-gradient(135deg,var(--green),#16a36b);color:#06120c}
-.customer-order-row{padding:13px;border-radius:16px;background:rgba(255,255,255,.045);border:1px solid var(--glass-border);margin-bottom:9px}.customer-order-row .cor-top{display:flex;justify-content:space-between;gap:8px}.customer-order-row .cor-name{font-weight:900;font-size:13px}.customer-order-row .cor-status{font-size:9px;padding:4px 7px;border-radius:9px;background:rgba(255,159,10,.14);color:var(--orange)}.customer-order-row .cor-items{font-size:11px;color:var(--muted);margin-top:7px;line-height:1.5}.customer-order-row .cor-actions{display:flex;gap:7px;margin-top:10px}.customer-order-row .cor-actions button{flex:1;padding:8px;border-radius:11px;font-size:10px;font-weight:800}
-.cc-section{padding:12px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid var(--glass-border);margin-bottom:10px}.cc-section h4{font-size:12px;color:var(--orange);margin-bottom:9px}.cc-field{margin-bottom:9px}.cc-field label{display:block;font-size:9px;color:var(--muted);margin-bottom:4px}.cc-field input,.cc-field textarea{width:100%;box-sizing:border-box;padding:10px;border-radius:11px;background:rgba(255,255,255,.07);border:1px solid var(--glass-border);color:#fff;outline:none;font-size:11px}.cc-field textarea{min-height:75px;resize:vertical}.cc-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cc-send{width:100%;padding:11px;border:0;border-radius:13px;background:linear-gradient(135deg,var(--orange),#b89730);color:#17110a;font-weight:900}.cc-note{font-size:9px;color:var(--muted);line-height:1.5;margin-top:6px}
-@media(min-width:700px){#page-home .customer-control-grid{grid-template-columns:repeat(4,1fr)}#new-customer-order-alert{left:auto;width:440px;right:20px}}
+#page-home .customer-control-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:0 0 14px}
+#page-home .customer-control-card{min-width:0;border:1px solid var(--glass-border);background:linear-gradient(145deg,rgba(255,255,255,.085),rgba(255,255,255,.03));border-radius:14px;padding:9px 4px;cursor:pointer;min-height:76px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;box-shadow:0 7px 20px rgba(0,0,0,.16);overflow:hidden}
+#page-home .customer-control-card:active{transform:scale(.97)}
+#page-home .customer-control-card .cc-icon{font-size:20px;line-height:1;margin-bottom:5px}
+#page-home .customer-control-card .cc-title{font-size:8.5px;line-height:1.2;font-weight:900;max-width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#page-home .customer-control-card .cc-count{font-size:7.5px;line-height:1.15;color:var(--muted);margin-top:4px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:370px){#page-home .customer-control-grid{gap:5px}#page-home .customer-control-card{min-height:70px;padding:8px 2px}.cc-title{font-size:8px!important}.cc-count{font-size:7px!important}}
+@media(min-width:700px){#page-home .customer-control-card{min-height:82px;padding:11px 8px}#page-home .customer-control-card .cc-title{font-size:10px}#page-home .customer-control-card .cc-count{font-size:8.5px}}
+#home-analytics-card{display:none!important}
+#page-home .customer-control-grid{margin-top:2px!important}
+#page-home .home-qr-card{width:100%;overflow:hidden}
+.late-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(255,82,82,.16);border:1px solid rgba(255,82,82,.55);color:#ff6b6b;padding:3px 7px;border-radius:999px;font-size:9px;font-weight:900;margin-left:6px;animation:latePulse 1.5s ease-in-out infinite}
+.customer-order-row.is-late{border-color:rgba(255,82,82,.65)!important;box-shadow:0 0 0 1px rgba(255,82,82,.08),0 8px 22px rgba(255,82,82,.10)}
+@keyframes latePulse{50%{opacity:.65}}
+@media(max-width:420px){#page-home .home-qr-card>div{gap:10px!important}#qr-container{width:120px!important;height:120px!important}}
+
+/* ===== FINAL CUSTOMER CONTROL REPAIR ===== */
+#customer-control-modal{
+  padding:16px!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+#customer-control-modal .modal-box{
+  width:min(440px,calc(100vw - 24px))!important;
+  max-width:440px!important;
+  max-height:84dvh!important;
+  border-radius:24px!important;
+  overflow:hidden!important;
+  background:linear-gradient(180deg,rgba(10,23,49,.98),rgba(7,17,38,.985))!important;
+  border:1px solid rgba(72,202,228,.75)!important;
+  box-shadow:0 24px 70px rgba(0,0,0,.7)!important;
+}
+#customer-control-modal .modal-header{
+  flex:0 0 auto!important;
+  padding:15px 16px!important;
+  background:rgba(255,255,255,.035)!important;
+  border-bottom:1px solid rgba(255,255,255,.10)!important;
+}
+#customer-control-modal .modal-body{
+  padding:14px!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+#customer-control-modal .cc-section{
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.045);
+  border-radius:18px;
+  padding:14px;
+  margin-bottom:12px;
+}
+#customer-control-modal .cc-section:last-child{margin-bottom:0}
+#customer-control-modal .cc-section h4{
+  margin:0 0 12px;
+  font-size:15px;
+  line-height:1.25;
+  color:#fff;
+  font-weight:900;
+}
+#customer-control-modal .cc-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+#customer-control-modal .cc-field{margin-bottom:10px;min-width:0}
+#customer-control-modal .cc-field label{
+  display:block;
+  margin-bottom:6px;
+  font-size:10px;
+  line-height:1.35;
+  color:var(--muted);
+  font-weight:800;
+}
+#customer-control-modal .cc-field input,
+#customer-control-modal .cc-field textarea,
+#customer-control-modal .cc-field select{
+  width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  border:1px solid rgba(255,255,255,.16)!important;
+  border-radius:13px!important;
+  background:rgba(0,0,0,.24)!important;
+  color:#fff!important;
+  padding:11px 12px!important;
+  outline:none!important;
+  font-size:14px!important;
+  line-height:1.35!important;
+}
+#customer-control-modal .cc-field textarea{min-height:92px!important;resize:vertical}
+#customer-control-modal .cc-field input:focus,
+#customer-control-modal .cc-field textarea:focus,
+#customer-control-modal .cc-field select:focus{
+  border-color:var(--orange)!important;
+  box-shadow:0 0 0 3px rgba(72,202,228,.10)!important;
+}
+#customer-control-modal .cc-send{
+  width:100%;
+  border:1px solid rgba(72,202,228,.7);
+  border-radius:14px;
+  padding:11px 13px;
+  background:linear-gradient(135deg,var(--orange),#67d8ed);
+  color:#06101f;
+  font-weight:900;
+  font-size:12px;
+  cursor:pointer;
+  box-shadow:0 8px 22px rgba(72,202,228,.15);
+}
+#customer-control-modal .cc-send:active{transform:scale(.985)}
+#customer-control-modal .cc-note{
+  margin-top:9px;
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.55;
+}
+#customer-control-modal .customer-order-row{
+  border:1px solid rgba(255,255,255,.11);
+  border-radius:16px;
+  background:rgba(255,255,255,.045);
+  padding:12px;
+  margin-bottom:10px;
+}
+#customer-control-modal .cor-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+}
+#customer-control-modal .cor-name{font-size:12px;font-weight:900;color:#fff}
+#customer-control-modal .cor-status{
+  display:inline-block;
+  padding:3px 7px;
+  border-radius:999px;
+  background:rgba(72,202,228,.12);
+  border:1px solid rgba(72,202,228,.35);
+  color:var(--orange);
+  font-size:8px;
+  font-weight:900;
+}
+#customer-control-modal .cor-items{
+  margin-top:8px;
+  white-space:pre-line;
+  color:#d9e5f5;
+  font-size:10px;
+  line-height:1.5;
+}
+#customer-control-modal .cor-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:10px;
+}
+#customer-control-modal .cor-actions .btn{width:100%;margin:0!important}
+#page-home .home-qr-card{
+  max-width:100%!important;
+}
+#page-home .home-qr-card>div{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:14px!important;
+  flex-wrap:nowrap!important;
+}
+#qr-container{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  flex:0 0 126px!important;
+  width:126px!important;
+  height:126px!important;
+  border-radius:14px!important;
+  overflow:hidden!important;
+  background:#fff!important;
+}
+#qr-container img{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  background:#fff!important;
+}
+@media(max-width:380px){
+  #customer-control-modal{padding:10px!important}
+  #customer-control-modal .modal-box{width:calc(100vw - 18px)!important;max-height:88dvh!important;border-radius:20px!important}
+  #customer-control-modal .modal-body{padding:10px!important}
+  #customer-control-modal .cc-section{padding:11px!important;border-radius:15px!important}
+  #customer-control-modal .cc-row{grid-template-columns:1fr!important}
+  #page-home .home-qr-card>div{gap:9px!important}
+  #qr-container{flex-basis:112px!important;width:112px!important;height:112px!important}
+}
+
 </style>
 
 
-<style>
-/* Prominent full-screen online-order alert */
-#new-customer-order-alert{position:fixed!important;inset:0!important;width:auto!important;height:100dvh!important;z-index:2147483000!important;background:rgba(0,0,0,.82)!important;backdrop-filter:blur(8px);padding:18px!important;align-items:center;justify-content:center}
-#new-customer-order-alert .nco-box{width:min(620px,96vw)!important;max-height:90dvh;overflow:auto;border:3px solid var(--orange)!important;box-shadow:0 0 0 6px rgba(255,122,0,.12),0 30px 90px rgba(0,0,0,.8)!important}
-#new-customer-order-alert[style*="display: block"]{display:flex!important}
-.nco-head{font-size:20px!important}.nco-actions button{min-height:58px!important;font-size:16px!important;font-weight:900!important}
-</style>
 
 <style id="mobile-compat-patch">
 html,body{min-height:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
@@ -348,16 +522,49 @@ input,select,textarea{max-width:100%;}
 }
 </style>
 
+
+<style id="admin-final-polish">
+/* Final compact dashboard layout */
+#page-home .led-matrix-container{margin:0 0 12px!important;padding:12px 16px!important;border-radius:18px!important;min-height:58px}
+#page-home .led-matrix-text{font-size:23px!important;padding:0 28px!important}
+#page-home .customer-control-grid{width:100%}
+/* Keep heavy glass effects reasonable on small/older phones */
+@media(max-width:480px){
+  .top-header,.card,.modal-box,.nco-box{box-shadow:0 10px 28px rgba(0,0,0,.34)}
+  #page-home .led-matrix-container{margin-top:2px!important}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
+
+<style id="signature-intro-final-css">
+#intro-screen{position:fixed!important;inset:0!important;z-index:999999!important;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow:hidden;direction:ltr!important;cursor:pointer;background:radial-gradient(circle at 50% 40%,rgba(229,193,88,.14) 0%,rgba(229,193,88,.035) 28%,transparent 58%),linear-gradient(160deg,#160306 0%,#31080f 48%,#110204 100%)!important;transition:opacity .95s cubic-bezier(.22,1,.36,1),transform .95s cubic-bezier(.22,1,.36,1),filter .95s ease!important;will-change:opacity,transform,filter}
+#intro-screen::before{content:'';position:absolute;width:min(78vw,430px);height:1px;top:53%;background:linear-gradient(90deg,transparent,rgba(229,193,88,.48),transparent);transform:scaleX(0);opacity:0;animation:adminSplashLine 1.6s .35s cubic-bezier(.22,1,.36,1) forwards}
+#intro-screen::after{content:'';position:absolute;width:min(66vw,290px);aspect-ratio:1;border-radius:50%;border:1px solid rgba(229,193,88,.09);box-shadow:0 0 90px rgba(229,193,88,.06);opacity:0;transform:scale(.82);animation:adminSplashHalo 2.1s .12s ease-out forwards}
+#intro-screen .splash-copy{position:relative;z-index:2;width:min(90vw,560px);direction:ltr!important;unicode-bidi:isolate}
+#intro-screen .splash-kicker{color:#E7C69A;font-family:'Cormorant Garamond','Times New Roman',serif;font-size:clamp(17px,4.4vw,26px);font-weight:600;letter-spacing:.08em;line-height:1.2;text-transform:uppercase;white-space:nowrap;opacity:0;transform:translateY(14px);filter:blur(4px);animation:adminKickerIn 1.05s .22s cubic-bezier(.16,1,.3,1) forwards}
+#intro-screen .splash-signature{margin-top:10px;color:#F1C98F;font-family:'Great Vibes','Brush Script MT',cursive;font-size:clamp(52px,15vw,86px);font-weight:400;line-height:1;white-space:nowrap;direction:ltr!important;unicode-bidi:isolate;opacity:0;transform:translateY(20px) scale(.94);filter:blur(7px);animation:adminSignatureIn 1.2s .62s cubic-bezier(.16,1,.3,1) forwards;text-shadow:0 0 30px rgba(229,193,88,.13)}
+#intro-screen .splash-tagline{position:relative;z-index:2;margin-top:22px;color:rgba(255,255,255,.48);font-size:8px;font-family:'Inter',sans-serif;font-weight:600;letter-spacing:.34em;text-transform:uppercase;direction:ltr!important;opacity:0;transform:translateY(8px);animation:adminTaglineIn .9s 1.18s ease forwards}
+#intro-screen .dev-name-splash{position:absolute;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(8px);z-index:2;font-size:8px;color:rgba(255,255,255,.30);letter-spacing:.07em;font-weight:500;font-family:'Inter',sans-serif;opacity:0;white-space:nowrap;direction:ltr!important;animation:adminDevIn .8s 1.38s ease forwards}
+#intro-screen.splash-exit{opacity:0!important;transform:scale(1.025)!important;filter:blur(4px)!important;pointer-events:none!important}
+@keyframes adminKickerIn{to{opacity:1;transform:translateY(0);filter:blur(0)}}
+@keyframes adminSignatureIn{0%{opacity:0;transform:translateY(20px) scale(.94);filter:blur(7px)}72%{opacity:1;transform:translateY(-2px) scale(1.015);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+@keyframes adminTaglineIn{to{opacity:1;transform:translateY(0)}}
+@keyframes adminDevIn{to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes adminSplashLine{0%{transform:scaleX(0);opacity:0}45%{opacity:1}100%{transform:scaleX(1);opacity:.36}}
+@keyframes adminSplashHalo{0%{opacity:0;transform:scale(.82)}55%{opacity:.68}100%{opacity:.16;transform:scale(1.08)}}
+</style>
 </head>
 <body>
 
-<div id="intro-screen" onclick="openLockScreen()">
-  <div class="intro-logo anim-logo">☕</div>
-  <h2 class="dyn-shopname anim-title" style="font-size:32px;font-weight:900;margin-top:20px;letter-spacing:1px;color:var(--orange);">Cup And Go</h2>
-  <div id="sync-status" style="margin-top:10px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px;">
-    <span class="spinner" id="loading-spinner"></span>
-    <span id="sync-text">Connecting to Cloud...</span>
+<div id="intro-screen" onclick="openLockScreen()" aria-label="Cup And Go" dir="ltr">
+  <div class="splash-copy">
+    <div class="splash-kicker">WITH A CUP OF COFFEE FROM</div>
+    <div class="splash-signature">Cup And Go</div>
+    <div class="splash-tagline">BREW • PICK UP • GO</div>
   </div>
+  <div class="dev-name-splash">Developed by Mohammed Ashik</div>
 </div>
 
 <div id="toast-msg">Copied to Clipboard!</div>
@@ -447,42 +654,7 @@ input,select,textarea{max-width:100%;}
   <div class="container">
     <!-- HOME PAGE -->
     <section id="page-home" class="page active">
-      <div class="card" style="padding:12px 16px; margin-bottom:12px; background: var(--glass-bg); border-radius:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <span style="font-size:11px; font-weight:700; color:var(--orange); letter-spacing:0.5px;">📊 ANALYTICS</span>
-          <span style="font-size:9px; color:var(--muted);" id="analytics-date"></span>
-        </div>
-        <div style="display:flex; align-items:flex-end; justify-content:space-between; height:45px; margin-bottom:10px; gap:3px;" id="chart-container-mini"></div>
-        <div style="display:flex; gap:15px; flex-wrap:wrap;">
-          <div style="flex:1; min-width:120px;">
-            <div style="display:flex; justify-content:space-between; font-size:9px; font-weight:600; color:var(--muted); margin-bottom:2px;">
-              <span>🎯 Sales</span>
-              <span id="prog-sales-text-mini">0 / 1000 SAR</span>
-            </div>
-            <div style="background:rgba(255,255,255,0.08); height:5px; border-radius:4px; overflow:hidden;">
-              <div id="prog-sales-bar-mini" style="background:var(--orange); height:100%; width:0%; transition:1s ease; border-radius:4px;"></div>
-            </div>
-          </div>
-          <div style="flex:1; min-width:120px;">
-            <div style="display:flex; justify-content:space-between; font-size:9px; font-weight:600; color:var(--muted); margin-bottom:2px;">
-              <span>📋 Orders</span>
-              <span id="prog-trans-text-mini">0 / 100</span>
-            </div>
-            <div style="background:rgba(255,255,255,0.08); height:5px; border-radius:4px; overflow:hidden;">
-              <div id="prog-trans-bar-mini" style="background:var(--blue); height:100%; width:0%; transition:1s ease; border-radius:4px;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-      <!-- CUSTOMER CONTROL CENTER -->
-      <div class="customer-control-grid">
-        <div class="customer-control-card" onclick="openCustomerControl('notifications')"><div class="cc-icon">🔔</div><div class="cc-title">Notifications / Offers</div><div class="cc-count" id="cc-notif-count">Send to customer</div></div>
-        <div class="customer-control-card" onclick="openCustomerControl('pending')"><div class="cc-icon">⏳</div><div class="cc-title">Pending Orders</div><div class="cc-count" id="cc-pending-count">0 waiting</div></div>
-        <div class="customer-control-card" onclick="openCustomerControl('active')"><div class="cc-icon">🔥</div><div class="cc-title">Active / Processing</div><div class="cc-count" id="cc-active-count">0 active</div></div>
-        <div class="customer-control-card" onclick="openCustomerControl('history')"><div class="cc-icon">📜</div><div class="cc-title">All History</div><div class="cc-count" id="cc-history-count">0 orders</div></div>
-      </div>
+      <!-- Analytics removed for a cleaner mobile home -->
       <!-- LED SIGN BOARD -->
       <div class="led-matrix-container" style="padding:15px 20px; margin-bottom:12px;">
         <div class="dot-matrix-overlay"></div>
@@ -500,17 +672,25 @@ input,select,textarea{max-width:100%;}
         </div>
       </div>
 
+      <!-- CUSTOMER CONTROL CENTER -->
+      <div class="customer-control-grid">
+        <div class="customer-control-card" onclick="openCustomerControl('notifications')"><div class="cc-icon">🔔</div><div class="cc-title">Notifications</div><div class="cc-count" id="cc-notif-count">Offers</div></div>
+        <div class="customer-control-card" onclick="openCustomerControl('pending')"><div class="cc-icon">⏳</div><div class="cc-title">Pending</div><div class="cc-count" id="cc-pending-count">0 new</div></div>
+        <div class="customer-control-card" onclick="openCustomerControl('active')"><div class="cc-icon">🔥</div><div class="cc-title">Active</div><div class="cc-count" id="cc-active-count">0 active</div></div>
+        <div class="customer-control-card" onclick="openCustomerControl('history')"><div class="cc-icon">📜</div><div class="cc-title">History</div><div class="cc-count" id="cc-history-count">0 orders</div></div>
+      </div>
+
       <!-- QR CODE -->
-      <div class="card" style="text-align:center; padding:15px; background:var(--glass-bg); border-radius:20px;">
-        <h4 style="font-size:13px;font-weight:700;color:var(--orange);margin-bottom:10px;" data-i18n="scan_menu">📱 Scan Menu (QR Code)</h4>
-        <div style="display:flex; align-items:center; justify-content:center; gap:15px; flex-wrap:wrap;">
-          <div style="background:#fff;padding:10px;border-radius:16px;box-shadow:0 5px 20px rgba(0,0,0,0.3); position:relative;">
-            <div id="qr-container" style="width:140px;height:140px;"></div>
+      <div class="card home-qr-card" style="text-align:center; padding:14px; background:var(--glass-bg); border-radius:20px;">
+        <h4 style="font-size:12px;font-weight:800;color:var(--orange);margin-bottom:10px;" data-i18n="scan_menu">📱 Scan Menu (QR Code)</h4>
+        <div style="display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap;">
+          <div style="background:#fff;padding:9px;border-radius:16px;box-shadow:0 5px 20px rgba(0,0,0,0.3); position:relative;">
+            <div id="qr-container" style="width:132px;height:132px;"></div>
             <div style="position:absolute; bottom:4px; right:8px; background:rgba(0,0,0,0.7); padding:2px 8px; border-radius:10px; font-size:7px; color:#fff; font-weight:700;">v2.0</div>
           </div>
-          <div style="text-align:left; flex:1; min-width:120px;">
-            <div style="font-size:11px; font-weight:700; color:var(--orange); margin-bottom:4px;">☕ Scan to View</div>
-            <div style="font-size:9px; color:var(--muted); line-height:1.5;">
+          <div style="text-align:left; flex:1; min-width:120px; max-width:180px;">
+            <div style="font-size:11px; font-weight:800; color:var(--orange); margin-bottom:4px;">☕ Scan to View</div>
+            <div style="font-size:9px; color:var(--muted); line-height:1.55;">
               <span style="display:block;">📋 Full Menu</span>
               <span style="display:block;">🛒 Order Online</span>
               <span style="display:block;">⭐ Exclusive Offers</span>
@@ -691,7 +871,7 @@ input,select,textarea{max-width:100%;}
 
 <div id="modal-cats" class="modal"><div class="modal-box"><div class="modal-header"><h3 style="color:var(--orange); font-size:16px; font-weight:900;">🗂️ Categories</h3><button class="btn" style="padding:4px 10px; border-radius:10px;" onclick="closeModal('modal-cats')">✕</button></div><div class="modal-body"><div style="display:flex; gap:8px; margin-bottom:15px;"><input type="text" id="new-cat-name" placeholder="New Category" style="flex:1; padding:10px; border-radius:10px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:#fff;"><button class="btn btn-success" onclick="addCategoryUI()">Add</button></div><div id="cat-list-ui"></div></div></div></div>
 
-<div id="p-modal" class="modal"><div class="modal-box"><div class="modal-header"><h3 id="p-modal-title" style="color:var(--orange); font-size:16px; font-weight:900;">Create Item</h3><button class="btn" style="padding:4px 10px; border-radius:10px;" onclick="closeModal('p-modal')">✕</button></div><div class="modal-body"><div class="field"><label>Item Name</label><input type="text" id="inp-name" placeholder="e.g. Spanish Latte"></div><div class="field"><label>Category</label><select id="inp-cat-select" style="width:100%; border:1.5px solid var(--glass-border); background:rgba(255,255,255,0.05); color:var(--text); border-radius:16px; padding:12px; font-weight:600;"></select></div><div class="field"><label>Price (<span class="dyn-currency">SR</span>)</label><input type="number" id="inp-price" placeholder="18" step="0.01"></div><div class="field"><label>Emoji or Image</label><div style="display:flex; gap:10px;"><input type="text" id="inp-icon" value="☕" style="flex:1;"><label for="inp-file" class="btn" style="background:rgba(255,255,255,0.1); color:var(--orange); display:flex; align-items:center; justify-content:center; padding:0 15px; cursor:pointer; border-radius:16px; border:1px solid var(--orange);">📁 Gallery</label><input type="file" id="inp-file" accept="image/*" style="display:none;" onchange="handleImageUploadFree(event)"></div><div id="upload-status" style="font-size:11px; font-weight:bold; color:var(--orange); margin-top:6px; display:none;">Processing...</div></div></div><div class="modal-footer"><button class="btn btn-primary" style="width:100%; border-radius:16px;" onclick="saveProduct()">Save Item</button></div></div></div>
+<div id="p-modal" class="modal"><div class="modal-box"><div class="modal-header"><h3 id="p-modal-title" style="color:var(--orange); font-size:16px; font-weight:900;">Create Item</h3><button class="btn" style="padding:4px 10px; border-radius:10px;" onclick="closeModal('p-modal')">✕</button></div><div class="modal-body"><div class="field"><label>Item Name</label><input type="text" id="inp-name" placeholder="e.g. Spanish Latte"></div><div class="field"><label>Category</label><select id="inp-cat-select" style="width:100%; border:1.5px solid var(--glass-border); background:rgba(255,255,255,0.05); color:var(--text); border-radius:16px; padding:12px; font-weight:600;"></select></div><div class="field"><label>Price (<span class="dyn-currency">SR</span>)</label><input type="number" id="inp-price" placeholder="18" step="0.01"></div><div class="field"><label>Customer App Availability</label><label style="display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--glass-border);border-radius:14px;background:rgba(255,255,255,.04);cursor:pointer;"><input type="checkbox" id="inp-customer-soldout" style="width:18px;height:18px;accent-color:#ff5252;"><span style="font-size:12px;font-weight:800;">Mark as SOLD OUT / Unavailable for customers</span></label></div><div class="field"><label>Emoji or Image</label><div style="display:flex; gap:10px;"><input type="text" id="inp-icon" value="☕" style="flex:1;"><label for="inp-file" class="btn" style="background:rgba(255,255,255,0.1); color:var(--orange); display:flex; align-items:center; justify-content:center; padding:0 15px; cursor:pointer; border-radius:16px; border:1px solid var(--orange);">📁 Gallery</label><input type="file" id="inp-file" accept="image/*" style="display:none;" onchange="handleImageUploadFree(event)"></div><div id="upload-status" style="font-size:11px; font-weight:bold; color:var(--orange); margin-top:6px; display:none;">Processing...</div></div></div><div class="modal-footer"><button class="btn btn-primary" style="width:100%; border-radius:16px;" onclick="saveProduct()">Save Item</button></div></div></div>
 
 <div id="modal-closing" class="modal"><div class="modal-box"><div class="modal-header"><h3 style="color:var(--orange); font-size:16px; font-weight:900;" data-i18n="daily_close">🔥 Daily Closing</h3><button class="btn" style="padding:4px 10px; border-radius:10px;" onclick="closeModal('modal-closing')">✕</button></div><div class="modal-body"><p style="font-size:12px; color:var(--muted); margin-bottom:15px; text-align:center;">Generates closing report for today's orders.</p><div style="display:flex;justify-content:space-between;margin-bottom:20px;background:rgba(255,255,255,0.05);padding:15px;border-radius:16px;"><div style="text-align:center;"><span style="font-size:11px;color:var(--muted);">Orders</span><br><b id="admin-orders-rpt" style="font-size:22px;">0</b></div><div style="text-align:center;"><span style="font-size:11px;color:var(--muted);">Revenue</span><br><b style="font-size:22px;color:var(--orange);"><span id="admin-rev">0.00</span></b></div></div></div><div class="modal-footer"><button class="btn btn-primary" style="width:100%;border-radius:22px;" onclick="proceedToClosingPin()">📥 Execute Closing</button></div></div></div>
 
@@ -734,6 +914,7 @@ input,select,textarea{max-width:100%;}
 
       <div style="border-top:1px dashed var(--glass-border); padding-top:12px; margin-top:8px;">
         <div class="field"><label>📲 Owner WhatsApp</label><input type="text" id="set-owner-phone" placeholder="9665xxxxxxxx"></div>
+        <div class="field"><label>⏱️ Customer Order Wait Time (minutes)</label><input type="number" id="set-wait-time" min="1" max="180" placeholder="15"></div>
       </div>
 
       <div style="border-top:1px dashed var(--glass-border); padding-top:12px; margin-top:8px;">
@@ -1213,22 +1394,12 @@ window.addEventListener('offline', function() {
 function generateQRCode() {
   const container = document.getElementById('qr-container');
   if (!container) return;
-  container.innerHTML = '';
   const menuUrl = 'https://sites.google.com/view/cup-and-go-menu/home';
-  try {
-    new QRCode(container, {
-      text: menuUrl,
-      width: 140,
-      height: 140,
-      colorDark: '#000000',
-      colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.H
-    });
-    const canvas = container.querySelector('canvas');
-    if (canvas) { canvas.style.borderRadius = '8px'; canvas.style.display = 'block'; }
-  } catch(e) {
-    container.innerHTML = '<div style="color:#000;font-size:12px;text-align:center;padding:40px 0;">QR Code<br>Loading...</div>';
-  }
+  container.innerHTML = `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZoAAAGaAQAAAAAefbjOAAAC6ElEQVR4nO2bQY6kMAxFvwcklkHqA9RRUjeYI436SH0DOEofYCSyRAr6s7CTgupVSzVQXTiLiKJ4IkiWY387Qnx7jL++zwAOOeSQQw455NBrQmKjBcYekGtqdcIoLeSaygPXQ5bn0I4QSJKIJMmpsasBDYFg92yqzw1P/k0OPQJKxQGoUwjZ7km/6B/qQY5ankMHQiGDnACSGRzQkMP/eZNDPwHiUDwDkDoicpYnWp5Du0GB5goiMzikjiI9ICId5QpzGYctz6G9oVFE1ASuqaP8mQDEOgGLphpHLc+h/SCNFldS9ngxV0Agg8As3Dyw6/IcOgiSKwAgWTbB935Rl6H3RmnVjRy0PId21yOKFFGSC801pvUjAEyUcD3ipSGzCJWkAACBahuIU0PEqSGHQLtyizgXVBMOpI5AqMlFEsHYH708h/aA1lvCgIaIE7CSpMxblOzTVezTQGEW0651WF0DQDEQ9xHngLaVLlj0oC5D9WxzHhxQg44n/yaHHgaFDL5fMjiEWUycChlAmAVAo+rlz/omh747Sq6BknjewoXiI9QsolfDTwFVPeIWO+bN/2FTAHWLeHlIVUqxyUIIjL//tgSWFkgtJHIRAk2WvZfn0O7QJrLchJeWjG70K48sXx/CvR1Y0buI2lXetlYat4hXh4qPqBJ17ZwCNp7BVeyTQPedtyunEFd2kOF6xMmgJKpZag18lG7dXTlq063rEWeASl0jcKVU6tAeKrIWRb2ucR7opkdYQ10VJcZ+Eds/Pr07/wzQSo8A0GQi9ShTkyV+tADSm1oI916eQ7tDXyPLsk1oPFlF7dvDvmucAqpnurTZUs90ddRJWyxDjSh+yDc59BBovMxi5zUus4hcZindVIufBD4lVH2Edk5Nm5aqh77JoWeESv4QCCABiNNblvgpANBQ4scbzUpS57vGCSDcQklU2dpCyXImuJQ0vK5xBuj+TNf2iuY89FfjPsIhhxxyyCGHHFqNf9XWcX2s3LcXAAAAAElFTkSuQmCC" alt="Cup And Go Menu QR" style="width:130px;height:130px;display:block" aria-label="Scan to open Cup And Go menu">`;
+  container.onclick = function() {
+    try { window.open(menuUrl, '_blank'); } catch(e) { location.href = menuUrl; }
+  };
+  container.style.cursor = 'pointer';
 }
 
 // ======= LED MATRIX FUNCTIONS =======
@@ -1352,7 +1523,7 @@ function executeSystemReset() {
     orders = []; history30Days = []; dueKhata = []; heldOrders = []; cart = []; stockRecords = {}; freeItems = [];
     saveData();
     if(navigator.onLine) {
-      db.ref('/').set({
+      db.ref('/').update({
         settings: appSettings,
         products: products,
         orders: [],
@@ -2252,7 +2423,29 @@ function downloadStockPDF() {
     }
     thead tr { position: static !important; }
     tr { page-break-inside: avoid !important; }
-  </style>`;
+  
+/* ===== FINAL MOBILE HOME CLEANUP ===== */
+#page-home{padding-top:4px!important;}
+#page-home .led-matrix-container{margin-top:0!important;margin-bottom:10px!important;}
+#page-home .customer-control-grid{gap:6px!important;margin:0 0 10px!important;}
+#page-home .customer-control-card{min-height:76px!important;padding:9px 3px!important;border-radius:18px!important;}
+#page-home .customer-control-card .cc-icon{font-size:21px!important;margin-bottom:4px!important;}
+#page-home .customer-control-card .cc-title{font-size:9px!important;line-height:1.1!important;}
+#page-home .customer-control-card .cc-count{font-size:8px!important;margin-top:4px!important;}
+#page-home .home-qr-card{padding:12px!important;margin-top:0!important;}
+#page-home .home-qr-card>div{flex-wrap:nowrap!important;align-items:center!important;}
+#qr-container{width:126px!important;height:126px!important;flex:0 0 126px!important;}
+#qr-container canvas,#qr-container img{width:126px!important;height:126px!important;}
+@media(max-width:390px){
+  #page-home .customer-control-grid{gap:4px!important;}
+  #page-home .customer-control-card{min-height:70px!important;padding:7px 2px!important;border-radius:15px!important;}
+  #page-home .customer-control-card .cc-icon{font-size:19px!important;}
+  #page-home .customer-control-card .cc-title{font-size:8px!important;}
+  #page-home .customer-control-card .cc-count{font-size:7px!important;}
+  #qr-container{width:112px!important;height:112px!important;flex-basis:112px!important;}
+  #qr-container canvas,#qr-container img{width:112px!important;height:112px!important;}
+}
+</style>`;
 
   // ৩. পিডিএফের জন্য 1050px চওড়া একটি কন্টেইনার বানানো হলো
   let fullHtmlString = `<html><head><meta charset="UTF-8">${style}</head><body><div style="width: 1050px; margin: auto;">${cleanHTML}</div></body></html>`;
@@ -2334,8 +2527,8 @@ window.addCashierUI = function() { appSettings.cashiers.push({name:'',pin:'',per
 window.removeCashierUI = function(idx) { if(appSettings.cashiers.length<=1) return showToast("❌ 1 cashier required!"); appSettings.cashiers.splice(idx,1); renderCashiersUI(); }
 
 // ======= ITEMS & UI =======
-function openItemModal(id=null) { let sel=document.getElementById('inp-cat-select'); sel.innerHTML=''; appSettings.categories.forEach(c=>sel.innerHTML+=`<option value="${c}">${c}</option>`); if(id) { editingProductId=id; let p=products.find(x=>x.id===id); document.getElementById('p-modal-title').innerText="Edit Item"; document.getElementById('inp-name').value=p.name; document.getElementById('inp-price').value=p.price; document.getElementById('inp-cat-select').value=p.category||appSettings.categories[0]; uploadedImageUrl=(p.icon.length>10)?p.icon:""; document.getElementById('inp-icon').value=(p.icon.length>10)?"Attached 🖼️":p.icon; } else { editingProductId=null; document.getElementById('p-modal-title').innerText="Create Item"; document.getElementById('inp-name').value=''; document.getElementById('inp-price').value=''; document.getElementById('inp-icon').value='☕'; uploadedImageUrl=""; } document.getElementById('upload-status').style.display='none'; closeModal('modal-items'); setTimeout(()=>openModal('p-modal'),200); }
-function saveProduct() { let n=document.getElementById('inp-name').value, p=document.getElementById('inp-price').value, i=document.getElementById('inp-icon').value, cat=document.getElementById('inp-cat-select').value; if(n && p) { let finalIcon=uploadedImageUrl!==""?uploadedImageUrl:(i||'☕'); if(editingProductId) { let index=products.findIndex(x=>x.id===editingProductId); if(index>-1){ products[index].name=n; products[index].price=parseFloat(p); products[index].category=cat; products[index].icon=finalIcon; cart.forEach(c=>{ if(c.id===editingProductId){ c.name=n; c.price=parseFloat(p); } }); } } else { products.push({id:Date.now(),name:n,category:cat,price:parseFloat(p),icon:finalIcon}); } saveData(); initUI(); closeModal('p-modal'); showToast("Item Saved!"); } else { showToast("Name and Price required!"); } }
+function openItemModal(id=null) { let sel=document.getElementById('inp-cat-select'); sel.innerHTML=''; appSettings.categories.forEach(c=>sel.innerHTML+=`<option value="${c}">${c}</option>`); if(id) { editingProductId=id; let p=products.find(x=>x.id===id); document.getElementById('p-modal-title').innerText="Edit Item"; document.getElementById('inp-name').value=p.name; document.getElementById('inp-price').value=p.price; document.getElementById('inp-cat-select').value=p.category||appSettings.categories[0]; const so=document.getElementById('inp-customer-soldout'); if(so) so.checked=!!(p.customerUnavailable||p.soldOut); uploadedImageUrl=(p.icon.length>10)?p.icon:""; document.getElementById('inp-icon').value=(p.icon.length>10)?"Attached 🖼️":p.icon; } else { editingProductId=null; document.getElementById('p-modal-title').innerText="Create Item"; document.getElementById('inp-name').value=''; document.getElementById('inp-price').value=''; document.getElementById('inp-icon').value='☕'; const so=document.getElementById('inp-customer-soldout'); if(so) so.checked=false; uploadedImageUrl=""; } document.getElementById('upload-status').style.display='none'; closeModal('modal-items'); setTimeout(()=>openModal('p-modal'),200); }
+function saveProduct() { let n=document.getElementById('inp-name').value, p=document.getElementById('inp-price').value, i=document.getElementById('inp-icon').value, cat=document.getElementById('inp-cat-select').value; const customerUnavailable=!!document.getElementById('inp-customer-soldout')?.checked; if(n && p) { let finalIcon=uploadedImageUrl!==""?uploadedImageUrl:(i||'☕'); if(editingProductId) { let index=products.findIndex(x=>x.id===editingProductId); if(index>-1){ products[index].name=n; products[index].price=parseFloat(p); products[index].category=cat; products[index].icon=finalIcon; products[index].customerUnavailable=customerUnavailable; cart.forEach(c=>{ if(c.id===editingProductId){ c.name=n; c.price=parseFloat(p); } }); } } else { products.push({id:Date.now(),name:n,category:cat,price:parseFloat(p),icon:finalIcon,customerUnavailable}); } saveData(); initUI(); closeModal('p-modal'); showToast(customerUnavailable?"Item saved as SOLD OUT for customers":"Item Saved!"); } else { showToast("Name and Price required!"); } }
 function deleteProduct(id) { products=products.filter(p=>p.id!==id); cart=cart.filter(c=>c.id!==id); updateCart(); saveData(); initUI(); showToast("Deleted!"); setTimeout(()=>openModal('modal-items'),200); }
 function handleImageUploadFree(event) { let file=event.target.files[0]; if(!file) return; let statusEl=document.getElementById('upload-status'); statusEl.style.display='block'; statusEl.innerText='Processing...'; let reader=new FileReader(); reader.onload=function(e){ let img=new Image(); img.onload=function(){ let canvas=document.createElement('canvas'); let MAX=150; let w=img.width,h=img.height; if(w>h){ if(w>MAX){ h*=MAX/w; w=MAX; } } else { if(h>MAX){ w*=MAX/h; h=MAX; } } canvas.width=w; canvas.height=h; let ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h); uploadedImageUrl=canvas.toDataURL('image/jpeg',0.8); document.getElementById('inp-icon').value="Attached 🖼️"; statusEl.innerText='✅ Ready!'; statusEl.style.color='var(--green)'; }; img.src=e.target.result; }; reader.readAsDataURL(file); }
 function handleLogoUpload(event) { let file=event.target.files[0]; if(!file) return; let textEl=document.getElementById('set-logo-text'); textEl.value='Processing...'; let reader=new FileReader(); reader.onload=function(e){ let img=new Image(); img.onload=function(){ let canvas=document.createElement('canvas'); let MAX=200; let w=img.width,h=img.height; if(w>h){ if(w>MAX){ h*=MAX/w; w=MAX; } } else { if(h>MAX){ w*=MAX/h; h=MAX; } } canvas.width=w; canvas.height=h; let ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h); pendingShopLogo=canvas.toDataURL('image/jpeg',0.8); textEl.value='✅ Logo Ready'; }; img.src=e.target.result; }; reader.readAsDataURL(file); }
@@ -2574,21 +2767,28 @@ function updateMiniChart() {
 }
 
 function updateMiniProgress() {
-  let todayRev=orders.reduce((sum,o)=>sum+parseFloat(o.total),0);
+  let todayRev=orders.reduce((sum,o)=>sum+parseFloat(o.total||0),0);
   let todayTrans=orders.length;
   let targetSales=appSettings.targetSales||2000;
   let targetTrans=appSettings.targetOrders||100;
   let pSales=Math.min((todayRev/targetSales)*100,100);
   let pTrans=Math.min((todayTrans/targetTrans)*100,100);
-  document.getElementById('prog-sales-text-mini').innerText=todayRev.toFixed(0)+' / '+targetSales+' SAR';
-  let sb=document.getElementById('prog-sales-bar-mini'); if(sb) sb.style.width=pSales+'%';
-  document.getElementById('prog-trans-text-mini').innerText=todayTrans+' / '+targetTrans;
-  let tb=document.getElementById('prog-trans-bar-mini'); if(tb) tb.style.width=pTrans+'%';
-  let now=new Date();
-  document.getElementById('analytics-date').innerText=now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+
+  const salesText=document.getElementById('prog-sales-text-mini');
+  if(salesText) salesText.innerText=todayRev.toFixed(0)+' / '+targetSales+' SAR';
+  const sb=document.getElementById('prog-sales-bar-mini');
+  if(sb) sb.style.width=pSales+'%';
+
+  const transText=document.getElementById('prog-trans-text-mini');
+  if(transText) transText.innerText=todayTrans+' / '+targetTrans;
+  const tb=document.getElementById('prog-trans-bar-mini');
+  if(tb) tb.style.width=pTrans+'%';
+
+  const dateEl=document.getElementById('analytics-date');
+  if(dateEl) dateEl.innerText=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
 }
 
-function updateAnalytics() { updateMiniChart(); updateMiniProgress(); }
+function updateAnalytics() { if(document.getElementById('chart-container-mini')) updateMiniChart(); updateMiniProgress(); }
 
 // ======= APPLY SETTINGS =======
 function applySettingsToUI() {
@@ -2597,7 +2797,7 @@ function applySettingsToUI() {
   safeSet('set-name','value',appSettings.shopName); safeSet('set-curr','value',appSettings.currency);
   safeSet('set-vat','value',appSettings.vatRate); safeSet('set-admin-pin','value',appSettings.adminPin);
   safeSet('set-target-rev','value',appSettings.targetSales); safeSet('set-target-ord','value',appSettings.targetOrders);
-  safeSet('set-owner-phone','value',appSettings.ownerPhone); safeSet('set-stock-threshold','value',appSettings.stockThreshold||5);
+  safeSet('set-owner-phone','value',appSettings.ownerPhone); safeSet('set-wait-time','value',appSettings.waitTime||15); safeSet('set-stock-threshold','value',appSettings.stockThreshold||5);
   
   let cols = appSettings.menuColumns || 2;
   document.querySelectorAll('#custom-menu-cols .p-opt').forEach(b => {
@@ -2634,7 +2834,7 @@ function saveSettings() {
   appSettings.targetSales=parseFloat(document.getElementById('set-target-rev').value)||2000;
   appSettings.targetOrders=parseFloat(document.getElementById('set-target-ord').value)||100;
   appSettings.ownerPhone=document.getElementById('set-owner-phone').value||"";
-  if(!appSettings.waitTime) appSettings.waitTime=15;
+  appSettings.waitTime=Math.max(1,Math.min(180,parseInt(document.getElementById('set-wait-time')?.value||appSettings.waitTime||15)));
   appSettings.stockThreshold=parseInt(document.getElementById('set-stock-threshold').value)||5;
   
   let activeColBtn = document.querySelector('#custom-menu-cols .p-opt.active');
@@ -2769,7 +2969,7 @@ function initUI() {
 
   products.forEach(p => {
     pt.innerHTML += `<tr><td style="padding:10px 0;">
-      <b style="font-size:13px;">${p.name}</b>
+      <b style="font-size:13px;">${p.name}</b>${(p.customerUnavailable||p.soldOut)?` <span style="font-size:8px;color:#ff6b6b;border:1px solid rgba(255,82,82,.45);padding:2px 5px;border-radius:7px;">SOLD OUT</span>`:''}
       <br><span style="font-size:9px;color:var(--muted);">${p.category || 'Coffee'}</span>
     </td>
     <td><span class="p-price" style="font-size:12px;padding:4px 8px;">${p.price}</span></td>
@@ -2824,7 +3024,7 @@ history.pushState(null, null, window.location.href);
 function openLockScreen() { 
   let intro=document.getElementById('intro-screen'); 
   let lock=document.getElementById('lock-screen'); 
-  if(intro){ intro.style.opacity='0'; setTimeout(()=>intro.style.display='none',400); } 
+  if(intro){ intro.classList.add('splash-exit'); setTimeout(()=>intro.style.display='none',980); } 
   if(lock){ lock.classList.add('show'); }
   let cloudStatus = document.getElementById('cloud-status');
   if(cloudStatus) {
@@ -2942,10 +3142,25 @@ window.onload = function() {
     sessionStorage.setItem('cng_role', rememberedLogin.role);
     sessionStorage.setItem('cng_active_cashier', rememberedLogin.activeName || (rememberedLogin.role==='admin'?'Admin':'Cashier'));
   }
-  if(currentLoginRole) { 
-    let intro=document.getElementById('intro-screen'); 
-    if(intro) intro.style.display='none'; 
-    loginAs(currentLoginRole,true); 
+  if(currentLoginRole) {
+    // Show the premium intro every time, even on remembered-login devices.
+    // After the intro finishes, enter the app directly without asking for the PIN again.
+    const intro=document.getElementById('intro-screen');
+    const lock=document.getElementById('lock-screen');
+    if(lock) lock.classList.remove('show');
+    if(intro){
+      intro.style.display='flex';
+      intro.classList.remove('splash-exit');
+      setTimeout(()=>{
+        intro.classList.add('splash-exit');
+        setTimeout(()=>{
+          intro.style.display='none';
+          loginAs(currentLoginRole,true);
+        },980);
+      },2500);
+    } else {
+      loginAs(currentLoginRole,true);
+    }
   } else { 
     setTimeout(()=>{ openLockScreen(); },2500); 
   }
@@ -2970,28 +3185,53 @@ let customerOrderInitialLoaded = false;
 let newCustomerOrderQueue = [];
 let activeNewCustomerOrder = null;
 let customerAlertAudio = null;
+let customerAlertRepeatTimer = null;
+let customerAlertSoundEnabled = true;
+let lateOrderNotifiedIds = new Set();
+let lateOrderTimer = null;
 
 function escCC(v){ return String(v ?? '').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
 function customerOrdersArray(v){ if(!v) return []; return Array.isArray(v)?v:Object.values(v); }
 function isCustomerOrder(o){ return !!(o && (o.customerPhone || o.orderSource==='customer' || o.source==='customer')); }
-function customerOrderStatus(o){ return String(o?.status||'held').toLowerCase(); }
+function customerOrderStatus(o){ return String(o?.status||'pending').toLowerCase(); }
 function customerOrderItemsText(o){ return (o?.items||[]).map(i=>`${i.qty||1}× ${i.name||'Item'}`).join(' • '); }
+function customerOrderBaseTime(o){
+  const candidates=[o?.timestamp,o?.createdAt,o?.orderTimestamp,o?.id];
+  for(const v of candidates){const n=Number(v);if(Number.isFinite(n)&&n>1000000000000)return n;}
+  return Date.now();
+}
+function customerOrderLateMinutes(o){
+  const st=customerOrderStatus(o);
+  if(st==='ready'||st==='completed'||st==='cancelled')return 0;
+  const wait=Math.max(1,parseInt(appSettings.waitTime||15));
+  return Math.max(0,Math.floor((Date.now()-customerOrderBaseTime(o))/60000)-wait);
+}
+function checkLateCustomerOrders(){
+  let lateNow=[];
+  customerOrdersCache.forEach(o=>{const mins=customerOrderLateMinutes(o);if(mins>0)lateNow.push({o,mins});});
+  lateNow.forEach(({o,mins})=>{const id=String(o.id);if(!lateOrderNotifiedIds.has(id)){lateOrderNotifiedIds.add(id);showToast(`⚠️ Late order #${id} — ${mins} min late`);try{beepCustomerAlert();setTimeout(beepCustomerAlert,500);}catch(e){}}});
+  const liveIds=new Set(lateNow.map(x=>String(x.o.id)));
+  [...lateOrderNotifiedIds].forEach(id=>{if(!liveIds.has(id))lateOrderNotifiedIds.delete(id);});
+  updateCustomerControlCounts();renderCustomerControlIfOpen();
+}
+
 
 function startCustomerOrderMonitor(){
   if(customerOrderListenerStarted) return; customerOrderListenerStarted=true;
-  db.ref('/heldOrders').on('value', snap=>{
+  db.ref('/customerOrders').on('value', snap=>{
     const arr=customerOrdersArray(snap.val());
     const customers=arr.filter(isCustomerOrder);
     const oldById={}; customerOrdersCache.forEach(o=>oldById[String(o.id)]=o);
-    if(customerOrderInitialLoaded){
-      customers.forEach(o=>{
-        const old=oldById[String(o.id)];
-        if(!old && customerOrderStatus(o)==='held') queueNewCustomerOrder(o);
-      });
-    }
+    customers.forEach(o=>{
+      const old=oldById[String(o.id)];
+      if(customerOrderStatus(o)==='pending' && (!customerOrderInitialLoaded || !old)) queueNewCustomerOrder(o);
+    });
     customerOrdersCache=customers;
+    reconcileCustomerOrderAlert(customers);
     updateCustomerControlCounts();
     renderCustomerControlIfOpen();
+    checkLateCustomerOrders();
+    if(!lateOrderTimer) lateOrderTimer=setInterval(checkLateCustomerOrders,30000);
     customerOrderInitialLoaded=true;
   });
   db.ref('/customerOrderHistory').on('value', snap=>{
@@ -3002,25 +3242,60 @@ function startCustomerOrderMonitor(){
 }
 
 function updateCustomerControlCounts(){
-  const pending=customerOrdersCache.filter(o=>customerOrderStatus(o)==='held').length;
-  const active=customerOrdersCache.filter(o=>['active','processing','accepted','ready'].includes(customerOrderStatus(o))).length;
-  const history=customerOrderHistoryCache.length;
-  safeSet('cc-pending-count','innerText',pending+' waiting'); safeSet('cc-active-count','innerText',active+' active'); safeSet('cc-history-count','innerText',history+' orders');
+  const pendingList=customerOrdersCache.filter(o=>customerOrderStatus(o)==='pending');
+  const activeList=customerOrdersCache.filter(o=>['active','processing','accepted','ready'].includes(customerOrderStatus(o)));
+  const pending=pendingList.length, active=activeList.length, history=customerOrderHistoryCache.length;
+  const late=customerOrdersCache.filter(o=>customerOrderLateMinutes(o)>0).length;
+  safeSet('cc-pending-count','innerText',pending+' new');
+  safeSet('cc-active-count','innerText',late?`${active} active · ${late} late`:`${active} active`);
+  safeSet('cc-history-count','innerText',history+' orders');
 }
 function beepCustomerAlert(){
   try{ const C=window.AudioContext||window.webkitAudioContext; if(!C)return; customerAlertAudio=customerAlertAudio||new C(); const ctx=customerAlertAudio; if(ctx.state==='suspended')ctx.resume(); const now=ctx.currentTime; [0,0.18,0.36].forEach((t,i)=>{let o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=740+i*130;g.gain.setValueAtTime(.0001,now+t);g.gain.exponentialRampToValueAtTime(.18,now+t+.02);g.gain.exponentialRampToValueAtTime(.0001,now+t+.14);o.connect(g);g.connect(ctx.destination);o.start(now+t);o.stop(now+t+.15);}); }catch(e){}
 }
-function queueNewCustomerOrder(o){ newCustomerOrderQueue.push(o); if(!activeNewCustomerOrder)showNextCustomerOrder(); }
+
+function stopCustomerAlertRinging(){
+  if(customerAlertRepeatTimer){clearInterval(customerAlertRepeatTimer);customerAlertRepeatTimer=null;}
+}
+function startCustomerAlertRinging(){
+  stopCustomerAlertRinging();
+  if(!customerAlertSoundEnabled)return;
+  beepCustomerAlert();
+  customerAlertRepeatTimer=setInterval(()=>{if(activeNewCustomerOrder && !document.hidden)beepCustomerAlert();},2800);
+}
+function toggleCustomerAlertSound(){
+  customerAlertSoundEnabled=!customerAlertSoundEnabled;
+  const b=document.getElementById('nco-sound-btn'); if(b)b.innerText=customerAlertSoundEnabled?'🔊':'🔇';
+  if(customerAlertSoundEnabled && activeNewCustomerOrder)startCustomerAlertRinging(); else stopCustomerAlertRinging();
+  showToast(customerAlertSoundEnabled?'🔊 Order sound ON':'🔇 Order sound muted');
+}
+function reconcileCustomerOrderAlert(customers){
+  const pendingIds=new Set(customers.filter(o=>customerOrderStatus(o)==='pending').map(o=>String(o.id)));
+  newCustomerOrderQueue=newCustomerOrderQueue.filter(o=>pendingIds.has(String(o?.id)));
+  if(activeNewCustomerOrder && !pendingIds.has(String(activeNewCustomerOrder.id))){
+    const el=document.getElementById('new-customer-order-alert'); if(el)el.style.display='none';
+    stopCustomerAlertRinging(); activeNewCustomerOrder=null; setTimeout(showNextCustomerOrder,80);
+  }
+}
+// Browsers require one user interaction before programmatic audio can be guaranteed.
+['pointerdown','touchstart','keydown'].forEach(ev=>document.addEventListener(ev,()=>{try{if(customerAlertAudio?.state==='suspended')customerAlertAudio.resume();}catch(e){}},{once:true,passive:true}));
+
+function queueNewCustomerOrder(o){
+  const id=String(o?.id||''); if(!id)return;
+  if(activeNewCustomerOrder && String(activeNewCustomerOrder.id)===id) return;
+  if(newCustomerOrderQueue.some(x=>String(x?.id)===id)) return;
+  newCustomerOrderQueue.push(o); if(!activeNewCustomerOrder)showNextCustomerOrder();
+}
 function showNextCustomerOrder(){
   activeNewCustomerOrder=newCustomerOrderQueue.shift()||null; if(!activeNewCustomerOrder)return;
   const o=activeNewCustomerOrder; const el=document.getElementById('new-customer-order-alert'); const c=document.getElementById('nco-content'); if(!el||!c)return;
-  c.innerHTML=`<div class="nco-customer"><b>👤 ${escCC(o.customerName||((o.cashier||'').replace(/^.*?: /,''))||'Guest')}</b><br>📞 ${escCC(o.customerPhone||'—')} &nbsp; 🚗 ${escCC(o.carNumber||'Walk-in')}</div><div class="nco-items">${(o.items||[]).map(i=>`<div class="nco-item"><span>${escCC(i.name||'Item')} × ${i.qty||1}</span><b>${((i.price||0)*(i.qty||1)).toFixed(2)} ${escCC(appSettings.currency||'SR')}</b></div>`).join('')}<div style="display:flex;justify-content:space-between;margin-top:8px;font-size:14px;font-weight:900;color:var(--orange);"><span>Total</span><span>${parseFloat(o.total||0).toFixed(2)} ${escCC(appSettings.currency||'SR')}</span></div></div><div class="nco-actions"><button class="nco-cancel" onclick="cancelCustomerOrderFromAlert()">❌ CANCEL</button><button class="nco-accept" onclick="acceptCustomerOrderFromAlert()">✅ ACCEPT</button></div>`;
-  el.style.display='block'; beepCustomerAlert();
+  c.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:6px;"><button id="nco-sound-btn" onclick="toggleCustomerAlertSound()" style="border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:#fff;border-radius:9px;padding:5px 9px;font-size:13px;">${customerAlertSoundEnabled?'🔊':'🔇'}</button></div><div class="nco-customer"><b>👤 ${escCC(o.customerName||((o.cashier||'').replace(/^.*?: /,''))||'Guest')}</b><br>📞 ${escCC(o.customerPhone||'—')} &nbsp; 🚗 ${escCC(o.carNumber||'Walk-in')}</div><div class="nco-items">${(o.items||[]).map(i=>`<div class="nco-item"><span>${escCC(i.name||'Item')} × ${i.qty||1}</span><b>${((i.price||0)*(i.qty||1)).toFixed(2)} ${escCC(appSettings.currency||'SR')}</b></div>`).join('')}<div style="display:flex;justify-content:space-between;margin-top:8px;font-size:14px;font-weight:900;color:var(--orange);"><span>Total</span><span>${parseFloat(o.total||0).toFixed(2)} ${escCC(appSettings.currency||'SR')}</span></div></div><div class="nco-actions"><button class="nco-cancel" onclick="cancelCustomerOrderFromAlert()">❌ CANCEL</button><button class="nco-accept" onclick="acceptCustomerOrderFromAlert()">✅ ACCEPT</button></div>`;
+  el.style.display='block'; startCustomerAlertRinging();
 }
-function dismissNewCustomerOrder(){ const el=document.getElementById('new-customer-order-alert');if(el)el.style.display='none';activeNewCustomerOrder=null;setTimeout(showNextCustomerOrder,120); }
+function dismissNewCustomerOrder(){ const el=document.getElementById('new-customer-order-alert');if(el)el.style.display='none';stopCustomerAlertRinging();activeNewCustomerOrder=null;setTimeout(showNextCustomerOrder,120); }
 async function updateHeldCustomerOrder(id,patch){
   let found=false;
-  const result=await db.ref('/heldOrders').transaction(current=>{
+  const result=await db.ref('/customerOrders').transaction(current=>{
     let arr=customerOrdersArray(current); const idx=arr.findIndex(o=>String(o.id)===String(id));
     if(idx<0) return current;
     found=true; arr[idx]={...arr[idx],...patch,updatedAt:Date.now()}; return arr;
@@ -3034,7 +3309,7 @@ async function moveCustomerOrderToHistory(o,status){
   await db.ref('/customerOrderHistory').transaction(current=>{
     let hist=customerOrdersArray(current); if(!hist.some(x=>String(x.id)===String(o.id))) hist.push(finished); return hist;
   });
-  await db.ref('/heldOrders').transaction(current=>customerOrdersArray(current).filter(x=>String(x.id)!==String(o.id)));
+  await db.ref('/customerOrders').transaction(current=>customerOrdersArray(current).filter(x=>String(x.id)!==String(o.id)));
   return finished;
 }
 async function markCustomerOrderReady(id){
@@ -3055,7 +3330,12 @@ async function completeCustomerOrder(id){
 }
 function renderOrderRows(list,mode){
   if(!list.length)return `<div style="text-align:center;color:var(--muted);padding:25px 5px;font-size:11px;">No orders</div>`;
-  return list.slice().sort((a,b)=>(b.timestamp||b.id||0)-(a.timestamp||a.id||0)).map(o=>`<div class="customer-order-row"><div class="cor-top"><span class="cor-name">👤 ${escCC(o.customerName||'Guest')}</span><span class="cor-status">${escCC(customerOrderStatus(o).toUpperCase())}</span></div><div style="font-size:10px;color:var(--muted);margin-top:3px;">#${escCC(o.id)} · ${escCC(o.time||'')} · ${escCC(o.customerPhone||'')}</div><div class="cor-items">${escCC(customerOrderItemsText(o))}</div><div style="font-size:12px;font-weight:900;color:var(--orange);margin-top:7px;">${parseFloat(o.total||0).toFixed(2)} ${escCC(appSettings.currency||'SR')}</div>${mode==='pending'?`<div class="cor-actions"><button class="btn btn-delete" onclick="adminCancelCustomerOrder('${escCC(o.id)}')">❌ Cancel</button><button class="btn btn-success" onclick="adminAcceptCustomerOrder('${escCC(o.id)}')">✅ Accept</button></div>`:''}${mode==='active'?`<div class="cor-actions">${customerOrderStatus(o)!=='ready'?`<button class="btn btn-primary" onclick="markCustomerOrderReady('${escCC(o.id)}')">🔔 Ready</button>`:`<button class="btn" disabled style="opacity:.7;">✅ Ready</button>`}<button class="btn btn-success" onclick="completeCustomerOrder('${escCC(o.id)}')">✅ Complete</button></div>`:''}</div>`).join('');
+  return list.slice().sort((a,b)=>(b.timestamp||b.createdAt||b.id||0)-(a.timestamp||a.createdAt||a.id||0)).map(o=>{
+    const late=customerOrderLateMinutes(o), status=customerOrderStatus(o), wait=Math.max(1,parseInt(appSettings.waitTime||15));
+    const elapsed=Math.max(0,Math.floor((Date.now()-customerOrderBaseTime(o))/60000));
+    const lateBadge=late>0?`<span class="late-badge">⚠️ LATE ${late}m</span>`:'';
+    return `<div class="customer-order-row ${late>0?'is-late':''}"><div class="cor-top"><span class="cor-name">👤 ${escCC(o.customerName||'Guest')}</span><span><span class="cor-status">${escCC(status.toUpperCase())}</span>${lateBadge}</span></div><div style="font-size:10px;color:var(--muted);margin-top:3px;">#${escCC(o.id)} · ${escCC(o.time||'')} · ${escCC(o.customerPhone||'')}</div><div style="font-size:9px;color:${late>0?'#ff6b6b':'var(--muted)'};margin-top:4px;font-weight:${late>0?'900':'700'};">⏱ ${elapsed} min elapsed · Target ${wait} min</div><div class="cor-items">${escCC(customerOrderItemsText(o))}</div><div style="font-size:12px;font-weight:900;color:var(--orange);margin-top:7px;">${parseFloat(o.total||0).toFixed(2)} ${escCC(appSettings.currency||'SR')}</div>${mode==='pending'?`<div class="cor-actions"><button class="btn btn-delete" onclick="adminCancelCustomerOrder('${escCC(o.id)}')">❌ Cancel</button><button class="btn btn-success" onclick="adminAcceptCustomerOrder('${escCC(o.id)}')">✅ Accept</button></div>`:''}${mode==='active'?`<div class="cor-actions">${status!=='ready'?`<button class="btn btn-primary" onclick="markCustomerOrderReady('${escCC(o.id)}')">🔔 Ready</button>`:`<button class="btn" disabled style="opacity:.7;">✅ Ready</button>`}<button class="btn btn-success" onclick="completeCustomerOrder('${escCC(o.id)}')">✅ Complete</button></div>`:''}</div>`;
+  }).join('');
 }
 async function adminAcceptCustomerOrder(id){const o=customerOrdersCache.find(x=>String(x.id)===String(id));if(!o)return;await updateHeldCustomerOrder(id,{status:'active',acceptedAt:Date.now(),acceptedBy:sessionStorage.getItem('cng_active_cashier')||'Admin'});showToast('✅ Accepted');renderCustomerControlIfOpen();}
 async function adminCancelCustomerOrder(id){const o=customerOrdersCache.find(x=>String(x.id)===String(id));if(!o)return;await moveCustomerOrderToHistory(o,'cancelled');showToast('❌ Cancelled');renderCustomerControlIfOpen();}
@@ -3064,8 +3344,12 @@ function renderCustomerControl(mode){
   const title=document.getElementById('cc-modal-title'),body=document.getElementById('cc-modal-body'); if(!body)return;
   const titles={notifications:'🔔 Notifications / Offers',pending:'⏳ Pending Orders',active:'🔥 Active / Processing Orders',history:'📜 All Customer History'}; if(title)title.innerText=titles[mode]||'Customer Control';
   if(mode==='notifications'){
-    body.innerHTML=`<div class="cc-section"><h4>📢 Send Notification</h4><div class="cc-field"><label>Title</label><input id="cc-notif-title" placeholder="New Offer"></div><div class="cc-field"><label>Message</label><textarea id="cc-notif-message" placeholder="Write your offer or announcement..."></textarea></div><div class="cc-field"><label>Image URL (optional)</label><input id="cc-notif-image" placeholder="https://..."></div><button class="cc-send" onclick="sendCustomerNotification()">🚀 SEND NOW</button><div class="cc-note">Customer app will receive this in real time.</div></div><div class="cc-section"><h4>🎨 Customer App Controls</h4><div class="cc-row"><div class="cc-field"><label>Order Waiting Time (minutes)</label><input id="cc-wait-time" type="number" min="1" max="180" value="${parseInt(appSettings.waitTime||15)}"></div><div class="cc-field"><label>Shop Location</label><input id="cc-location" value="${escCC(appSettings.location||'')}"></div></div><button class="cc-send" onclick="saveCustomerAppControls()">💾 SAVE CUSTOMER SETTINGS</button></div>`;
-  } else if(mode==='pending') body.innerHTML=renderOrderRows(customerOrdersCache.filter(o=>customerOrderStatus(o)==='held'),'pending');
+    body.innerHTML=`<div class="cc-section"><h4>📢 Send Notification</h4><div class="cc-field"><label>Title</label><input id="cc-notif-title" placeholder="New Offer"></div><div class="cc-field"><label>Message</label><textarea id="cc-notif-message" placeholder="Write your offer or announcement..."></textarea></div><button class="cc-send" onclick="sendCustomerNotification()">🚀 SEND NOW</button><div class="cc-note">Customer app will receive this in real time.</div><div class="cc-note" style="margin-top:8px;">⚠️ Late-order warning automatically uses the waiting-time value below.</div></div>
+    <div class="cc-section"><h4>🎨 Customer App Controls</h4><div class="cc-row"><div class="cc-field"><label>Order Waiting Time / Late Warning (minutes)</label><input id="cc-wait-time" type="number" min="1" max="180" value="${parseInt(appSettings.waitTime||15)}"></div><div class="cc-field"><label>Shop Location</label><input id="cc-location" value="${escCC(appSettings.location||'')}"></div></div><button class="cc-send" onclick="saveCustomerAppControls()">💾 SAVE CUSTOMER SETTINGS</button></div>
+    <div class="cc-section"><h4>🖼️ Customer Home Banners</h4><div class="cc-note" style="margin-bottom:10px;">Upload up to 3 photos directly from your phone. No image link needed. Photos are compressed automatically for fast loading.</div><label class="cc-send" style="display:block;text-align:center;cursor:pointer;">📷 CHOOSE UP TO 3 PHOTOS<input type="file" accept="image/*" multiple style="display:none;" onchange="handlePromoBannerFiles(event)"></label><div id="cc-banner-preview" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;"></div></div>
+    <div class="cc-section"><h4>🎬 Launch Intro Ad</h4><div class="cc-note" style="margin-bottom:10px;">Optional full-screen opening image, like a premium shopping app.</div><div class="cc-row"><div class="cc-field"><label>Show Intro</label><select id="cc-intro-enabled"><option value="yes" ${appSettings.introAd?.enabled?'selected':''}>ON</option><option value="no" ${!appSettings.introAd?.enabled?'selected':''}>OFF</option></select></div><div class="cc-field"><label>Duration (seconds)</label><input id="cc-intro-duration" type="number" min="2" max="10" value="${parseInt(appSettings.introAd?.duration||4)}"></div></div><label class="cc-send" style="display:block;text-align:center;cursor:pointer;">📱 UPLOAD INTRO PHOTO<input type="file" accept="image/*" style="display:none;" onchange="handleIntroAdFile(event)"></label><div id="cc-intro-preview" style="margin-top:10px;"></div><button class="cc-send" style="margin-top:10px;background:rgba(255,255,255,.08);color:#fff;" onclick="saveIntroAdSettings()">💾 SAVE INTRO SETTINGS</button></div>`;
+    setTimeout(()=>{renderPromoBannerPreview();renderIntroPreview();},0);
+  } else if(mode==='pending') body.innerHTML=renderOrderRows(customerOrdersCache.filter(o=>customerOrderStatus(o)==='pending'),'pending');
   else if(mode==='active') body.innerHTML=renderOrderRows(customerOrdersCache.filter(o=>['active','processing','accepted','ready'].includes(customerOrderStatus(o))),'active');
   else body.innerHTML=renderOrderRows(customerOrderHistoryCache,'history');
 }
@@ -3079,9 +3363,83 @@ async function sendCustomerNotification(){
 }
 async function saveCustomerAppControls(){
   const wait=Math.min(Math.max(parseInt(document.getElementById('cc-wait-time')?.value||15),1),180); const location=document.getElementById('cc-location')?.value.trim()||'';
-  appSettings.waitTime=wait; appSettings.location=location;
+  appSettings.waitTime=wait; appSettings.location=location; const sw=document.getElementById('set-wait-time'); if(sw)sw.value=wait;
   localStorage.setItem('cng_settings',JSON.stringify(appSettings));
   try{await db.ref('/settings').update({waitTime:wait,location});applySettingsToUI();showToast('✅ Customer settings updated');}catch(e){showToast('❌ Could not save customer settings');}
+}
+
+
+function compressCustomerImage(file,maxW,maxH,quality){
+  return new Promise((resolve,reject)=>{
+    if(!file)return reject(new Error('No file'));
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        let w=img.naturalWidth||img.width,h=img.naturalHeight||img.height;
+        const scale=Math.min(1,maxW/w,maxH/h); w=Math.max(1,Math.round(w*scale)); h=Math.max(1,Math.round(h*scale));
+        const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+        const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);
+        let out;
+        try{out=canvas.toDataURL('image/jpeg',quality);}catch(err){return reject(err);}
+        resolve(out);
+      };
+      img.onerror=()=>reject(new Error('Invalid image'));
+      img.src=e.target.result;
+    };
+    reader.onerror=()=>reject(reader.error||new Error('Read failed'));
+    reader.readAsDataURL(file);
+  });
+}
+function renderPromoBannerPreview(){
+  const el=document.getElementById('cc-banner-preview');if(!el)return;
+  const arr=Array.isArray(appSettings.promoBanners)?appSettings.promoBanners:[];
+  if(!arr.length){el.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--muted);font-size:10px;padding:12px;">No banners uploaded yet</div>';return;}
+  el.innerHTML=arr.map((src,i)=>`<div style="position:relative;aspect-ratio:16/7;border-radius:12px;overflow:hidden;border:1px solid var(--glass-border);background:#16070b;"><img src="${src}" style="width:100%;height:100%;object-fit:cover;"><button onclick="removePromoBanner(${i})" style="position:absolute;top:5px;right:5px;width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.72);color:#fff;font-weight:900;">✕</button><span style="position:absolute;bottom:5px;left:6px;background:rgba(0,0,0,.7);padding:2px 6px;border-radius:7px;color:#fff;font-size:9px;">${i+1}</span></div>`).join('');
+}
+async function handlePromoBannerFiles(event){
+  const files=Array.from(event.target.files||[]).slice(0,3);
+  if(!files.length)return;
+  try{
+    showToast('⏳ Preparing banner photos...');
+    const out=[];
+    for(const f of files)out.push(await compressCustomerImage(f,1400,600,.76));
+    appSettings.promoBanners=out.slice(0,3);
+    localStorage.setItem('cng_settings',JSON.stringify(appSettings));
+    await db.ref('/settings').update({promoBanners:appSettings.promoBanners,offerPosterImage:null});
+    renderPromoBannerPreview();showToast('✅ Customer banners updated in real time');
+  }catch(e){console.error(e);showToast('❌ Could not upload banner');}
+  event.target.value='';
+}
+async function removePromoBanner(index){
+  const arr=Array.isArray(appSettings.promoBanners)?appSettings.promoBanners.slice():[];arr.splice(index,1);appSettings.promoBanners=arr;
+  localStorage.setItem('cng_settings',JSON.stringify(appSettings));
+  try{await db.ref('/settings').update({promoBanners:arr});renderPromoBannerPreview();showToast('✅ Banner removed');}catch(e){showToast('❌ Could not remove banner');}
+}
+function renderIntroPreview(){
+  const el=document.getElementById('cc-intro-preview');if(!el)return;const intro=appSettings.introAd||{};
+  el.innerHTML=intro.image?`<div style="position:relative;max-width:150px;margin:auto;aspect-ratio:9/14;border-radius:16px;overflow:hidden;border:1px solid var(--glass-border);"><img src="${intro.image}" style="width:100%;height:100%;object-fit:cover;"><button onclick="removeIntroAdImage()" style="position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.72);color:#fff;">✕</button></div>`:'<div style="text-align:center;color:var(--muted);font-size:10px;padding:10px;">No intro photo</div>';
+}
+async function handleIntroAdFile(event){
+  const f=event.target.files?.[0];if(!f)return;
+  try{
+    showToast('⏳ Preparing intro photo...');
+    const img=await compressCustomerImage(f,1080,1600,.76);
+    appSettings.introAd={...(appSettings.introAd||{}),image:img,enabled:true,duration:parseInt(document.getElementById('cc-intro-duration')?.value||4)};
+    localStorage.setItem('cng_settings',JSON.stringify(appSettings));
+    await db.ref('/settings/introAd').set(appSettings.introAd);renderIntroPreview();showToast('✅ Intro photo updated');
+  }catch(e){console.error(e);showToast('❌ Could not upload intro photo');}
+  event.target.value='';
+}
+async function saveIntroAdSettings(){
+  appSettings.introAd={...(appSettings.introAd||{}),enabled:document.getElementById('cc-intro-enabled')?.value==='yes',duration:Math.max(2,Math.min(10,parseInt(document.getElementById('cc-intro-duration')?.value||4)))};
+  localStorage.setItem('cng_settings',JSON.stringify(appSettings));
+  try{await db.ref('/settings/introAd').set(appSettings.introAd);showToast('✅ Intro settings saved');}catch(e){showToast('❌ Could not save intro settings');}
+}
+async function removeIntroAdImage(){
+  appSettings.introAd={...(appSettings.introAd||{}),image:'',enabled:false};
+  localStorage.setItem('cng_settings',JSON.stringify(appSettings));
+  try{await db.ref('/settings/introAd').set(appSettings.introAd);renderIntroPreview();const s=document.getElementById('cc-intro-enabled');if(s)s.value='no';showToast('✅ Intro photo removed');}catch(e){showToast('❌ Could not remove intro photo');}
 }
 
 // Ensure online order monitoring starts after Firebase is ready.
@@ -3089,27 +3447,11 @@ setTimeout(startCustomerOrderMonitor,500);
 
 
 </script>
-<!-- CUSTOMER CONTROL MODAL (live app DOM) -->
-<div id="customer-control-modal" class="modal">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h3 id="cc-modal-title" style="color:var(--orange);font-size:16px;font-weight:900;">Customer Control</h3>
-      <button class="btn" style="padding:4px 10px;border-radius:10px;" onclick="closeModal('customer-control-modal')">✕</button>
-    </div>
-    <div class="modal-body" id="cc-modal-body"></div>
-  </div>
-</div>
 
-<!-- NEW CUSTOMER ORDER ALERT (live app DOM) -->
-<div id="new-customer-order-alert">
-  <div class="nco-box">
-    <div class="nco-head">
-      <b>🔔 NEW CUSTOMER ORDER</b>
-      <button class="btn" style="padding:5px 9px;border-radius:9px;" onclick="dismissNewCustomerOrder()">✕</button>
-    </div>
-    <div id="nco-content"></div>
-  </div>
-</div>
+<!-- LIVE CUSTOMER CONTROL MODAL -->
+<div id="customer-control-modal" class="modal"><div class="modal-box"><div class="modal-header"><h3 id="cc-modal-title" style="color:var(--orange);font-size:16px;font-weight:900;">Customer Control</h3><button class="btn" style="padding:4px 10px;border-radius:10px;" onclick="closeModal('customer-control-modal')">✕</button></div><div class="modal-body" id="cc-modal-body"></div></div></div>
 
+<!-- LIVE NEW CUSTOMER ORDER ALERT -->
+<div id="new-customer-order-alert" style="display:none;"><div class="nco-box"><div class="nco-head"><b>🔔 NEW CUSTOMER ORDER</b><button class="btn" style="padding:5px 9px;border-radius:9px;" onclick="dismissNewCustomerOrder()">✕</button></div><div id="nco-content"></div></div></div>
 </body>
 </html>
