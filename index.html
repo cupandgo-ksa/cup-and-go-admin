@@ -3375,6 +3375,13 @@ function customerOrderStatus(o){
   return s;
 }
 function customerOrderItemsText(o){ return (o?.items||[]).map(i=>`${i.qty||1}× ${i.name||'Item'}`).join(' • '); }
+function customerPaymentMethod(o){ const p=String(o?.paymentMethod||'').trim().toLowerCase(); return p==='card'?'Card':(p==='cash'?'Cash':'Not specified'); }
+function customerPaymentBadge(o){
+  const p=customerPaymentMethod(o);
+  if(p==='Card') return '<div style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:7px 11px;border-radius:12px;background:rgba(10,132,255,.16);border:1px solid rgba(10,132,255,.45);color:#79b8ff;font-size:11px;font-weight:900;">💳 PAYMENT: CARD</div>';
+  if(p==='Cash') return '<div style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:7px 11px;border-radius:12px;background:rgba(0,230,118,.13);border:1px solid rgba(0,230,118,.42);color:#5df0a2;font-size:11px;font-weight:900;">💵 PAYMENT: CASH</div>';
+  return '<div style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:7px 11px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:var(--muted);font-size:10px;font-weight:800;">PAYMENT: NOT SPECIFIED</div>';
+}
 function customerOrderBaseTime(o){
   const candidates=[o?.timestamp,o?.createdAt,o?.orderTimestamp,o?.id];
   for(const v of candidates){const n=Number(v);if(Number.isFinite(n)&&n>1000000000000)return n;}
@@ -3469,7 +3476,7 @@ function queueNewCustomerOrder(o){
 function showNextCustomerOrder(){
   activeNewCustomerOrder=newCustomerOrderQueue.shift()||null; if(!activeNewCustomerOrder)return;
   const o=activeNewCustomerOrder; const el=document.getElementById('new-customer-order-alert'); const c=document.getElementById('nco-content'); if(!el||!c)return;
-  c.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:6px;"><button id="nco-sound-btn" onclick="toggleCustomerAlertSound()" style="border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:#fff;border-radius:9px;padding:5px 9px;font-size:13px;">${customerAlertSoundEnabled?'🔊':'🔇'}</button></div><div class="nco-customer"><b>👤 ${escCC(o.customerName||((o.cashier||'').replace(/^.*?: /,''))||'Guest')}</b><br>📞 ${escCC(o.customerPhone||'—')} &nbsp; 🚗 ${escCC(o.carNumber||'Walk-in')}</div><div class="nco-items">${(o.items||[]).map(i=>`<div class="nco-item"><span>${escCC(i.name||'Item')} × ${i.qty||1}</span><b>${((i.price||0)*(i.qty||1)).toFixed(2)} ${escCC(appSettings.currency||'SR')}</b></div>`).join('')}<div style="display:flex;justify-content:space-between;margin-top:8px;font-size:14px;font-weight:900;color:var(--orange);"><span>Total</span><span>${parseFloat(o.total||0).toFixed(2)} ${escCC(appSettings.currency||'SR')}</span></div></div><div class="nco-actions"><button class="nco-cancel" onclick="cancelCustomerOrderFromAlert()">❌ CANCEL</button><button class="nco-accept" onclick="acceptCustomerOrderFromAlert()">✅ ACCEPT</button></div>`;
+  c.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:6px;"><button id="nco-sound-btn" onclick="toggleCustomerAlertSound()" style="border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:#fff;border-radius:9px;padding:5px 9px;font-size:13px;">${customerAlertSoundEnabled?'🔊':'🔇'}</button></div><div class="nco-customer"><b>👤 ${escCC(o.customerName||((o.cashier||'').replace(/^.*?: /,''))||'Guest')}</b><br>📞 ${escCC(o.customerPhone||'—')} &nbsp; 🚗 ${escCC(o.carNumber||'Walk-in')}<br>${customerPaymentBadge(o)}</div><div class="nco-items">${(o.items||[]).map(i=>`<div class="nco-item"><span>${escCC(i.name||'Item')} × ${i.qty||1}</span><b>${((i.price||0)*(i.qty||1)).toFixed(2)} ${escCC(appSettings.currency||'SR')}</b></div>`).join('')}<div style="display:flex;justify-content:space-between;margin-top:8px;font-size:14px;font-weight:900;color:var(--orange);"><span>Total</span><span>${parseFloat(o.total||0).toFixed(2)} ${escCC(appSettings.currency||'SR')}</span></div></div><div class="nco-actions"><button class="nco-cancel" onclick="cancelCustomerOrderFromAlert()">❌ CANCEL</button><button class="nco-accept" onclick="acceptCustomerOrderFromAlert()">✅ ACCEPT</button></div>`;
   el.style.display='block'; resetAdminScrollTop(el); const nbox=el.querySelector('.nco-box'); if(nbox)nbox.scrollTop=0; startCustomerAlertRinging();
 }
 function dismissNewCustomerOrder(){ const el=document.getElementById('new-customer-order-alert');if(el)el.style.display='none';stopCustomerAlertRinging();activeNewCustomerOrder=null;resetAdminScrollTop(document.getElementById('customer-control-modal'));setTimeout(()=>{showNextCustomerOrder();const alert=document.getElementById('new-customer-order-alert');if(alert)resetAdminScrollTop(alert);},120); }
@@ -3543,7 +3550,7 @@ function renderOrderRows(list,mode){
     const late=customerOrderLateMinutes(o), status=customerOrderStatus(o), wait=Math.max(1,parseInt(appSettings.waitTime||15));
     const elapsed=Math.max(0,Math.floor((Date.now()-customerOrderBaseTime(o))/60000));
     const lateBadge=late>0?`<span class="late-badge">⚠️ LATE ${late}m</span>`:'';
-    return `<div class="customer-order-row ${late>0?'is-late':''}"><div class="cor-top"><span class="cor-name">👤 ${escCC(o.customerName||'Guest')}</span><span><span class="cor-status">${escCC(status.toUpperCase())}</span>${lateBadge}</span></div><div style="font-size:10px;color:var(--muted);margin-top:3px;">#${escCC(o.id)} · ${escCC(o.time||'')} · ${escCC(o.customerPhone||'')}</div><div style="font-size:9px;color:${late>0?'#ff6b6b':'var(--muted)'};margin-top:4px;font-weight:${late>0?'900':'700'};">⏱ ${elapsed} min elapsed · Target ${wait} min</div><div class="cor-items">${escCC(customerOrderItemsText(o))}</div><div style="font-size:12px;font-weight:900;color:var(--orange);margin-top:7px;">${parseFloat(o.total||0).toFixed(2)} ${escCC(appSettings.currency||'SR')}</div>${mode==='pending'?`<div class="cor-actions"><button class="btn btn-delete" onclick="adminCancelCustomerOrder('${escCC(o.id)}')">❌ Cancel</button><button class="btn btn-success" onclick="adminAcceptCustomerOrder('${escCC(o.id)}')">✅ Accept</button></div>`:''}${mode==='active'?`<div class="cor-actions">${status!=='ready'?`<button class="btn btn-primary" onclick="markCustomerOrderReady('${escCC(o.id)}')">🔔 Ready</button>`:`<button class="btn" disabled style="opacity:.7;">✅ Ready</button>`}<button class="btn btn-success" onclick="completeCustomerOrder('${escCC(o.id)}')">✅ Complete</button></div>`:''}</div>`;
+    return `<div class="customer-order-row ${late>0?'is-late':''}"><div class="cor-top"><span class="cor-name">👤 ${escCC(o.customerName||'Guest')}</span><span><span class="cor-status">${escCC(status.toUpperCase())}</span>${lateBadge}</span></div><div style="font-size:10px;color:var(--muted);margin-top:3px;">#${escCC(o.id)} · ${escCC(o.time||'')} · ${escCC(o.customerPhone||'')}</div><div style="font-size:9px;color:${late>0?'#ff6b6b':'var(--muted)'};margin-top:4px;font-weight:${late>0?'900':'700'};">⏱ ${elapsed} min elapsed · Target ${wait} min</div>${customerPaymentBadge(o)}<div class="cor-items">${escCC(customerOrderItemsText(o))}</div><div style="font-size:12px;font-weight:900;color:var(--orange);margin-top:7px;">${parseFloat(o.total||0).toFixed(2)} ${escCC(appSettings.currency||'SR')}</div>${mode==='pending'?`<div class="cor-actions"><button class="btn btn-delete" onclick="adminCancelCustomerOrder('${escCC(o.id)}')">❌ Cancel</button><button class="btn btn-success" onclick="adminAcceptCustomerOrder('${escCC(o.id)}')">✅ Accept</button></div>`:''}${mode==='active'?`<div class="cor-actions">${status!=='ready'?`<button class="btn btn-primary" onclick="markCustomerOrderReady('${escCC(o.id)}')">🔔 Ready</button>`:`<button class="btn" disabled style="opacity:.7;">✅ Ready</button>`}<button class="btn btn-success" onclick="completeCustomerOrder('${escCC(o.id)}')">✅ Complete</button></div>`:''}</div>`;
   }).join('');
 }
 async function adminAcceptCustomerOrder(id){const o=customerOrdersCache.find(x=>String(x.id)===String(id));if(!o)return;await updateHeldCustomerOrder(id,{status:'active',acceptedAt:Date.now(),acceptedBy:sessionStorage.getItem('cng_active_cashier')||'Admin'});showToast('✅ Accepted');renderCustomerControlIfOpen();}
@@ -3556,7 +3563,7 @@ function renderCustomerControl(mode){
     body.innerHTML=`<div class="cc-section"><h4>📢 Send Notification</h4><div class="cc-field"><label>Title</label><input id="cc-notif-title" placeholder="New Offer"></div><div class="cc-field"><label>Message</label><textarea id="cc-notif-message" placeholder="Write your offer or announcement..."></textarea></div><button class="cc-send" onclick="sendCustomerNotification()">🚀 SEND NOW</button><div class="cc-note">Customer app will receive this in real time.</div><div class="cc-note" style="margin-top:8px;">⚠️ Late-order warning automatically uses the waiting-time value below.</div></div>
     <div class="cc-section"><h4>🎨 Customer App Controls</h4><div class="cc-row"><div class="cc-field"><label>Order Waiting Time / Late Warning (minutes)</label><input id="cc-wait-time" type="number" min="1" max="180" value="15"></div><div class="cc-field"><label>Shop Location</label><input id="cc-location" value="${escCC(appSettings.location||'')}"></div></div><button class="cc-send" onclick="saveCustomerAppControls()">💾 SAVE CUSTOMER SETTINGS</button></div>
     <div class="cc-section"><h4>🖼️ Customer Home Banners</h4><div class="cc-note" style="margin-bottom:10px;">Upload up to 3 photos directly from your phone. No image link needed. Photos are compressed automatically for fast loading.</div><label class="cc-send" style="display:block;text-align:center;cursor:pointer;">📷 CHOOSE UP TO 3 PHOTOS<input type="file" accept="image/*" multiple style="display:none;" onchange="handlePromoBannerFiles(event)"></label><div id="cc-banner-preview" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;"></div></div>
-    <div class="cc-section"><h4>🎬 Launch Intro Ad</h4><div class="cc-note" style="margin-bottom:10px;">Optional full-screen opening image, like a premium shopping app.</div><div class="cc-row"><div class="cc-field"><label>Show Intro</label><select id="cc-intro-enabled"><option value="yes" ${appSettings.introAd?.enabled?'selected':''}>ON</option><option value="no" ${!appSettings.introAd?.enabled?'selected':''}>OFF</option></select></div><div class="cc-field"><label>Duration (seconds)</label><input id="cc-intro-duration" type="number" min="2" max="10" value="${parseInt(appSettings.introAd?.duration||4)}"></div></div><label class="cc-send" style="display:block;text-align:center;cursor:pointer;">📱 UPLOAD INTRO PHOTO<input type="file" accept="image/*" style="display:none;" onchange="handleIntroAdFile(event)"></label><div id="cc-intro-preview" style="margin-top:10px;"></div><button class="cc-send" style="margin-top:10px;background:rgba(255,255,255,.08);color:#fff;" onclick="saveIntroAdSettings()">💾 SAVE INTRO SETTINGS</button></div>`;
+    <div class="cc-section"><h4>🎬 Launch Intro Ad</h4><div class="cc-note" style="margin-bottom:10px;">Shown after the Cup And Go shop intro. Choose a photo or a short video.</div><div class="cc-row"><div class="cc-field"><label>Show Intro Ad</label><select id="cc-intro-enabled"><option value="yes" ${appSettings.introAd?.enabled?'selected':''}>ON</option><option value="no" ${!appSettings.introAd?.enabled?'selected':''}>OFF</option></select></div><div class="cc-field"><label>Photo Duration (seconds)</label><input id="cc-intro-duration" type="number" min="2" max="10" value="${parseInt(appSettings.introAd?.duration||4)}"></div></div><label class="cc-send" style="display:block;text-align:center;cursor:pointer;">🎞️ UPLOAD PHOTO OR VIDEO<input type="file" accept="image/*,video/mp4,video/webm,video/quicktime" style="display:none;" onchange="handleIntroAdFile(event)"></label><div class="cc-note" style="margin-top:8px;">For video on all phones, MP4 (H.264) is best. Keep video under 4 MB.</div><div id="cc-intro-preview" style="margin-top:10px;"></div><button class="cc-send" style="margin-top:10px;background:rgba(255,255,255,.08);color:#fff;" onclick="saveIntroAdSettings()">💾 SAVE INTRO SETTINGS</button></div>`;
     setTimeout(()=>{renderPromoBannerPreview();renderIntroPreview();},0);
   } else if(mode==='pending') body.innerHTML=renderOrderRows(customerOrdersCache.filter(o=>customerOrderStatus(o)==='pending'),'pending');
   else if(mode==='active') body.innerHTML=renderOrderRows(customerOrdersCache.filter(o=>['active','processing','accepted','ready'].includes(customerOrderStatus(o))),'active');
@@ -3627,28 +3634,49 @@ async function removePromoBanner(index){
 }
 function renderIntroPreview(){
   const el=document.getElementById('cc-intro-preview');if(!el)return;const intro=appSettings.introAd||{};
-  el.innerHTML=intro.image?`<div style="position:relative;max-width:150px;margin:auto;aspect-ratio:9/14;border-radius:16px;overflow:hidden;border:1px solid var(--glass-border);"><img src="${intro.image}" style="width:100%;height:100%;object-fit:cover;"><button onclick="removeIntroAdImage()" style="position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.72);color:#fff;">✕</button></div>`:'<div style="text-align:center;color:var(--muted);font-size:10px;padding:10px;">No intro photo</div>';
+  const type=intro.mediaType||(intro.video?'video':(intro.image?'image':''));
+  const src=type==='video'?(intro.video||intro.media||''):(intro.image||intro.media||'');
+  if(!src){el.innerHTML='<div style="text-align:center;color:var(--muted);font-size:10px;padding:10px;">No intro ad selected</div>';return;}
+  const media=type==='video'
+    ? `<video src="${src}" muted playsinline controls style="width:100%;height:100%;object-fit:cover;background:#000;"></video>`
+    : `<img src="${src}" style="width:100%;height:100%;object-fit:cover;">`;
+  el.innerHTML=`<div style="position:relative;max-width:170px;margin:auto;aspect-ratio:9/14;border-radius:16px;overflow:hidden;border:1px solid var(--glass-border);">${media}<button onclick="removeIntroAdImage()" style="position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.72);color:#fff;z-index:3;">✕</button><span style="position:absolute;bottom:7px;left:7px;background:rgba(0,0,0,.72);color:#fff;padding:3px 7px;border-radius:8px;font-size:9px;z-index:3;">${type==='video'?'VIDEO':'PHOTO'}</span></div>`;
+}
+function readFileAsDataURL(file){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('Read failed'));r.readAsDataURL(file);
+  });
 }
 async function handleIntroAdFile(event){
   const f=event.target.files?.[0];if(!f)return;
   try{
-    showToast('⏳ Preparing intro photo...');
-    const img=await compressCustomerImage(f,1080,1600,.76);
-    appSettings.introAd={...(appSettings.introAd||{}),image:img,enabled:true,duration:parseInt(document.getElementById('cc-intro-duration')?.value||4)};
-    localStorage.setItem('cng_settings',JSON.stringify(appSettings));
-    await db.ref('/settings/introAd').set(appSettings.introAd);renderIntroPreview();showToast('✅ Intro photo updated');
-  }catch(e){console.error(e);showToast('❌ Could not upload intro photo');}
+    const isVideo=(f.type||'').startsWith('video/');
+    if(isVideo){
+      if(f.size>4*1024*1024){showToast('❌ Video too large — use a file under 4 MB');event.target.value='';return;}
+      showToast('⏳ Preparing intro video...');
+      const video=await readFileAsDataURL(f);
+      appSettings.introAd={...(appSettings.introAd||{}),mediaType:'video',video:video,image:'',media:'',enabled:true,duration:parseInt(document.getElementById('cc-intro-duration')?.value||4)};
+      localStorage.setItem('cng_settings',JSON.stringify(appSettings));
+      await db.ref('/settings/introAd').set(appSettings.introAd);renderIntroPreview();showToast('✅ Intro video updated');
+    }else{
+      showToast('⏳ Preparing intro photo...');
+      const img=await compressCustomerImage(f,1080,1600,.76);
+      appSettings.introAd={...(appSettings.introAd||{}),mediaType:'image',image:img,video:'',media:'',enabled:true,duration:parseInt(document.getElementById('cc-intro-duration')?.value||4)};
+      localStorage.setItem('cng_settings',JSON.stringify(appSettings));
+      await db.ref('/settings/introAd').set(appSettings.introAd);renderIntroPreview();showToast('✅ Intro photo updated');
+    }
+  }catch(e){console.error(e);showToast('❌ Could not upload intro ad');}
   event.target.value='';
 }
 async function saveIntroAdSettings(){
   appSettings.introAd={...(appSettings.introAd||{}),enabled:document.getElementById('cc-intro-enabled')?.value==='yes',duration:Math.max(2,Math.min(10,parseInt(document.getElementById('cc-intro-duration')?.value||4)))};
   localStorage.setItem('cng_settings',JSON.stringify(appSettings));
-  try{await db.ref('/settings/introAd').set(appSettings.introAd);showToast('✅ Intro settings saved');}catch(e){showToast('❌ Could not save intro settings');}
+  try{await db.ref('/settings/introAd').set(appSettings.introAd);showToast('✅ Intro ad settings saved');}catch(e){showToast('❌ Could not save intro settings');}
 }
 async function removeIntroAdImage(){
-  appSettings.introAd={...(appSettings.introAd||{}),image:'',enabled:false};
+  appSettings.introAd={...(appSettings.introAd||{}),image:'',video:'',media:'',mediaType:'',enabled:false};
   localStorage.setItem('cng_settings',JSON.stringify(appSettings));
-  try{await db.ref('/settings/introAd').set(appSettings.introAd);renderIntroPreview();const s=document.getElementById('cc-intro-enabled');if(s)s.value='no';showToast('✅ Intro photo removed');}catch(e){showToast('❌ Could not remove intro photo');}
+  try{await db.ref('/settings/introAd').set(appSettings.introAd);renderIntroPreview();const s=document.getElementById('cc-intro-enabled');if(s)s.value='no';showToast('✅ Intro ad removed');}catch(e){showToast('❌ Could not remove intro ad');}
 }
 
 // Ensure online order monitoring starts after Firebase is ready.
@@ -3843,6 +3871,7 @@ setTimeout(startCustomerOrderMonitor,500);
           <div><b>Date/Time:</b> <span id="chr-time"></span></div>
           <div><b>Customer:</b> <span id="chr-name"></span></div>
           <div><b>Phone:</b> <span id="chr-phone"></span></div>
+          <div><b>Payment:</b> <span id="chr-payment" style="font-weight:900;"></span></div>
           <div id="chr-cancel-row" style="display:none;"><b>Cancel reason:</b> <span id="chr-cancel-reason"></span></div>
         </div>
         <table style="width:100%;border-collapse:collapse;font-size:11px;">
@@ -3902,6 +3931,7 @@ setTimeout(startCustomerOrderMonitor,500);
     set('chr-time',o.time||o.date||new Date(o.timestamp||Date.now()).toLocaleString());
     set('chr-name',o.customerName||o.name||'Guest');
     set('chr-phone',o.customerPhone||o.phone||'—');
+    set('chr-payment',customerPaymentMethod(o));
     set('chr-status',status);
     set('chr-total',Number(o.total||0).toFixed(2)+' '+currency);
 
@@ -3981,6 +4011,7 @@ setTimeout(startCustomerOrderMonitor,500);
         </div>
         <div style="font-size:10px;color:var(--muted);margin-top:4px;">#${esc(o.id||'')} · ${esc(o.time||'')} · ${esc(o.customerPhone||o.phone||'')}</div>
         <div style="font-size:9px;color:var(--muted);margin-top:4px;">⏱ ${elapsed} min elapsed · Target ${wait} min</div>
+        ${customerPaymentBadge(o)}
         <div class="cor-items">${esc(items)}</div>
         <div style="font-size:12px;font-weight:900;color:var(--orange);margin-top:7px;">${Number(o.total||0).toFixed(2)} ${esc(currency)}</div>
         <div class="cor-actions" style="grid-template-columns:1fr 1fr;">
