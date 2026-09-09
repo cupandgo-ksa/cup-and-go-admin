@@ -277,6 +277,16 @@ table { width: 100%; border-collapse: collapse; } th, td { padding: 14px 10px; t
   font-size: 13px;
   white-space: pre-wrap;
 }
+
+/* ===== FINAL GLOBAL MODAL STACK FIX =====
+   When a child popup opens, the previous popup is temporarily hidden.
+   Closing the child restores the previous popup at the same scroll position. */
+.modal.modal-suspended{
+  opacity:0!important;
+  pointer-events:none!important;
+  visibility:hidden!important;
+}
+.modal{isolation:isolate;}
 </style>
 
 <style id="customer-control-center-css">
@@ -555,6 +565,208 @@ input,select,textarea{max-width:100%;}
 @keyframes adminSplashLine{0%{transform:scaleX(0);opacity:0}45%{opacity:1}100%{transform:scaleX(1);opacity:.36}}
 @keyframes adminSplashHalo{0%{opacity:0;transform:scale(.82)}55%{opacity:.68}100%{opacity:.16;transform:scale(1.08)}}
 </style>
+
+
+<style id="customer-order-popup-final-fix">
+/* FINAL FIX: customer order alert is a true centered modal on every phone */
+#new-customer-order-alert{
+  position:fixed!important;
+  inset:0!important;
+  left:0!important; top:0!important; right:0!important; bottom:0!important;
+  transform:none!important;
+  width:100vw!important;
+  height:100vh!important;
+  height:100dvh!important;
+  max-width:none!important;
+  max-height:none!important;
+  padding:max(14px,env(safe-area-inset-top)) 14px max(92px,calc(env(safe-area-inset-bottom) + 82px))!important;
+  background:rgba(0,0,0,.62)!important;
+  backdrop-filter:blur(8px)!important;
+  -webkit-backdrop-filter:blur(8px)!important;
+  z-index:2147483646!important;
+  overflow:hidden!important;
+  align-items:center!important;
+  justify-content:center!important;
+  box-sizing:border-box!important;
+}
+#new-customer-order-alert[style*="display: block"],
+#new-customer-order-alert[style*="display:block"]{
+  display:flex!important;
+}
+#new-customer-order-alert .nco-box{
+  width:min(420px,100%)!important;
+  max-width:420px!important;
+  height:auto!important;
+  max-height:min(70dvh,620px)!important;
+  margin:auto!important;
+  padding:16px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+  background:linear-gradient(180deg,#1c0d10 0%,#12070a 100%)!important;
+  border:1.5px solid var(--orange)!important;
+  border-radius:22px!important;
+  box-shadow:0 26px 80px rgba(0,0,0,.82),0 0 0 1px rgba(255,255,255,.05)!important;
+  color:var(--text)!important;
+}
+#new-customer-order-alert .nco-head{
+  position:relative!important;
+  top:auto!important;
+  flex:0 0 auto!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  padding:0 0 12px!important;
+  margin:0 0 10px!important;
+  background:transparent!important;
+  border-bottom:1px solid rgba(255,255,255,.10)!important;
+  font-size:15px!important;
+  color:var(--orange)!important;
+}
+#new-customer-order-alert #nco-content{
+  min-height:0!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  -webkit-overflow-scrolling:touch!important;
+  overscroll-behavior:contain!important;
+  padding-right:2px!important;
+}
+#new-customer-order-alert .nco-customer{
+  background:rgba(255,255,255,.055)!important;
+  border:1px solid rgba(255,255,255,.09)!important;
+  border-radius:14px!important;
+  padding:11px 12px!important;
+  margin-bottom:10px!important;
+  line-height:1.65!important;
+  font-size:13px!important;
+}
+#new-customer-order-alert .nco-items{
+  background:rgba(255,255,255,.035)!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  border-radius:14px!important;
+  padding:10px 12px!important;
+}
+#new-customer-order-alert .nco-item{
+  display:flex!important;
+  justify-content:space-between!important;
+  align-items:flex-start!important;
+  gap:12px!important;
+  padding:7px 0!important;
+  border-bottom:1px dashed rgba(255,255,255,.10)!important;
+  font-size:12px!important;
+}
+#new-customer-order-alert .nco-item:last-of-type{border-bottom:0!important;}
+#new-customer-order-alert .nco-actions{
+  position:sticky!important;
+  bottom:0!important;
+  z-index:5!important;
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:9px!important;
+  margin-top:12px!important;
+  padding:10px 0 0!important;
+  background:linear-gradient(180deg,rgba(18,7,10,0),#12070a 24%)!important;
+}
+#new-customer-order-alert .nco-actions button{
+  min-height:46px!important;
+  border:0!important;
+  border-radius:13px!important;
+  font-weight:900!important;
+  font-size:12px!important;
+  padding:10px!important;
+}
+#new-customer-order-alert .nco-cancel{
+  background:rgba(255,59,48,.16)!important;
+  color:#ff6b63!important;
+  border:1px solid rgba(255,59,48,.38)!important;
+}
+#new-customer-order-alert .nco-accept{
+  background:linear-gradient(135deg,#00e676,#00b85c)!important;
+  color:#07140c!important;
+}
+@media(max-width:420px){
+  #new-customer-order-alert{
+    padding:max(10px,env(safe-area-inset-top)) 10px max(86px,calc(env(safe-area-inset-bottom) + 76px))!important;
+  }
+  #new-customer-order-alert .nco-box{
+    width:100%!important;
+    max-height:68dvh!important;
+    padding:14px!important;
+    border-radius:18px!important;
+  }
+}
+</style>
+
+<style id="final-popup-position-and-offline-font-fix">
+/* Keep new-order popup high on the screen for fast repeated handling */
+#new-customer-order-alert{
+  align-items:flex-start!important;
+  justify-content:center!important;
+  padding-top:max(34px,calc(env(safe-area-inset-top) + 26px))!important;
+}
+#new-customer-order-alert .nco-box{
+  margin:0 auto!important;
+}
+@media(max-width:420px){
+  #new-customer-order-alert{
+    padding-top:max(26px,calc(env(safe-area-inset-top) + 18px))!important;
+  }
+}
+/* Intro typography must not change when Google Fonts load/unload. */
+#intro-screen .splash-kicker{
+  font-family:serif!important;
+}
+#intro-screen .splash-signature{
+  font-family:cursive!important;
+}
+#intro-screen .splash-tagline,
+#intro-screen .dev-name-splash{
+  font-family:sans-serif!important;
+}
+</style>
+
+
+<style id="final-item-image-quality-fix">
+/* Keep uploaded menu images clear and uncropped. */
+.p-icon img{object-fit:contain!important;background:#16070b!important;}
+</style>
+
+<style id="admin-final-item-image-quality-fix">
+/* Admin POS item images: keep full image visible, but fill empty side space with a soft blurred copy. */
+.admin-item-img-wrap{
+  width:100%;height:150px;position:relative;overflow:hidden;border-radius:10px;
+  background:#16070b;isolation:isolate;display:flex;align-items:center;justify-content:center;
+}
+.admin-item-img-wrap::before{
+  content:"";position:absolute;inset:-16px;z-index:-2;
+  background-image:var(--item-bg);background-size:cover;background-position:center;
+  filter:blur(16px) brightness(.48) saturate(1.08);transform:scale(1.12);opacity:.82;
+}
+.admin-item-img-wrap::after{
+  content:"";position:absolute;inset:0;z-index:-1;
+  background:linear-gradient(180deg,rgba(10,2,4,.10),rgba(10,2,4,.28));
+}
+.admin-item-img{
+  width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important;
+  display:block;background:transparent!important;image-rendering:auto;
+}
+@media (min-width:430px){.admin-item-img-wrap{height:165px;}}
+</style>
+
+<style id="exact-4x3-menu-image-lock">
+/* Exact 4:3 menu image frame. Upload 1200x900 or 800x600 for edge-to-edge display. */
+.admin-item-img-wrap{width:100%!important;height:auto!important;aspect-ratio:4/3!important;overflow:hidden!important;}
+.admin-item-img{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important;}
+</style>
+
+<style id="final-large-full-item-image">
+/* Larger square image area: show the whole product without cropping */
+.admin-item-img-wrap{width:100%!important;height:auto!important;aspect-ratio:1/1!important;overflow:hidden!important;background:#16070b!important;}
+.admin-item-img{width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important;}
+</style>
+
 </head>
 <body>
 
@@ -1086,7 +1298,7 @@ input,select,textarea{max-width:100%;}
 
 <div id="about-modal" class="modal"><div class="modal-box" style="text-align:center;"><div class="modal-body"><div class="intro-logo" style="margin:auto; width:75px;height:75px;font-size:38px;border-radius:22px;margin-bottom:15px;animation:none;">☕</div><h3 style="color:var(--orange);font-size:19px;font-weight:900;margin-bottom:10px;">Cup And Go POS Pro</h3><p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:22px;">Enterprise POS with Live Cloud Sync.<br><br><b>Developer:</b> Mohammed Ashik<br><span style="display:inline-block;margin-top:10px;padding:4px 10px;background:rgba(229,193,88,0.15);border-radius:8px;font-weight:bold;color:var(--orange);">Version 13.0 (Enterprise)</span></p><button class="btn btn-primary" style="width:100%;border-radius:18px;" onclick="closeModal('about-modal')">Close</button></div></div></div>
 
-<div id="order-detail-modal" class="modal"><div class="modal-box" style="max-width:350px;"><div class="modal-body" style="padding:15px; color:#000;"><div class="invoice-wrap" id="receipt-content"><div style="text-align:center;margin-bottom:12px;"><h3 class="dyn-shopname" style="font-size:18px;font-weight:900;text-transform:uppercase;margin:0;">Cup And Go</h3><p style="font-size:10px;line-height:1.4;margin:4px 0;">Hafar Al Batin - Saudi Arabia<br>0554998306</p><p style="font-size:12px;font-weight:bold;margin-top:8px;border-top:1px solid #000;padding-top:5px;">Simplified Tax Invoice</p></div><div style="border-bottom:1px dashed #000;padding-bottom:8px;margin-bottom:10px;font-size:11px;line-height:1.6;"><div style="display:flex;justify-content:space-between;"><span>Inv: <b id="rcpt-inv"></b></span></div><div style="display:flex;justify-content:space-between;"><span>Date: <span id="rcpt-date"></span></span></div><div style="display:flex;justify-content:space-between;"><span>Cashier: <span id="rcpt-cashier-print"></span></span></div></div><table style="width:100%;font-size:11px;margin-bottom:10px;border-bottom:1px solid #000;"><thead><tr style="border-bottom:1px solid #000;"><th style="padding:4px 0;color:#000;">Item</th><th style="text-align:center;color:#000;">Qty</th><th style="text-align:right;color:#000;">Amt</th></tr></thead><tbody id="rcpt-items"></tbody></table><div style="font-size:11px;font-weight:bold;display:flex;justify-content:space-between;padding:5px 0;"><span>Total:</span><span><span id="rcpt-due" style="font-size:14px;"></span> <span class="dyn-currency" style="font-size:9px;">SR</span></span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:4px;color:#333;"><span id="rcpt-cash-paid">CASH: 0.00</span><span id="rcpt-card-paid">CARD: 0.00</span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:4px;color:#333;"><span id="rcpt-change">METHOD: </span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:6px;border-top:1px dashed #000;padding-top:4px;"><span>💰 Paid:</span><span id="rcpt-paid">0.00</span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:6px;color:var(--green);"><span>🔄 Return:</span><span id="rcpt-return">0.00</span></div><div style="text-align:center; margin-top:10px; font-size:16px; letter-spacing:3px;">|||||| ||||| |||||||</div><div style="text-align:center; margin-top:15px; padding-top:10px; border-top:1px dashed #000;"><p style="font-size:12px; font-weight:bold; margin-bottom:4px; margin-top:0;">Thank you!</p></div></div></div><div class="modal-footer"><button class="btn btn-primary" style="flex:1;font-size:12px;" onclick="printContent('receipt-content')">🖨️ Print</button><button class="btn btn-success" style="flex:1;font-size:12px;" onclick="shareTextReceipt()">📤 Share</button><button class="btn" style="flex:1;background:rgba(229,193,88,0.2);color:#B89730;font-size:12px;" onclick="downloadReceiptPDF()">📥 PDF</button><button class="btn" style="flex:1;background:rgba(255,255,255,0.1);color:var(--text);font-size:12px;" onclick="closeModal('order-detail-modal')">Close</button></div></div></div>
+<div id="order-detail-modal" class="modal"><div class="modal-box" style="max-width:350px;"><div class="modal-body" style="padding:15px; color:#000;"><div class="invoice-wrap" id="receipt-content"><div style="text-align:center;margin-bottom:12px;"><h3 class="dyn-shopname" style="font-size:18px;font-weight:900;text-transform:uppercase;margin:0;">Cup And Go</h3><p style="font-size:10px;line-height:1.4;margin:4px 0;">Hafar Al Batin - Saudi Arabia<br>0554998306</p><div id="rcpt-online-label" style="display:none;margin:7px auto 2px;padding:5px 12px;border:1.5px solid #000;border-radius:7px;width:max-content;font-size:11px;font-weight:900;letter-spacing:1px;">ONLINE ORDER</div><p style="font-size:12px;font-weight:bold;margin-top:8px;border-top:1px solid #000;padding-top:5px;">Simplified Tax Invoice</p></div><div style="border-bottom:1px dashed #000;padding-bottom:8px;margin-bottom:10px;font-size:11px;line-height:1.6;"><div style="display:flex;justify-content:space-between;"><span>Inv: <b id="rcpt-inv"></b></span></div><div style="display:flex;justify-content:space-between;"><span>Date: <span id="rcpt-date"></span></span></div><div style="display:flex;justify-content:space-between;"><span>Cashier: <span id="rcpt-cashier-print"></span></span></div></div><table style="width:100%;font-size:11px;margin-bottom:10px;border-bottom:1px solid #000;"><thead><tr style="border-bottom:1px solid #000;"><th style="padding:4px 0;color:#000;">Item</th><th style="text-align:center;color:#000;">Qty</th><th style="text-align:right;color:#000;">Amt</th></tr></thead><tbody id="rcpt-items"></tbody></table><div style="font-size:11px;font-weight:bold;display:flex;justify-content:space-between;padding:5px 0;"><span>Total:</span><span><span id="rcpt-due" style="font-size:14px;"></span> <span class="dyn-currency" style="font-size:9px;">SR</span></span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:4px;color:#333;"><span id="rcpt-cash-paid">CASH: 0.00</span><span id="rcpt-card-paid">CARD: 0.00</span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:4px;color:#333;"><span id="rcpt-change">METHOD: </span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:6px;border-top:1px dashed #000;padding-top:4px;"><span>💰 Paid:</span><span id="rcpt-paid">0.00</span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:6px;color:var(--green);"><span>🔄 Return:</span><span id="rcpt-return">0.00</span></div><div style="text-align:center; margin-top:10px; font-size:16px; letter-spacing:3px;">|||||| ||||| |||||||</div><div style="text-align:center; margin-top:15px; padding-top:10px; border-top:1px dashed #000;"><p style="font-size:12px; font-weight:bold; margin-bottom:4px; margin-top:0;">Thank you!</p></div></div></div><div class="modal-footer"><button class="btn btn-primary" style="flex:1;font-size:12px;" onclick="printContent('receipt-content')">🖨️ Print</button><button class="btn btn-success" style="flex:1;font-size:12px;" onclick="shareTextReceipt()">📤 Share</button><button class="btn" style="flex:1;background:rgba(229,193,88,0.2);color:#B89730;font-size:12px;" onclick="downloadReceiptPDF()">📥 PDF</button><button class="btn" style="flex:1;background:rgba(255,255,255,0.1);color:var(--text);font-size:12px;" onclick="closeModal('order-detail-modal')">Close</button></div></div></div>
 
 <div id="report-preview-modal" class="modal"><div class="modal-box" style="max-width:400px; width:95%;"><div class="modal-body" style="background:var(--brand-bg); padding:15px;"><div id="pdf-report-content" style="background:#fff; color:#000; font-family:monospace; font-size:12px; line-height:1.5; width:100%; padding:15px; border-radius:12px;"></div></div><div class="modal-footer"><button class="btn btn-primary" style="flex:1;font-size:12px;" onclick="printContent('pdf-report-content')">🖨️ Print</button><button class="btn btn-success" style="flex:1;font-size:12px;" onclick="shareTextReport()">📤 Share</button><button class="btn" style="flex:1;background:rgba(229,193,88,0.2);color:var(--orange);font-size:12px;" onclick="executeReportDownload()">📥 PDF</button><button class="btn" style="flex:1;background:rgba(255,255,255,0.1);color:var(--text);font-size:12px;" onclick="closeModal('report-preview-modal')">Close</button></div></div></div>
 
@@ -1225,8 +1437,73 @@ let isFirstLoad = true;
 // ======= HELPER FUNCTIONS =======
 function safeSet(id, prop, val) { let el = document.getElementById(id); if(el) el[prop] = val; }
 function showToast(msg) { let t = document.getElementById('toast-msg'); if(!t) return; t.innerText=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 1500); }
-function openModal(id) { let m = document.getElementById(id); if(!m) return; m.classList.remove('hidden'); setTimeout(()=>m.classList.add('show'), 10); }
-function closeModal(id) { let m = document.getElementById(id); if(!m) return; m.classList.remove('show'); setTimeout(()=>m.classList.add('hidden'), 150); }
+function resetAdminScrollTop(target){
+  try{
+    if(target){
+      const box=target.classList?.contains('modal-box')?target:target.querySelector?.('.modal-box');
+      const body=target.classList?.contains('modal-body')?target:target.querySelector?.('.modal-body');
+      if(body) body.scrollTop=0;
+      if(box) box.scrollTop=0;
+    }
+    window.scrollTo({top:0,left:0,behavior:'auto'});
+    document.documentElement.scrollTop=0;
+    document.body.scrollTop=0;
+  }catch(e){}
+}
+// ===== FINAL GLOBAL POPUP / MODAL MANAGER =====
+// Prevents the previous popup from staying visually on top when another popup opens.
+const cngModalStack=[];
+const cngModalScrollState=new Map();
+function cngCaptureModalScroll(m){
+  if(!m)return;
+  const body=m.querySelector('.modal-body'), box=m.querySelector('.modal-box');
+  cngModalScrollState.set(m.id,{body:body?body.scrollTop:0,box:box?box.scrollTop:0});
+}
+function cngRestoreModalScroll(m){
+  if(!m)return;
+  const st=cngModalScrollState.get(m.id)||{body:0,box:0};
+  requestAnimationFrame(()=>{
+    const body=m.querySelector('.modal-body'), box=m.querySelector('.modal-box');
+    if(body)body.scrollTop=st.body||0;
+    if(box)box.scrollTop=st.box||0;
+  });
+}
+function cngSuspendVisibleModals(exceptId){
+  document.querySelectorAll('.modal.show').forEach(x=>{
+    if(x.id!==exceptId){cngCaptureModalScroll(x);x.classList.add('modal-suspended');}
+  });
+}
+function cngResumeTopModal(){
+  while(cngModalStack.length){
+    const id=cngModalStack[cngModalStack.length-1], m=document.getElementById(id);
+    if(m&&m.classList.contains('show')){
+      m.classList.remove('modal-suspended');
+      m.style.zIndex=String(99999+cngModalStack.length*10);
+      cngRestoreModalScroll(m);
+      return;
+    }
+    cngModalStack.pop();
+  }
+}
+function openModal(id){
+  const m=document.getElementById(id); if(!m)return;
+  cngSuspendVisibleModals(id);
+  const existing=cngModalStack.indexOf(id); if(existing!==-1)cngModalStack.splice(existing,1);
+  cngModalStack.push(id);
+  m.classList.remove('modal-suspended','hidden');
+  m.style.zIndex=String(99999+cngModalStack.length*10);
+  // New popup always starts from its top.
+  resetAdminScrollTop(m);
+  setTimeout(()=>{m.classList.add('show');resetAdminScrollTop(m);},10);
+}
+function closeModal(id){
+  const m=document.getElementById(id); if(!m)return;
+  m.classList.remove('show','modal-suspended');
+  const i=cngModalStack.lastIndexOf(id); if(i!==-1)cngModalStack.splice(i,1);
+  setTimeout(()=>m.classList.add('hidden'),150);
+  setTimeout(cngResumeTopModal,20);
+}
+
 function confirmAction(title, text, callback) { safeSet('confirm-title', 'innerText', title); safeSet('confirm-text', 'innerText', text); pendingAction = callback; openModal('custom-confirm-modal'); }
 function closeConfirm(res) { closeModal('custom-confirm-modal'); }
 document.getElementById('confirm-ok-btn').addEventListener('click', () => { closeModal('custom-confirm-modal'); if(pendingAction) pendingAction(); });
@@ -2242,6 +2519,7 @@ function viewOrder(id) {
   }
   
   activeOrderForShare = o; 
+  const onlineLabel=document.getElementById('rcpt-online-label'); if(onlineLabel) onlineLabel.style.display='none';
   
   safeSet('rcpt-inv','innerText', o.id); 
   safeSet('rcpt-date','innerText', o.time); 
@@ -2658,8 +2936,8 @@ function updateCart() {
 }
 
 // ======= HISTORY =======
-function updateHistory() { let tb=document.getElementById('history-table'); if(!tb) return; tb.innerHTML=''; if(history30Days.length===0){ tb.innerHTML=`<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted);font-size:12px;">No records</td></tr>`; return; } history30Days.forEach((h,idx)=>{ tb.innerHTML+=`<tr><td style="padding:10px 0;"><b style="font-size:12px;">${h.date.split('T')[0]||h.date}</b><br><span style="font-size:9px;color:var(--muted);">${h.timeStr||''}</span></td><td><span style="background:rgba(229,193,88,0.1);padding:4px 8px;border-radius:10px;font-size:11px;">${h.orders}</span></td><td><b style="color:var(--orange);font-size:13px;">${appSettings.currency} ${h.rev.toFixed(2)}</b></td><td style="text-align:right;"><button class="btn btn-primary" style="padding:4px 10px;border-radius:10px;font-size:10px;" onclick="viewHistoryReport(${idx})">👁️ View</button></td></tr>`; }); }
-function filterHistory() { let s=document.getElementById('date-search'), tb=document.getElementById('history-table'); if(!s||!tb) return; let q=s.value.toLowerCase(); tb.innerHTML=''; history30Days.forEach((h,idx)=>{ if(h.date.toLowerCase().includes(q)){ tb.innerHTML+=`<tr><td style="padding:10px 0;"><b style="font-size:12px;">${h.date}</b><br><span style="font-size:9px;color:var(--muted);">${h.timeStr||''}</span></td><td><span style="background:rgba(229,193,88,0.1);padding:4px 8px;border-radius:10px;font-size:11px;">${h.orders}</span></td><td><b style="color:var(--orange);font-size:13px;">${appSettings.currency} ${h.rev.toFixed(2)}</b></td><td style="text-align:right;"><button class="btn btn-primary" style="padding:4px 10px;border-radius:10px;font-size:10px;" onclick="viewHistoryReport(${idx})">👁️ View</button></td></tr>`; } }); }
+function updateHistory() { let tb=document.getElementById('history-table'); if(!tb) return; tb.innerHTML=''; if(history30Days.length===0){ tb.innerHTML=`<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted);font-size:12px;">No records</td></tr>`; return; } history30Days.forEach((h,idx)=>{ tb.innerHTML+=`<tr><td style="padding:10px 0;"><b style="font-size:12px;">${h.date.split('T')[0]||h.date}</b><br><span style="font-size:9px;color:var(--muted);">${h.timeStr||''}</span></td><td><span style="background:rgba(229,193,88,0.1);padding:4px 8px;border-radius:10px;font-size:11px;">${h.orders}</span></td><td><b style="color:var(--orange);font-size:13px;">${appSettings.currency} ${h.rev.toFixed(2)}</b></td><td style="text-align:right;"><div style="display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap;"><button class="btn btn-primary" style="padding:4px 8px;border-radius:10px;font-size:10px;" onclick="viewHistoryReport(${idx})">👁️ View</button><button class="btn" style="padding:4px 8px;border-radius:10px;font-size:10px;background:rgba(255,255,255,.10);color:#fff;" onclick="printHistoryReport(${idx})">🖨️ Print</button><button class="btn" style="padding:4px 8px;border-radius:10px;font-size:10px;background:rgba(229,193,88,.18);color:var(--orange);" onclick="pdfHistoryReport(${idx})">📥 PDF</button></div></td></tr>`; }); }
+function filterHistory() { let s=document.getElementById('date-search'), tb=document.getElementById('history-table'); if(!s||!tb) return; let q=s.value.toLowerCase(); tb.innerHTML=''; history30Days.forEach((h,idx)=>{ if(h.date.toLowerCase().includes(q)){ tb.innerHTML+=`<tr><td style="padding:10px 0;"><b style="font-size:12px;">${h.date}</b><br><span style="font-size:9px;color:var(--muted);">${h.timeStr||''}</span></td><td><span style="background:rgba(229,193,88,0.1);padding:4px 8px;border-radius:10px;font-size:11px;">${h.orders}</span></td><td><b style="color:var(--orange);font-size:13px;">${appSettings.currency} ${h.rev.toFixed(2)}</b></td><td style="text-align:right;"><div style="display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap;"><button class="btn btn-primary" style="padding:4px 8px;border-radius:10px;font-size:10px;" onclick="viewHistoryReport(${idx})">👁️ View</button><button class="btn" style="padding:4px 8px;border-radius:10px;font-size:10px;background:rgba(255,255,255,.10);color:#fff;" onclick="printHistoryReport(${idx})">🖨️ Print</button><button class="btn" style="padding:4px 8px;border-radius:10px;font-size:10px;background:rgba(229,193,88,.18);color:var(--orange);" onclick="pdfHistoryReport(${idx})">📥 PDF</button></div></td></tr>`; } }); }
 
 // ======= CLOSING =======
 function proceedToClosingPin() { if(orders.length===0) return showToast("No sales!"); closeModal('modal-closing'); safeSet('closing-admin-pin','value',''); setTimeout(()=>openModal('closing-pin-modal'),200); }
@@ -2715,6 +2993,21 @@ function viewHistoryReport(idx, directData=null) {
   reportTextForShare=`*${appSettings.shopName} - Report*\nDate: ${currentReportDate}\n\n*Items Sold:*\n${textShareItems}\n*Total Cash:* ${totalCash.toFixed(2)}\n*Total Card:* ${totalCard.toFixed(2)}\n*Total Return:* ${returnAmt.toFixed(2)}\n*Net Revenue:* ${netRev.toFixed(2)} ${appSettings.currency}`;
   document.getElementById('pdf-report-content').innerHTML=reportHTML;
   openModal('report-preview-modal');
+}
+
+
+// ======= HISTORY QUICK ACTIONS =======
+function printHistoryReport(idx){
+  viewHistoryReport(idx);
+  setTimeout(()=>{
+    printContent('pdf-report-content');
+  },180);
+}
+function pdfHistoryReport(idx){
+  viewHistoryReport(idx);
+  setTimeout(()=>{
+    executeReportDownload();
+  },220);
 }
 
 // ======= MONTHLY REPORT =======
@@ -2936,7 +3229,7 @@ function initUI() {
         html += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">`;
                                 catProds.forEach(p => {
               let icn = (p.icon && p.icon.length > 10) 
-                  ? `<img src="${p.icon}" style="width:100%; height:110px; object-fit:cover; border-radius:10px; display:block;">` 
+                  ? `<div class="admin-item-img-wrap" style="--item-bg:url('${p.icon.replace(/'/g,"%27")}')"><img class="admin-item-img" src="${p.icon}" alt="${p.name||''}"></div>` 
                   : `<div style="width:100%; height:110px; background:rgba(255,255,255,0.05); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:40px;">${p.icon || '☕'}</div>`;
               
               html += `<div class="product-card" id="card-${p.id}" onclick="addToCart(${p.id})" style="padding:8px; text-align:center;">
@@ -2955,7 +3248,7 @@ function initUI() {
     let catProds = products.filter(p => p.category === currentCategory);
     html += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">`;
     catProds.forEach(p => {
-      let icn = (p.icon && p.icon.length > 10) ? `<img src="${p.icon}" style="width:100%; height:110px; object-fit:cover; border-radius:8px; display:block;">` : (p.icon || '☕');
+      let icn = (p.icon && p.icon.length > 10) ? `<div class="admin-item-img-wrap" style="--item-bg:url('${p.icon.replace(/'/g,"%27")}')"><img class="admin-item-img" src="${p.icon}" alt="${p.name||''}"></div>` : (p.icon || '☕');
       html += `<div class="product-card" id="card-${p.id}" onclick="addToCart(${p.id})" style="padding:10px; text-align:center;">
         <div>${icn}</div>
         <b style="font-size:13px; display:block; margin-top:8px; margin-bottom:5px;">${p.name}</b>
@@ -3107,6 +3400,7 @@ function showPage(id) {
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   let activeBtn=document.querySelector(`.nav-item[onclick="showPage('${id}')"]`);
   if(activeBtn) activeBtn.classList.add('active');
+  resetAdminScrollTop(p);
   if(id==='home') { updateAnalytics(); setTimeout(generateQRCode, 300); }
 }
 
@@ -3290,9 +3584,9 @@ function showNextCustomerOrder(){
   activeNewCustomerOrder=newCustomerOrderQueue.shift()||null; if(!activeNewCustomerOrder)return;
   const o=activeNewCustomerOrder; const el=document.getElementById('new-customer-order-alert'); const c=document.getElementById('nco-content'); if(!el||!c)return;
   c.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:6px;"><button id="nco-sound-btn" onclick="toggleCustomerAlertSound()" style="border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:#fff;border-radius:9px;padding:5px 9px;font-size:13px;">${customerAlertSoundEnabled?'🔊':'🔇'}</button></div><div class="nco-customer"><b>👤 ${escCC(o.customerName||((o.cashier||'').replace(/^.*?: /,''))||'Guest')}</b><br>📞 ${escCC(o.customerPhone||'—')} &nbsp; 🚗 ${escCC(o.carNumber||'Walk-in')}</div><div class="nco-items">${(o.items||[]).map(i=>`<div class="nco-item"><span>${escCC(i.name||'Item')} × ${i.qty||1}</span><b>${((i.price||0)*(i.qty||1)).toFixed(2)} ${escCC(appSettings.currency||'SR')}</b></div>`).join('')}<div style="display:flex;justify-content:space-between;margin-top:8px;font-size:14px;font-weight:900;color:var(--orange);"><span>Total</span><span>${parseFloat(o.total||0).toFixed(2)} ${escCC(appSettings.currency||'SR')}</span></div></div><div class="nco-actions"><button class="nco-cancel" onclick="cancelCustomerOrderFromAlert()">❌ CANCEL</button><button class="nco-accept" onclick="acceptCustomerOrderFromAlert()">✅ ACCEPT</button></div>`;
-  el.style.display='block'; startCustomerAlertRinging();
+  el.style.display='block'; resetAdminScrollTop(el); const nbox=el.querySelector('.nco-box'); if(nbox)nbox.scrollTop=0; const ncontent=el.querySelector('#nco-content'); if(ncontent)ncontent.scrollTop=0; requestAnimationFrame(()=>{ resetAdminScrollTop(el); if(nbox)nbox.scrollTop=0; if(ncontent)ncontent.scrollTop=0; }); startCustomerAlertRinging();
 }
-function dismissNewCustomerOrder(){ const el=document.getElementById('new-customer-order-alert');if(el)el.style.display='none';stopCustomerAlertRinging();activeNewCustomerOrder=null;setTimeout(showNextCustomerOrder,120); }
+function dismissNewCustomerOrder(){ const el=document.getElementById('new-customer-order-alert');if(el){el.style.display='none';const c=el.querySelector('#nco-content');if(c)c.scrollTop=0;const b=el.querySelector('.nco-box');if(b)b.scrollTop=0;}stopCustomerAlertRinging();activeNewCustomerOrder=null;resetAdminScrollTop(document.getElementById('customer-control-modal'));setTimeout(()=>{showNextCustomerOrder();const alert=document.getElementById('new-customer-order-alert');if(alert){resetAdminScrollTop(alert);const c=alert.querySelector('#nco-content');if(c)c.scrollTop=0;const b=alert.querySelector('.nco-box');if(b)b.scrollTop=0;}},120); }
 async function updateHeldCustomerOrder(id,patch){
   let found=false;
   const result=await db.ref('/customerOrders').transaction(current=>{
@@ -3303,9 +3597,40 @@ async function updateHeldCustomerOrder(id,patch){
   return !!(found && result.committed);
 }
 async function acceptCustomerOrderFromAlert(){ if(!activeNewCustomerOrder)return; const o=activeNewCustomerOrder; try{ await updateHeldCustomerOrder(o.id,{status:'active',acceptedAt:Date.now(),acceptedBy:sessionStorage.getItem('cng_active_cashier')||'Admin'}); showToast('✅ Customer order accepted'); dismissNewCustomerOrder(); }catch(e){showToast('❌ Could not accept order');} }
-async function cancelCustomerOrderFromAlert(){ if(!activeNewCustomerOrder)return; const o=activeNewCustomerOrder; try{ await moveCustomerOrderToHistory(o,'cancelled'); showToast('❌ Order cancelled'); dismissNewCustomerOrder(); }catch(e){showToast('❌ Could not cancel order');} }
-async function moveCustomerOrderToHistory(o,status){
-  const finished={...o,status,completedAt:Date.now(),completedBy:sessionStorage.getItem('cng_active_cashier')||'Admin'};
+function chooseCustomerCancelReason(){
+  return new Promise(resolve=>{
+    const old=document.getElementById('cancel-reason-overlay'); if(old) old.remove();
+    const orderAlert=document.getElementById('new-customer-order-alert');
+    const wasOrderVisible=!!(orderAlert && getComputedStyle(orderAlert).display!=='none');
+    if(wasOrderVisible) orderAlert.style.display='none';
+    const overlay=document.createElement('div'); overlay.id='cancel-reason-overlay';
+    overlay.style.cssText='position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.76);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:max(18px,calc(env(safe-area-inset-top) + 14px)) 18px max(18px,calc(env(safe-area-inset-bottom) + 14px));overflow-y:auto;overscroll-behavior:contain;';
+    const reasons=[
+      {en:'Item unavailable',ar:'الصنف غير متوفر',icon:'☕'},
+      {en:'Order will be delayed',ar:'الطلب سيتأخر',icon:'⏳'},
+      {en:'Shop is very busy',ar:'المتجر مشغول جداً',icon:'🔥'},
+      {en:'Technical issue',ar:'مشكلة تقنية',icon:'⚠️'}
+    ];
+    overlay.innerHTML=`<div style="width:min(390px,100%);max-height:calc(100dvh - 44px);overflow-y:auto;margin:0 auto;background:linear-gradient(180deg,#22090f,#120407);border:1px solid rgba(229,193,88,.55);border-radius:24px;padding:20px;box-shadow:0 25px 70px rgba(0,0,0,.75);color:#fff;">
+      <div style="font-size:18px;font-weight:900;color:var(--orange);margin-bottom:5px;">❌ Cancellation Reason</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px;">Choose a reason. The customer will see it instantly.</div>
+      <div id="cancel-reason-buttons" style="display:grid;gap:9px;"></div>
+      <div style="margin-top:12px;border-top:1px solid rgba(255,255,255,.1);padding-top:12px;">
+        <input id="cancel-reason-other" placeholder="Other reason..." style="width:100%;padding:12px;border-radius:13px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:#fff;outline:none;">
+        <button id="cancel-reason-other-btn" style="width:100%;margin-top:8px;padding:11px;border:0;border-radius:13px;background:var(--orange);color:#1a050a;font-weight:900;">Use Other Reason</button>
+      </div>
+      <button id="cancel-reason-close" style="width:100%;margin-top:9px;padding:10px;border-radius:13px;border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.06);color:#fff;font-weight:800;">Back</button>
+    </div>`;
+    document.body.appendChild(overlay);
+    const box=overlay.querySelector('#cancel-reason-buttons');
+    reasons.forEach(r=>{const b=document.createElement('button');b.style.cssText='padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.07);color:#fff;text-align:left;font-weight:800;';b.textContent=`${r.icon} ${r.en}`;b.onclick=()=>{overlay.remove();resolve(r);};box.appendChild(b);});
+    overlay.querySelector('#cancel-reason-other-btn').onclick=()=>{const v=overlay.querySelector('#cancel-reason-other').value.trim();if(!v){showToast('⚠️ Write a reason first');return;} overlay.remove();resolve({en:v,ar:v,icon:'📝'});};
+    overlay.querySelector('#cancel-reason-close').onclick=()=>{overlay.remove();if(wasOrderVisible&&orderAlert){orderAlert.style.display='block';requestAnimationFrame(()=>{const c=orderAlert.querySelector('#nco-content');if(c)c.scrollTop=0;});}resolve(null);};
+  });
+}
+async function cancelCustomerOrderFromAlert(){ if(!activeNewCustomerOrder)return; const o=activeNewCustomerOrder; const reason=await chooseCustomerCancelReason(); if(!reason)return; try{ await moveCustomerOrderToHistory(o,'cancelled',{cancelReasonEn:reason.en,cancelReasonAr:reason.ar,cancelReason:reason.en,cancelledAt:Date.now()}); showToast('❌ Order cancelled — customer notified'); dismissNewCustomerOrder(); }catch(e){showToast('❌ Could not cancel order');} }
+async function moveCustomerOrderToHistory(o,status,extra={}){
+  const finished={...o,...extra,status,completedAt:Date.now(),completedBy:sessionStorage.getItem('cng_active_cashier')||'Admin'};
   await db.ref('/customerOrderHistory').transaction(current=>{
     let hist=customerOrdersArray(current); if(!hist.some(x=>String(x.id)===String(o.id))) hist.push(finished); return hist;
   });
@@ -3334,12 +3659,50 @@ function renderOrderRows(list,mode){
     const late=customerOrderLateMinutes(o), status=customerOrderStatus(o), wait=Math.max(1,parseInt(appSettings.waitTime||15));
     const elapsed=Math.max(0,Math.floor((Date.now()-customerOrderBaseTime(o))/60000));
     const lateBadge=late>0?`<span class="late-badge">⚠️ LATE ${late}m</span>`:'';
-    return `<div class="customer-order-row ${late>0?'is-late':''}"><div class="cor-top"><span class="cor-name">👤 ${escCC(o.customerName||'Guest')}</span><span><span class="cor-status">${escCC(status.toUpperCase())}</span>${lateBadge}</span></div><div style="font-size:10px;color:var(--muted);margin-top:3px;">#${escCC(o.id)} · ${escCC(o.time||'')} · ${escCC(o.customerPhone||'')}</div><div style="font-size:9px;color:${late>0?'#ff6b6b':'var(--muted)'};margin-top:4px;font-weight:${late>0?'900':'700'};">⏱ ${elapsed} min elapsed · Target ${wait} min</div><div class="cor-items">${escCC(customerOrderItemsText(o))}</div><div style="font-size:12px;font-weight:900;color:var(--orange);margin-top:7px;">${parseFloat(o.total||0).toFixed(2)} ${escCC(appSettings.currency||'SR')}</div>${mode==='pending'?`<div class="cor-actions"><button class="btn btn-delete" onclick="adminCancelCustomerOrder('${escCC(o.id)}')">❌ Cancel</button><button class="btn btn-success" onclick="adminAcceptCustomerOrder('${escCC(o.id)}')">✅ Accept</button></div>`:''}${mode==='active'?`<div class="cor-actions">${status!=='ready'?`<button class="btn btn-primary" onclick="markCustomerOrderReady('${escCC(o.id)}')">🔔 Ready</button>`:`<button class="btn" disabled style="opacity:.7;">✅ Ready</button>`}<button class="btn btn-success" onclick="completeCustomerOrder('${escCC(o.id)}')">✅ Complete</button></div>`:''}</div>`;
+    return `<div class="customer-order-row ${late>0?'is-late':''}"><div class="cor-top"><span class="cor-name">👤 ${escCC(o.customerName||'Guest')}</span><span><span class="cor-status">${escCC(status.toUpperCase())}</span>${lateBadge}</span></div><div style="font-size:10px;color:var(--muted);margin-top:3px;">#${escCC(o.id)} · ${escCC(o.time||'')} · ${escCC(o.customerPhone||'')}</div><div style="font-size:9px;color:${late>0?'#ff6b6b':'var(--muted)'};margin-top:4px;font-weight:${late>0?'900':'700'};">⏱ ${elapsed} min elapsed · Target ${wait} min</div><div class="cor-items">${escCC(customerOrderItemsText(o))}</div><div style="font-size:12px;font-weight:900;color:var(--orange);margin-top:7px;">${parseFloat(o.total||0).toFixed(2)} ${escCC(appSettings.currency||'SR')}</div>${mode==='pending'?`<div class="cor-actions"><button class="btn btn-delete" onclick="adminCancelCustomerOrder('${escCC(o.id)}')">❌ Cancel</button><button class="btn btn-success" onclick="adminAcceptCustomerOrder('${escCC(o.id)}')">✅ Accept</button></div>`:''}${mode==='active'?`<div class="cor-actions">${status!=='ready'?`<button class="btn btn-primary" onclick="markCustomerOrderReady('${escCC(o.id)}')">🔔 Ready</button>`:`<button class="btn" disabled style="opacity:.7;">✅ Ready</button>`}<button class="btn btn-success" onclick="completeCustomerOrder('${escCC(o.id)}')">✅ Complete</button></div>`:''}${mode==='history'?`<div class="cor-actions" style="margin-top:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;"><button class="btn btn-primary" style="font-size:10px;padding:8px 5px;" onclick="viewCustomerHistoryOrder('${escCC(o.id)}')">👁 View</button><button class="btn" style="font-size:10px;padding:8px 5px;background:rgba(255,255,255,.10);color:#fff;" onclick="printCustomerHistoryOrder('${escCC(o.id)}')">🖨 Print</button><button class="btn" style="font-size:10px;padding:8px 5px;background:rgba(229,193,88,.18);color:var(--orange);" onclick="pdfCustomerHistoryOrder('${escCC(o.id)}')">📥 PDF</button></div>`:''}</div>`;
   }).join('');
 }
+function fillOnlineCustomerReceipt(o){
+  if(!o)return false;
+  activeOrderForShare=o;
+  const onlineLabel=document.getElementById('rcpt-online-label'); if(onlineLabel) onlineLabel.style.display='block';
+  safeSet('rcpt-inv','innerText',o.id||'');
+  safeSet('rcpt-date','innerText',o.time||new Date(o.timestamp||o.createdAt||Date.now()).toLocaleString());
+  safeSet('rcpt-cashier-print','innerText',`Online Order${o.customerName?' · '+o.customerName:''}`);
+  const total=parseFloat(o.total||0).toFixed(2);
+  safeSet('rcpt-due','innerText',total);
+  safeSet('rcpt-cash-paid','innerText','CASH: 0.00');
+  safeSet('rcpt-card-paid','innerText','CARD: 0.00');
+  safeSet('rcpt-change','innerText','METHOD: ONLINE ORDER');
+  safeSet('rcpt-paid','innerText',`${total} ${appSettings.currency||'SR'}`);
+  safeSet('rcpt-return','innerText',`0.00 ${appSettings.currency||'SR'}`);
+  const ret=document.getElementById('rcpt-return'); if(ret)ret.style.color='#000';
+  const tb=document.getElementById('rcpt-items'); if(tb){
+    tb.innerHTML='';
+    (Array.isArray(o.items)?o.items:[]).forEach(i=>{
+      const qty=parseFloat(i.qty||1), price=parseFloat(i.price||0);
+      tb.innerHTML+=`<tr><td style="padding:4px 0;color:#000;">${escCC(i.name||'Item')}</td><td style="text-align:center;color:#000;">${qty}</td><td style="text-align:right;color:#000;">${(price*qty).toFixed(2)}</td></tr>`;
+    });
+  }
+  return true;
+}
+function getCustomerHistoryOrder(id){return customerOrderHistoryCache.find(x=>String(x.id)===String(id));}
+function viewCustomerHistoryOrder(id){
+  const o=getCustomerHistoryOrder(id); if(!o)return showToast('Order not found!');
+  fillOnlineCustomerReceipt(o);
+  openModal('order-detail-modal');
+}
+function printCustomerHistoryOrder(id){
+  const o=getCustomerHistoryOrder(id); if(!o)return showToast('Order not found!');
+  fillOnlineCustomerReceipt(o); printContent('receipt-content');
+}
+function pdfCustomerHistoryOrder(id){
+  const o=getCustomerHistoryOrder(id); if(!o)return showToast('Order not found!');
+  fillOnlineCustomerReceipt(o); downloadReceiptPDF();
+}
 async function adminAcceptCustomerOrder(id){const o=customerOrdersCache.find(x=>String(x.id)===String(id));if(!o)return;await updateHeldCustomerOrder(id,{status:'active',acceptedAt:Date.now(),acceptedBy:sessionStorage.getItem('cng_active_cashier')||'Admin'});showToast('✅ Accepted');renderCustomerControlIfOpen();}
-async function adminCancelCustomerOrder(id){const o=customerOrdersCache.find(x=>String(x.id)===String(id));if(!o)return;await moveCustomerOrderToHistory(o,'cancelled');showToast('❌ Cancelled');renderCustomerControlIfOpen();}
-function openCustomerControl(mode){ openModal('customer-control-modal'); renderCustomerControl(mode); }
+async function adminCancelCustomerOrder(id){const o=customerOrdersCache.find(x=>String(x.id)===String(id));if(!o)return;const reason=await chooseCustomerCancelReason();if(!reason)return;await moveCustomerOrderToHistory(o,'cancelled',{cancelReasonEn:reason.en,cancelReasonAr:reason.ar,cancelReason:reason.en,cancelledAt:Date.now()});showToast('❌ Cancelled — customer notified');renderCustomerControlIfOpen();}
+function openCustomerControl(mode){ openModal('customer-control-modal'); renderCustomerControl(mode); requestAnimationFrame(()=>resetAdminScrollTop(document.getElementById('customer-control-modal'))); }
 function renderCustomerControl(mode){
   const title=document.getElementById('cc-modal-title'),body=document.getElementById('cc-modal-body'); if(!body)return;
   const titles={notifications:'🔔 Notifications / Offers',pending:'⏳ Pending Orders',active:'🔥 Active / Processing Orders',history:'📜 All Customer History'}; if(title)title.innerText=titles[mode]||'Customer Control';
@@ -3354,7 +3717,7 @@ function renderCustomerControl(mode){
   else body.innerHTML=renderOrderRows(customerOrderHistoryCache,'history');
 }
 let openCCMode=null;
-function renderCustomerControlIfOpen(){ const m=document.getElementById('customer-control-modal'); if(m&&m.classList.contains('show')&&openCCMode)renderCustomerControl(openCCMode); }
+function renderCustomerControlIfOpen(){ const m=document.getElementById('customer-control-modal'); if(m&&m.classList.contains('show')&&openCCMode){renderCustomerControl(openCCMode);requestAnimationFrame(()=>resetAdminScrollTop(m));} }
 // Wrap openCustomerControl so refreshes remember selected tab.
 const _openCustomerControl=openCustomerControl; openCustomerControl=function(mode){openCCMode=mode;_openCustomerControl(mode);};
 async function sendCustomerNotification(){
@@ -3451,7 +3814,5 @@ setTimeout(startCustomerOrderMonitor,500);
 <!-- LIVE CUSTOMER CONTROL MODAL -->
 <div id="customer-control-modal" class="modal"><div class="modal-box"><div class="modal-header"><h3 id="cc-modal-title" style="color:var(--orange);font-size:16px;font-weight:900;">Customer Control</h3><button class="btn" style="padding:4px 10px;border-radius:10px;" onclick="closeModal('customer-control-modal')">✕</button></div><div class="modal-body" id="cc-modal-body"></div></div></div>
 
-<!-- LIVE NEW CUSTOMER ORDER ALERT -->
-<div id="new-customer-order-alert" style="display:none;"><div class="nco-box"><div class="nco-head"><b>🔔 NEW CUSTOMER ORDER</b><button class="btn" style="padding:5px 9px;border-radius:9px;" onclick="dismissNewCustomerOrder()">✕</button></div><div id="nco-content"></div></div></div>
 </body>
 </html>
