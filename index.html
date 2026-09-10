@@ -3548,7 +3548,20 @@ function chooseCustomerCancelReason(){
     overlay.querySelector('#cancel-reason-close').onclick=()=>{overlay.remove();if(typeof cngRestoreOrderAlertAfterChild==='function')cngRestoreOrderAlertAfterChild();resolve(null);};
   });
 }
-async function cancelCustomerOrderFromAlert(){ if(!activeNewCustomerOrder)return; const o=activeNewCustomerOrder; const reason=await chooseCustomerCancelReason(); if(!reason)return; try{ await moveCustomerOrderToHistory(o,'cancelled',{cancelReasonEn:reason.en,cancelReasonAr:reason.ar,cancelReason:reason.en,cancelledAt:Date.now()}); showToast('❌ Order cancelled — customer notified'); dismissNewCustomerOrder(); }catch(e){showToast('❌ Could not cancel order');} }
+async function notifyCustomerOrderCancelled(o, reason){
+  const phone=String(o?.customerPhone||'').trim();
+  if(!phone) return;
+  const orderId=String(o?.id||'');
+  const en=String(reason?.en||reason||'Order cancelled');
+  const ar=String(reason?.ar||reason?.en||reason||'تم إلغاء الطلب');
+  await db.ref('/customerNotifications').push({
+    id:Date.now(), type:'order_cancelled', targetPhone:phone, orderId,
+    cancelReasonEn:en, cancelReasonAr:ar,
+    title:'Order Cancelled', message:`Order #${orderId} cancelled — ${en}`,
+    timestamp:Date.now(), time:new Date().toLocaleTimeString(), active:true
+  });
+}
+async function cancelCustomerOrderFromAlert(){ if(!activeNewCustomerOrder)return; const o=activeNewCustomerOrder; const reason=await chooseCustomerCancelReason(); if(!reason)return; try{ await moveCustomerOrderToHistory(o,'cancelled',{cancelReasonEn:reason.en,cancelReasonAr:reason.ar,cancelReason:reason.en,cancelledAt:Date.now()}); await notifyCustomerOrderCancelled(o,reason); showToast('❌ Order cancelled — customer notified'); dismissNewCustomerOrder(); }catch(e){showToast('❌ Could not cancel order');} }
 async function moveCustomerOrderToHistory(o,status,extra={}){
   const finished={...o,...extra,status,completedAt:Date.now(),completedBy:sessionStorage.getItem('cng_active_cashier')||'Admin'};
   await db.ref('/customerOrderHistory').transaction(current=>{
@@ -3583,7 +3596,7 @@ function renderOrderRows(list,mode){
   }).join('');
 }
 async function adminAcceptCustomerOrder(id){const o=customerOrdersCache.find(x=>String(x.id)===String(id));if(!o)return;await updateHeldCustomerOrder(id,{status:'active',acceptedAt:Date.now(),acceptedBy:sessionStorage.getItem('cng_active_cashier')||'Admin'});showToast('✅ Accepted');renderCustomerControlIfOpen();}
-async function adminCancelCustomerOrder(id){const o=customerOrdersCache.find(x=>String(x.id)===String(id));if(!o)return;const reason=await chooseCustomerCancelReason();if(!reason)return;await moveCustomerOrderToHistory(o,'cancelled',{cancelReasonEn:reason.en,cancelReasonAr:reason.ar,cancelReason:reason.en,cancelledAt:Date.now()});showToast('❌ Cancelled — customer notified');renderCustomerControlIfOpen();}
+async function adminCancelCustomerOrder(id){const o=customerOrdersCache.find(x=>String(x.id)===String(id));if(!o)return;const reason=await chooseCustomerCancelReason();if(!reason)return;try{await moveCustomerOrderToHistory(o,'cancelled',{cancelReasonEn:reason.en,cancelReasonAr:reason.ar,cancelReason:reason.en,cancelledAt:Date.now()});await notifyCustomerOrderCancelled(o,reason);showToast('❌ Cancelled — customer notified');renderCustomerControlIfOpen();}catch(e){showToast('❌ Could not cancel order');}}
 function openCustomerControl(mode){ openModal('customer-control-modal'); renderCustomerControl(mode); requestAnimationFrame(()=>resetAdminScrollTop(document.getElementById('customer-control-modal'))); }
 function renderCustomerControl(mode){
   const title=document.getElementById('cc-modal-title'),body=document.getElementById('cc-modal-body'); if(!body)return;
