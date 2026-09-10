@@ -688,6 +688,90 @@ input,select,textarea{max-width:100%;}
   }
 }
 </style>
+
+<style id="cng-header-inbox-layout-fix">
+@media(max-width:390px){
+  #cngHeaderInboxBtn{padding:4px 7px!important;min-width:32px!important}
+  .top-header .header-row>div:last-child>div:first-child{gap:4px!important}
+}
+</style>
+
+<style id="cng-admin-customer-history-css">
+.cngCustHistWrap{margin-top:12px;padding:14px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid var(--glass-border)}
+.cngCustHistHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.cngCustHistHead h4{margin:0;color:var(--orange);font-size:12px}
+.cngCustHistSearch{width:150px;max-width:48%;padding:9px 10px;border-radius:12px;border:1px solid var(--glass-border);background:rgba(255,255,255,.06);color:var(--text);font-size:10px}
+.cngCustHistList{max-height:260px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.cngCustHistRow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px;border-radius:13px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.06)}
+.cngCustHistName{font-size:11px;font-weight:900;color:#fff}
+.cngCustHistPhone{font-size:9px;color:var(--muted);margin-top:2px}
+.cngCustHistTime{font-size:8px;color:var(--muted);text-align:right;white-space:nowrap}
+</style>
+
+
+<style id="cng-fullscreen-scanner-css">
+#cngQuickScannerModal{
+  position:fixed!important; inset:0!important; z-index:2147483647!important;
+  display:none; padding:0!important; margin:0!important;
+  background:#0b1016!important; color:#fff!important;
+  opacity:1!important; pointer-events:auto!important; backdrop-filter:none!important;
+}
+#cngQuickScannerModal.show{display:flex!important;opacity:1!important}
+#cngQuickScannerModal .cngFsScannerShell{
+  width:100%!important;height:100dvh!important;max-width:none!important;max-height:none!important;
+  margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+  background:#0b1016!important;display:flex;flex-direction:column;overflow:hidden;box-shadow:none!important;
+}
+.cngFsScannerTop{
+  height:76px;min-height:76px;padding:max(14px,env(safe-area-inset-top)) 18px 12px;
+  display:grid;grid-template-columns:48px 1fr 48px;align-items:end;gap:10px;
+  background:linear-gradient(180deg,rgba(0,0,0,.48),rgba(0,0,0,.10));z-index:5;
+}
+.cngFsIconBtn{
+  width:44px;height:44px;border-radius:15px;border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.08);color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;
+}
+.cngFsScannerTitle{text-align:center;font-size:15px;font-weight:900;line-height:1.2}
+.cngFsScannerStage{position:relative;flex:1;min-height:0;background:#05070a;overflow:hidden}
+#cngFsVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#05070a}
+#cngFsCanvas{display:none}
+.cngFsShade{position:absolute;inset:0;background:rgba(0,0,0,.18);pointer-events:none}
+.cngFsScanFrame{
+  position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);
+  width:min(74vw,390px);aspect-ratio:1/1;border-radius:22px;
+  box-shadow:0 0 0 9999px rgba(0,0,0,.46);pointer-events:none;
+}
+.cngFsScanFrame:before,.cngFsScanFrame:after,.cngFsScanFrame i:before,.cngFsScanFrame i:after{
+  content:"";position:absolute;width:56px;height:56px;border-color:var(--orange);border-style:solid;
+}
+.cngFsScanFrame:before{left:0;top:0;border-width:4px 0 0 4px;border-radius:18px 0 0 0}
+.cngFsScanFrame:after{right:0;top:0;border-width:4px 4px 0 0;border-radius:0 18px 0 0}
+.cngFsScanFrame i:before{left:0;bottom:0;border-width:0 0 4px 4px;border-radius:0 0 0 18px}
+.cngFsScanFrame i:after{right:0;bottom:0;border-width:0 4px 4px 0;border-radius:0 0 18px 0}
+.cngFsScanLine{
+  position:absolute;left:8%;right:8%;height:2px;top:10%;border-radius:99px;
+  background:linear-gradient(90deg,transparent,var(--orange),transparent);
+  box-shadow:0 0 14px var(--orange);animation:cngScanSweep 2.2s ease-in-out infinite;
+}
+@keyframes cngScanSweep{0%,100%{top:12%;opacity:.55}50%{top:86%;opacity:1}}
+.cngFsScannerBottom{
+  padding:17px 20px calc(18px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,#10161d,#0b1016);text-align:center;z-index:5;
+}
+.cngFsQrMini{font-size:24px;margin-bottom:5px}.cngFsHint{font-size:12px;color:#c9d0d7;line-height:1.45}
+.cngFsOr{display:flex;align-items:center;gap:10px;margin:14px 0 12px;color:#7d8791;font-size:10px}
+.cngFsOr:before,.cngFsOr:after{content:"";height:1px;background:rgba(255,255,255,.13);flex:1}
+.cngFsManual{
+  width:min(100%,340px);padding:13px 18px;border-radius:999px;margin:auto;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.22);color:#fff;font-weight:900;font-size:12px;
+}
+#cngQuickScanStatus{font-size:9px;color:#9aa4ad;margin-top:10px;min-height:14px}
+@media(max-width:380px){
+  .cngFsScannerTop{height:68px;min-height:68px}.cngFsScanFrame{width:min(78vw,330px)}
+  .cngFsScannerBottom{padding-left:16px;padding-right:16px}
+}
+</style>
+
 </head>
 <body>
 
@@ -765,6 +849,7 @@ input,select,textarea{max-width:100%;}
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
         <div style="display:flex; gap:6px; margin-bottom: 6px;">
           <button class="btn" style="padding:4px 8px;border-radius:8px;font-size:12px;background:rgba(255,255,255,0.15);color:#fff;" onclick="cycleTheme()">🎨</button>
+          <button id="cngHeaderInboxBtn" class="btn" style="position:relative;padding:4px 8px;border-radius:8px;font-size:12px;background:rgba(255,255,255,0.15);color:#fff;min-width:34px;" onclick="cngOpenAdminInbox()" aria-label="Customer Inbox">💬<span id="cngHeaderInboxBadge" style="display:none;position:absolute;top:-6px;right:-6px;min-width:17px;height:17px;padding:0 4px;border-radius:10px;background:#ff3b30;color:#fff;border:1.5px solid #fff;font:800 9px/14px Arial;align-items:center;justify-content:center;">0</span></button>
           <button class="btn" style="padding:4px 8px;border-radius:8px;font-size:12px;background:rgba(255,255,255,0.15);color:#fff;" onclick="toggleLangQuick()">🌐</button>
           <button class="btn" style="padding:4px 8px;border-radius:8px;font-size:10px;background:rgba(255,59,48,0.15);color:var(--red);" onclick="logout()" data-i18n="exit_lock">Exit</button>
         </div>
@@ -807,7 +892,7 @@ input,select,textarea{max-width:100%;}
 
       <!-- CUSTOMER CONTROL CENTER -->
       <div class="customer-control-grid">
-        <div class="customer-control-card" onclick="cngOpenAdminInbox()"><div class="cc-icon">💬</div><div class="cc-title">Inbox</div><div class="cc-count" id="cc-inbox-home-count">Messages</div></div>
+        <div class="customer-control-card" onclick="showPage('sales')"><div class="cc-icon">☕</div><div class="cc-title">Menu</div><div class="cc-count">POS Menu</div></div>
         <div class="customer-control-card" onclick="openCustomerControl('pending')"><div class="cc-icon">⏳</div><div class="cc-title">Pending</div><div class="cc-count" id="cc-pending-count">0 new</div></div>
         <div class="customer-control-card" onclick="openCustomerControl('active')"><div class="cc-icon">🔥</div><div class="cc-title">Active</div><div class="cc-count" id="cc-active-count">0 active</div></div>
         <div class="customer-control-card" onclick="openCustomerControl('history')"><div class="cc-icon">📜</div><div class="cc-title">History</div><div class="cc-count" id="cc-history-count">0 orders</div></div>
@@ -917,7 +1002,7 @@ input,select,textarea{max-width:100%;}
   <nav class="bottom-nav">
     <button class="nav-item active" onclick="showPage('home')"><i>🏠</i><span data-i18n="nav_home">Home</span></button>
     <button class="nav-item" onclick="showPage('orders')"><i>🧾</i><span data-i18n="nav_orders">Orders</span></button>
-    <button class="nav-scan" onclick="showPage('sales')">☕</button>
+    <button class="nav-scan" onclick="cngOpenQuickScanner()" aria-label="Scan customer loyalty QR" title="Scan Customer QR">▣</button>
     <button class="nav-item" onclick="showPage('cart')"><i>🛒</i><span class="cart-badge" id="dock-cart-badge" style="display:none;">0</span><span>Cart</span></button>
     <button class="nav-item" id="nav-btn-admin" onclick="showPage('admin')"><i>⚙️</i><span data-i18n="nav_admin">Admin</span></button>
   </nav>
@@ -1718,7 +1803,84 @@ function printContent(elementId) {
       img{max-width:100%}
       button{display:none!important}
     </style>
-  </head>
+  
+<style id="cng-admin-customer-history-css">
+.cngCustHistWrap{margin-top:12px;padding:14px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid var(--glass-border)}
+.cngCustHistHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.cngCustHistHead h4{margin:0;color:var(--orange);font-size:12px}
+.cngCustHistSearch{width:150px;max-width:48%;padding:9px 10px;border-radius:12px;border:1px solid var(--glass-border);background:rgba(255,255,255,.06);color:var(--text);font-size:10px}
+.cngCustHistList{max-height:260px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.cngCustHistRow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px;border-radius:13px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.06)}
+.cngCustHistName{font-size:11px;font-weight:900;color:#fff}
+.cngCustHistPhone{font-size:9px;color:var(--muted);margin-top:2px}
+.cngCustHistTime{font-size:8px;color:var(--muted);text-align:right;white-space:nowrap}
+</style>
+
+
+<style id="cng-fullscreen-scanner-css">
+#cngQuickScannerModal{
+  position:fixed!important; inset:0!important; z-index:2147483647!important;
+  display:none; padding:0!important; margin:0!important;
+  background:#0b1016!important; color:#fff!important;
+  opacity:1!important; pointer-events:auto!important; backdrop-filter:none!important;
+}
+#cngQuickScannerModal.show{display:flex!important;opacity:1!important}
+#cngQuickScannerModal .cngFsScannerShell{
+  width:100%!important;height:100dvh!important;max-width:none!important;max-height:none!important;
+  margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+  background:#0b1016!important;display:flex;flex-direction:column;overflow:hidden;box-shadow:none!important;
+}
+.cngFsScannerTop{
+  height:76px;min-height:76px;padding:max(14px,env(safe-area-inset-top)) 18px 12px;
+  display:grid;grid-template-columns:48px 1fr 48px;align-items:end;gap:10px;
+  background:linear-gradient(180deg,rgba(0,0,0,.48),rgba(0,0,0,.10));z-index:5;
+}
+.cngFsIconBtn{
+  width:44px;height:44px;border-radius:15px;border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.08);color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;
+}
+.cngFsScannerTitle{text-align:center;font-size:15px;font-weight:900;line-height:1.2}
+.cngFsScannerStage{position:relative;flex:1;min-height:0;background:#05070a;overflow:hidden}
+#cngFsVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#05070a}
+#cngFsCanvas{display:none}
+.cngFsShade{position:absolute;inset:0;background:rgba(0,0,0,.18);pointer-events:none}
+.cngFsScanFrame{
+  position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);
+  width:min(74vw,390px);aspect-ratio:1/1;border-radius:22px;
+  box-shadow:0 0 0 9999px rgba(0,0,0,.46);pointer-events:none;
+}
+.cngFsScanFrame:before,.cngFsScanFrame:after,.cngFsScanFrame i:before,.cngFsScanFrame i:after{
+  content:"";position:absolute;width:56px;height:56px;border-color:var(--orange);border-style:solid;
+}
+.cngFsScanFrame:before{left:0;top:0;border-width:4px 0 0 4px;border-radius:18px 0 0 0}
+.cngFsScanFrame:after{right:0;top:0;border-width:4px 4px 0 0;border-radius:0 18px 0 0}
+.cngFsScanFrame i:before{left:0;bottom:0;border-width:0 0 4px 4px;border-radius:0 0 0 18px}
+.cngFsScanFrame i:after{right:0;bottom:0;border-width:0 4px 4px 0;border-radius:0 0 18px 0}
+.cngFsScanLine{
+  position:absolute;left:8%;right:8%;height:2px;top:10%;border-radius:99px;
+  background:linear-gradient(90deg,transparent,var(--orange),transparent);
+  box-shadow:0 0 14px var(--orange);animation:cngScanSweep 2.2s ease-in-out infinite;
+}
+@keyframes cngScanSweep{0%,100%{top:12%;opacity:.55}50%{top:86%;opacity:1}}
+.cngFsScannerBottom{
+  padding:17px 20px calc(18px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,#10161d,#0b1016);text-align:center;z-index:5;
+}
+.cngFsQrMini{font-size:24px;margin-bottom:5px}.cngFsHint{font-size:12px;color:#c9d0d7;line-height:1.45}
+.cngFsOr{display:flex;align-items:center;gap:10px;margin:14px 0 12px;color:#7d8791;font-size:10px}
+.cngFsOr:before,.cngFsOr:after{content:"";height:1px;background:rgba(255,255,255,.13);flex:1}
+.cngFsManual{
+  width:min(100%,340px);padding:13px 18px;border-radius:999px;margin:auto;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.22);color:#fff;font-weight:900;font-size:12px;
+}
+#cngQuickScanStatus{font-size:9px;color:#9aa4ad;margin-top:10px;min-height:14px}
+@media(max-width:380px){
+  .cngFsScannerTop{height:68px;min-height:68px}.cngFsScanFrame{width:min(78vw,330px)}
+  .cngFsScannerBottom{padding-left:16px;padding-right:16px}
+}
+</style>
+
+</head>
   <body><div class="print-shell">${content.innerHTML}</div></body>
   </html>`;
 
@@ -2649,6 +2811,83 @@ function downloadStockPDF() {
   backface-visibility:hidden;
 }
 </style>
+
+<style id="cng-admin-customer-history-css">
+.cngCustHistWrap{margin-top:12px;padding:14px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid var(--glass-border)}
+.cngCustHistHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.cngCustHistHead h4{margin:0;color:var(--orange);font-size:12px}
+.cngCustHistSearch{width:150px;max-width:48%;padding:9px 10px;border-radius:12px;border:1px solid var(--glass-border);background:rgba(255,255,255,.06);color:var(--text);font-size:10px}
+.cngCustHistList{max-height:260px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.cngCustHistRow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px;border-radius:13px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.06)}
+.cngCustHistName{font-size:11px;font-weight:900;color:#fff}
+.cngCustHistPhone{font-size:9px;color:var(--muted);margin-top:2px}
+.cngCustHistTime{font-size:8px;color:var(--muted);text-align:right;white-space:nowrap}
+</style>
+
+
+<style id="cng-fullscreen-scanner-css">
+#cngQuickScannerModal{
+  position:fixed!important; inset:0!important; z-index:2147483647!important;
+  display:none; padding:0!important; margin:0!important;
+  background:#0b1016!important; color:#fff!important;
+  opacity:1!important; pointer-events:auto!important; backdrop-filter:none!important;
+}
+#cngQuickScannerModal.show{display:flex!important;opacity:1!important}
+#cngQuickScannerModal .cngFsScannerShell{
+  width:100%!important;height:100dvh!important;max-width:none!important;max-height:none!important;
+  margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+  background:#0b1016!important;display:flex;flex-direction:column;overflow:hidden;box-shadow:none!important;
+}
+.cngFsScannerTop{
+  height:76px;min-height:76px;padding:max(14px,env(safe-area-inset-top)) 18px 12px;
+  display:grid;grid-template-columns:48px 1fr 48px;align-items:end;gap:10px;
+  background:linear-gradient(180deg,rgba(0,0,0,.48),rgba(0,0,0,.10));z-index:5;
+}
+.cngFsIconBtn{
+  width:44px;height:44px;border-radius:15px;border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.08);color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;
+}
+.cngFsScannerTitle{text-align:center;font-size:15px;font-weight:900;line-height:1.2}
+.cngFsScannerStage{position:relative;flex:1;min-height:0;background:#05070a;overflow:hidden}
+#cngFsVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#05070a}
+#cngFsCanvas{display:none}
+.cngFsShade{position:absolute;inset:0;background:rgba(0,0,0,.18);pointer-events:none}
+.cngFsScanFrame{
+  position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);
+  width:min(74vw,390px);aspect-ratio:1/1;border-radius:22px;
+  box-shadow:0 0 0 9999px rgba(0,0,0,.46);pointer-events:none;
+}
+.cngFsScanFrame:before,.cngFsScanFrame:after,.cngFsScanFrame i:before,.cngFsScanFrame i:after{
+  content:"";position:absolute;width:56px;height:56px;border-color:var(--orange);border-style:solid;
+}
+.cngFsScanFrame:before{left:0;top:0;border-width:4px 0 0 4px;border-radius:18px 0 0 0}
+.cngFsScanFrame:after{right:0;top:0;border-width:4px 4px 0 0;border-radius:0 18px 0 0}
+.cngFsScanFrame i:before{left:0;bottom:0;border-width:0 0 4px 4px;border-radius:0 0 0 18px}
+.cngFsScanFrame i:after{right:0;bottom:0;border-width:0 4px 4px 0;border-radius:0 0 18px 0}
+.cngFsScanLine{
+  position:absolute;left:8%;right:8%;height:2px;top:10%;border-radius:99px;
+  background:linear-gradient(90deg,transparent,var(--orange),transparent);
+  box-shadow:0 0 14px var(--orange);animation:cngScanSweep 2.2s ease-in-out infinite;
+}
+@keyframes cngScanSweep{0%,100%{top:12%;opacity:.55}50%{top:86%;opacity:1}}
+.cngFsScannerBottom{
+  padding:17px 20px calc(18px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,#10161d,#0b1016);text-align:center;z-index:5;
+}
+.cngFsQrMini{font-size:24px;margin-bottom:5px}.cngFsHint{font-size:12px;color:#c9d0d7;line-height:1.45}
+.cngFsOr{display:flex;align-items:center;gap:10px;margin:14px 0 12px;color:#7d8791;font-size:10px}
+.cngFsOr:before,.cngFsOr:after{content:"";height:1px;background:rgba(255,255,255,.13);flex:1}
+.cngFsManual{
+  width:min(100%,340px);padding:13px 18px;border-radius:999px;margin:auto;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.22);color:#fff;font-weight:900;font-size:12px;
+}
+#cngQuickScanStatus{font-size:9px;color:#9aa4ad;margin-top:10px;min-height:14px}
+@media(max-width:380px){
+  .cngFsScannerTop{height:68px;min-height:68px}.cngFsScanFrame{width:min(78vw,330px)}
+  .cngFsScannerBottom{padding-left:16px;padding-right:16px}
+}
+</style>
+
 </head><body><div style="width: 1050px; margin: auto;">${cleanHTML}</div></body></html>`;
 
   let opt = {
@@ -3819,7 +4058,7 @@ setTimeout(startCustomerOrderMonitor,500);
  var threadsRef=null,threadsListener=null,currentKey='',currentRef=null,currentListener=null;
  function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
  function tm(t){try{return new Date(Number(t)||Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
- function badge(n){n=Number(n)||0;var b=document.getElementById('cngAdminInboxBadge');if(b){b.textContent=n>99?'99+':n;b.style.display=n>0?'flex':'none';}var h=document.getElementById('cc-inbox-home-count');if(h)h.textContent=n>0?((n>99?'99+':n)+' unread'):'Messages';}
+ function badge(n){n=Number(n)||0;var txt=n>99?'99+':String(n);var b=document.getElementById('cngAdminInboxBadge');if(b){b.textContent=txt;b.style.display=n>0?'flex':'none';}var hb=document.getElementById('cngHeaderInboxBadge');if(hb){hb.textContent=txt;hb.style.display=n>0?'flex':'none';}var h=document.getElementById('cc-inbox-home-count');if(h)h.textContent=n>0?(txt+' unread'):'Messages';}
  function renderThreads(data){var a=document.getElementById('cngAdminThreads');if(!a)return;var rows=[];Object.keys(data||{}).forEach(function(k){var v=data[k]||{};v._key=k;rows.push(v);});rows.sort(function(x,y){return(y.updatedAt||0)-(x.updatedAt||0);});var total=0,h='';rows.forEach(function(r){var unread=Number(r.unreadAdmin)||0;total+=unread;h+='<div class="cngThread" data-k="'+encodeURIComponent(r._key)+'" onclick="cngAdminOpenThread(decodeURIComponent(this.dataset.k))"><div class="cngAvatar">👤</div><div class="cngThreadMain"><div class="cngThreadName">'+esc(r.customerName||'Customer')+'</div><div class="cngThreadPhone">'+esc(r.customerPhone||'')+'</div><div class="cngThreadLast">'+esc(r.lastMessage||'')+'</div></div><div>'+(unread>0?'<span class="cngUnread">'+(unread>99?'99+':unread)+'</span>':'')+'</div></div>';});badge(total);a.innerHTML=h||'<div style="text-align:center;color:#8f96a1;padding:55px 20px;font-size:12px">💬 No customer messages yet.</div>';}
  function listenThreads(){if(threadsRef&&threadsListener)threadsRef.off('value',threadsListener);threadsRef=db.ref('/customerChats');threadsListener=function(s){renderThreads(s.val()||{});};threadsRef.on('value',threadsListener);}
  function renderMessages(d){var a=document.getElementById('cngAdminChatMessages');if(!a)return;var m=d&&d.messages?Object.values(d.messages):[];m.sort(function(x,y){return(x.timestamp||0)-(y.timestamp||0);});var h='';m.forEach(function(x){h+='<div class="cngAMsgRow '+(x.sender==='admin'?'me':'them')+'"><div class="cngAMsg"><div>'+esc(x.text)+'</div><div class="cngATime">'+tm(x.timestamp)+'</div></div></div>';});a.innerHTML=h||'<div style="text-align:center;color:#8f96a1;padding:50px 20px">No messages.</div>';setTimeout(function(){a.scrollTop=a.scrollHeight;},0);}
@@ -4171,6 +4410,255 @@ function showIntroSavePopup(message){
   window.__cngIntroPopupTimer=setTimeout(()=>el.classList.remove('show'),2200);
 }
 </script>
+
+
+<!-- ===== CUP AND GO LOYALTY SYSTEM v2 ===== -->
+<style id="cng-loyalty-admin-css">
+#cngLoyaltyProgramCard{margin:0 0 18px;border-radius:24px;overflow:hidden;background:linear-gradient(145deg,rgba(58,13,21,.92),rgba(26,5,10,.96));color:var(--text);border:1px solid var(--glass-border);box-shadow:var(--shadow)}
+#cngLoyaltyProgramTop{padding:18px;background:linear-gradient(145deg,rgba(229,193,88,.10),rgba(255,255,255,.025));color:var(--text);display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--glass-border)}.cngProgLogo{width:58px;height:58px;border-radius:18px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;overflow:hidden}.cngProgLogo img{width:100%;height:100%;object-fit:contain}.cngProgTitle{font-size:18px;font-weight:900}.cngProgSub{font-size:10px;opacity:.68;margin-top:3px}
+.cngProgBody{padding:17px}.cngProgStatus{display:flex;align-items:center;justify-content:space-between;gap:10px}.cngProgStatus b{font-size:16px;color:var(--orange)}.cngActivePill{padding:6px 10px;border-radius:999px;background:rgba(0,230,118,.10);color:#00E676;border:1px solid rgba(0,230,118,.35);font-size:9px;font-weight:900}.cngProgStats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:15px 0}.cngProgStat{padding:10px 6px;border-radius:14px;background:rgba(255,255,255,.055);border:1px solid var(--glass-border);text-align:center}.cngProgStat b{display:block;font-size:18px;color:var(--orange)}.cngProgStat span{display:block;font-size:8px;color:var(--muted);margin-top:2px}.cngProgActions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.cngProgActions button{border-radius:14px;padding:11px;font-size:10px;font-weight:900}.cngProgDetails{background:rgba(229,193,88,.12);color:var(--orange);border:1px solid rgba(229,193,88,.35)!important}.cngProgScan{background:linear-gradient(135deg,var(--orange),#B89730);color:var(--brand-bg);border:0!important}
+#cngLoyaltyModal{z-index:2147483600!important}#cngLoyaltyModal .modal-box{max-width:500px!important;max-height:92dvh!important}.cngLoyaltyGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.cngLoyaltyCard{background:rgba(255,255,255,.055);border:1px solid var(--glass-border);border-radius:18px;padding:14px}.cngLoyaltyCard h4{color:var(--orange);font-size:12px;margin:0 0 10px}.cngLoyaltyLabel{display:block;font-size:10px;color:var(--muted);font-weight:800;margin:8px 0 5px}.cngLoyaltyInput{width:100%;padding:11px 12px;border-radius:13px;border:1px solid var(--glass-border);background:rgba(255,255,255,.06);color:var(--text);font-size:12px}.cngLoyaltyBtn{width:100%;padding:11px;border:0;border-radius:13px;font-weight:900;font-size:11px;cursor:pointer;margin-top:8px}.cngLoyaltyGold{background:linear-gradient(135deg,var(--orange),#b89730);color:var(--brand-bg)}.cngLoyaltyGreen{background:linear-gradient(135deg,#00E676,#00BFA5);color:#052016}.cngLoyaltyRed{background:rgba(255,59,48,.18);color:#ff6b63;border:1px solid rgba(255,59,48,.45)}
+#cngLoyaltyCustomerResult{display:none;margin-top:12px;padding:15px;border-radius:18px;background:rgba(255,255,255,.055);border:1px solid var(--glass-border)}.cngLoyaltyStatRow{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:10px 0}.cngLoyaltyStat{padding:10px 5px;border-radius:13px;background:rgba(0,0,0,.18);text-align:center}.cngLoyaltyStat b{display:block;color:var(--orange);font-size:18px}.cngLoyaltyStat span{font-size:8px;color:var(--muted)}
+#cngLoyaltyScanner{width:100%;min-height:220px;background:#050505;border-radius:14px;overflow:hidden;margin-top:8px;display:none}.cngCupPreview{width:80px;height:80px;border-radius:16px;background:transparent;border:1px dashed var(--glass-border);display:flex;align-items:center;justify-content:center;overflow:hidden;margin:8px auto}.cngCupPreview img{width:100%;height:100%;object-fit:contain;background:transparent}.cngScanStatus{font-size:9px;color:var(--muted);text-align:center;margin-top:6px;line-height:1.5}
+@media(max-width:420px){.cngLoyaltyGrid{grid-template-columns:1fr}#cngLoyaltyModal{padding:9px!important}#cngLoyaltyModal .modal-box{width:calc(100vw - 18px)!important;border-radius:22px!important}}
+</style>
+
+<div class="modal" id="cngQuickScannerModal">
+  <div class="cngFsScannerShell">
+    <div class="cngFsScannerTop">
+      <button class="cngFsIconBtn" onclick="cngCloseQuickScanner()" aria-label="Back">←</button>
+      <div class="cngFsScannerTitle">Scan the customer's card</div>
+      <button class="cngFsIconBtn" id="cngTorchBtn" onclick="cngToggleTorch()" aria-label="Flashlight">⚡</button>
+    </div>
+    <div class="cngFsScannerStage">
+      <video id="cngFsVideo" autoplay playsinline muted></video>
+      <canvas id="cngFsCanvas"></canvas>
+      <div class="cngFsShade"></div>
+      <div class="cngFsScanFrame"><i></i><div class="cngFsScanLine"></div></div>
+    </div>
+    <div class="cngFsScannerBottom">
+      <div class="cngFsQrMini">▦</div>
+      <div class="cngFsHint">Point the camera at the customer's loyalty QR code</div>
+      <div class="cngFsOr">or</div>
+      <button class="cngFsManual" onclick="cngQuickManualFind()">🔎 Find customer manually</button>
+      <div id="cngQuickScanStatus">Opening camera…</div>
+    </div>
+  </div>
+</div>
+<div class="modal" id="cngLoyaltyModal" onclick="if(event.target===this)cngCloseLoyaltyAdmin()">
+ <div class="modal-box">
+  <div class="modal-header"><div><b style="color:var(--orange)">☕ Loyalty & Rewards</b><div style="font-size:9px;color:var(--muted);margin-top:3px">Customers, QR scanning, rewards and settings</div></div><button class="btn" onclick="cngCloseLoyaltyAdmin()">✕</button></div>
+  <div class="modal-body">
+   <div class="cngLoyaltyGrid">
+    <div class="cngLoyaltyCard"><h4>📷 Scan Customer QR</h4><button class="cngLoyaltyBtn cngLoyaltyGold" onclick="cngCloseLoyaltyAdmin();setTimeout(cngOpenQuickScanner,180)">OPEN FULL SCREEN SCANNER</button><div id="cngLoyaltyScanner"></div><div class="cngScanStatus" id="cngLoyaltyScanStatus">Camera permission is only used while scanning.</div></div>
+    <div class="cngLoyaltyCard"><h4>🔎 Find Customer</h4><label class="cngLoyaltyLabel">Customer mobile number</label><input id="cngLoyaltyPhoneSearch" class="cngLoyaltyInput" type="tel" placeholder="05xxxxxxxx"><button class="cngLoyaltyBtn cngLoyaltyGold" onclick="cngFindLoyaltyCustomer()">FIND CUSTOMER</button></div>
+   </div>
+   <div id="cngLoyaltyCustomerResult"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><b id="cngLoyaltyCustomerName" style="font-size:15px;color:#fff">Customer</b><div id="cngLoyaltyCustomerPhone" style="font-size:10px;color:var(--muted);margin-top:3px"></div></div><span id="cngLoyaltyRewardBadge" style="font-size:9px;font-weight:900;padding:5px 9px;border-radius:999px;background:rgba(229,193,88,.15);color:var(--orange)">Progress</span></div><div class="cngLoyaltyStatRow"><div class="cngLoyaltyStat"><b id="cngLCups">0</b><span>TOTAL CUPS</span></div><div class="cngLoyaltyStat"><b id="cngLProgress">0/8</b><span>PROGRESS</span></div><div class="cngLoyaltyStat"><b id="cngLRewards">0</b><span>AVAILABLE</span></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="cngLoyaltyBtn cngLoyaltyGreen" onclick="cngAddCup(1)">＋ ADD 1 CUP</button><button class="cngLoyaltyBtn cngLoyaltyRed" onclick="cngAddCup(-1)">－ REMOVE 1</button></div><button id="cngRedeemBtn" class="cngLoyaltyBtn cngLoyaltyGold" onclick="cngRedeemReward()">🎁 REDEEM REWARD</button></div>
+   
+<div class="cngCustHistWrap">
+  <div class="cngCustHistHead">
+    <h4>👥 Customer History <span id="cngCustHistCount" style="color:var(--muted);font-weight:700">(0)</span></h4>
+    <input id="cngCustHistSearch" class="cngCustHistSearch" placeholder="Search name / mobile" oninput="cngRenderCustomerHistory()">
+  </div>
+  <div class="cngCustHistList" id="cngCustHistList">
+    <div style="text-align:center;color:var(--muted);font-size:10px;padding:20px">No customers yet</div>
+  </div>
+</div>
+<div class="cngLoyaltyCard" style="margin-top:12px"><h4>⚙️ Loyalty Settings</h4><div class="cngLoyaltyGrid"><div><label class="cngLoyaltyLabel">Cups needed for reward</label><input id="cngLoyaltyTarget" class="cngLoyaltyInput" type="number" min="2" max="50" value="8"></div><div><label class="cngLoyaltyLabel">Reward name</label><input id="cngLoyaltyRewardName" class="cngLoyaltyInput" value="Free Coffee"></div></div><label class="cngLoyaltyLabel">Transparent PNG cup image (recommended)</label><label class="cngLoyaltyBtn cngLoyaltyGold" style="display:block;text-align:center">📷 CHOOSE PNG CUP IMAGE<input id="cngLoyaltyCupFile" type="file" accept="image/png,image/webp" style="display:none" onchange="cngHandleLoyaltyCupImage(event)"></label><div class="cngCupPreview" id="cngCupPreview">☕</div><div style="font-size:9px;color:var(--muted);text-align:center">PNG/WebP transparency is preserved. Use a cup image with no background.</div><button class="cngLoyaltyBtn cngLoyaltyGreen" onclick="cngSaveLoyaltySettings()">SAVE SETTINGS</button></div>
+  </div>
+ </div>
+</div>
+<script id="cng-loyalty-admin-js">
+(function(){
+ let settings={target:8,rewardName:'Free Coffee',cupImage:''},current=null,scanner=null;
+ const safeKey=p=>String(p||'').trim().replace(/[^a-zA-Z0-9_-]/g,'_'),toast=m=>typeof showToast==='function'?showToast(m):alert(m);
+ function calc(v){const t=Math.max(2,Number(settings.target)||8),total=Math.max(0,Number(v?.totalCups)||0),red=Math.max(0,Number(v?.redeemedRewards)||0),earned=Math.floor(total/t),avail=Math.max(0,earned-red),used=red*t,raw=Math.max(0,total-used),shown=avail>0?t:(raw%t),left=avail>0?0:Math.max(0,t-shown);return{target:t,total,red,avail,shown,left}}
+ function addAdminUI(){const ag=document.querySelector('#page-admin .quick-grid');if(ag&&!document.getElementById('admin-card-loyalty')){const d=document.createElement('div');d.className='quick-card';d.id='admin-card-loyalty';d.onclick=window.cngOpenLoyaltyAdmin;d.innerHTML='<div class="quick-icon" style="color:var(--orange)">🎟️</div><span style="font-size:12px;font-weight:700">Loyalty & Rewards</span>';ag.insertAdjacentElement('afterbegin',d)}
+ const page=document.getElementById('page-admin');if(page&&!document.getElementById('cngLoyaltyProgramCard')){const card=document.createElement('div');card.id='cngLoyaltyProgramCard';card.innerHTML='<div id="cngLoyaltyProgramTop"><div class="cngProgLogo" id="cngProgLogo">☕</div><div><div class="cngProgTitle">Cup And Go</div><div class="cngProgSub">Loyalty rewards program</div></div></div><div class="cngProgBody"><div class="cngProgStatus"><b>Cup And Go Rewards</b><span class="cngActivePill">● Active</span></div><div class="cngProgStats"><div class="cngProgStat"><b id="cngProgCustomers">0</b><span>CUSTOMERS</span></div><div class="cngProgStat"><b id="cngProgCups">0</b><span>TOTAL CUPS</span></div><div class="cngProgStat"><b id="cngProgRewards">0</b><span>REDEEMED</span></div></div><div class="cngProgActions"><button class="cngProgDetails" onclick="cngOpenLoyaltyAdmin()">⚙ DETAILS & SETTINGS</button><button class="cngProgScan" onclick="cngOpenQuickScanner()">▣ SCAN QR</button></div></div>';const h=page.querySelector('h3');if(h)h.insertAdjacentElement('afterend',card);else page.prepend(card)}}
+ function render(){if(!current)return;const x=calc(current);document.getElementById('cngLoyaltyCustomerResult').style.display='block';document.getElementById('cngLoyaltyCustomerName').textContent=current.name||'Customer';document.getElementById('cngLoyaltyCustomerPhone').textContent=current.phone||'';document.getElementById('cngLCups').textContent=x.total;document.getElementById('cngLProgress').textContent=x.shown+'/'+x.target;document.getElementById('cngLRewards').textContent=x.avail;const b=document.getElementById('cngLoyaltyRewardBadge');b.textContent=x.avail>0?'🎁 Reward Available':(x.left+' cups left');document.getElementById('cngRedeemBtn').disabled=x.avail<1;document.getElementById('cngRedeemBtn').style.opacity=x.avail<1?'.45':'1'}
+ function loadCustomer(phone){phone=String(phone||'').trim();if(!phone){toast('Enter customer mobile number');return}db.ref('/loyaltyCustomers/'+safeKey(phone)).once('value').then(s=>{let v=s.val();if(!v){v={phone,name:'Customer',totalCups:0,redeemedRewards:0,createdAt:Date.now()};return db.ref('/loyaltyCustomers/'+safeKey(phone)).set(v).then(()=>v)}return v}).then(v=>{current=v;render();toast('✅ Customer loaded')}).catch(()=>toast('❌ Could not load customer'))}
+ window.cngOpenLoyaltyAdmin=function(){const m=document.getElementById('cngLoyaltyModal');m.style.display='flex';requestAnimationFrame(()=>m.classList.add('show'));db.ref('/loyaltySettings').once('value').then(s=>{settings=Object.assign(settings,s.val()||{});document.getElementById('cngLoyaltyTarget').value=settings.target||8;document.getElementById('cngLoyaltyRewardName').value=settings.rewardName||'Free Coffee';const p=document.getElementById('cngCupPreview');p.innerHTML=settings.cupImage?'<img src="'+settings.cupImage+'">':'☕';if(current)render()})};
+ window.cngCloseLoyaltyAdmin=function(){const m=document.getElementById('cngLoyaltyModal');m.classList.remove('show');setTimeout(()=>m.style.display='none',180);if(scanner){try{scanner.stop().catch(()=>{}).finally(()=>{scanner.clear();scanner=null})}catch(e){scanner=null}}};
+ window.cngFindLoyaltyCustomer=function(){loadCustomer(document.getElementById('cngLoyaltyPhoneSearch').value)};
+ window.cngAddCup=function(delta){if(!current)return toast('Scan or find a customer first');const ref=db.ref('/loyaltyCustomers/'+safeKey(current.phone));let before=calc(current);ref.transaction(v=>{v=v||current;v.totalCups=Math.max(0,(Number(v.totalCups)||0)+delta);v.updatedAt=Date.now();return v},(e,ok,s)=>{if(e||!ok)return toast('❌ Update failed');current=s.val();const after=calc(current);render();toast(delta>0?'☕ Cup added':'↩️ Cup removed');if(delta>0&&after.avail>before.avail){db.ref('/customerNotifications').push({id:'LOY-'+Date.now(),type:'loyalty_reward',targetPhone:current.phone,title:'🎁 Reward Unlocked!',message:'You earned '+(settings.rewardName||'a reward')+' at Cup And Go.',timestamp:Date.now(),active:true})}})};
+ window.cngRedeemReward=function(){if(!current)return;const x=calc(current);if(x.avail<1)return toast('No reward available');if(!confirm('Redeem 1 '+(settings.rewardName||'reward')+' for '+(current.name||'customer')+'?'))return;const ref=db.ref('/loyaltyCustomers/'+safeKey(current.phone));ref.transaction(v=>{if(!v)return v;const total=Number(v.totalCups)||0,red=Number(v.redeemedRewards)||0,target=Math.max(2,Number(settings.target)||8);if(Math.floor(total/target)-red<1)return;v.redeemedRewards=red+1;v.lastRedeemedAt=Date.now();v.updatedAt=Date.now();return v},(e,ok,s)=>{if(e||!ok)return toast('❌ Could not redeem');current=s.val();render();db.ref('/loyaltyRedemptions').push({phone:current.phone,name:current.name||'',rewardName:settings.rewardName||'Free Coffee',timestamp:Date.now(),by:sessionStorage.getItem('cng_active_cashier')||'Admin'});toast('🎁 Reward redeemed')})};
+ window.cngHandleLoyaltyCupImage=function(ev){const f=ev.target.files&&ev.target.files[0];if(!f)return;if(!/image\/(png|webp)/i.test(f.type)){toast('Please choose a transparent PNG or WebP image');ev.target.value='';return}const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{const canvas=document.createElement('canvas'),max=320,sc=Math.min(1,max/Math.max(im.width,im.height));canvas.width=Math.max(1,Math.round(im.width*sc));canvas.height=Math.max(1,Math.round(im.height*sc));const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(im,0,0,canvas.width,canvas.height);settings.cupImage=canvas.toDataURL('image/png');document.getElementById('cngCupPreview').innerHTML='<img src="'+settings.cupImage+'">'};im.src=rd.result};rd.readAsDataURL(f)};
+ window.cngSaveLoyaltySettings=function(){settings.target=Math.max(2,Math.min(50,parseInt(document.getElementById('cngLoyaltyTarget').value)||8));settings.rewardName=(document.getElementById('cngLoyaltyRewardName').value||'Free Coffee').trim();db.ref('/loyaltySettings').update({target:settings.target,rewardName:settings.rewardName,cupImage:settings.cupImage||'',updatedAt:Date.now()}).then(()=>{toast('✅ Loyalty settings saved');if(current)render()}).catch(()=>toast('❌ Save failed'))};
+ function parseScan(txt){txt=String(txt||'').trim();if(txt.startsWith('CNGLOYALTY|')){try{return decodeURIComponent(txt.split('|')[1]||'')}catch(e){return txt.split('|')[1]||''}}try{const u=new URL(txt);return u.searchParams.get('loyalty')||u.searchParams.get('phone')||''}catch(e){}return txt.replace(/^tel:/i,'').trim()}
+ function ensureScannerLib(){if(window.Html5Qrcode)return Promise.resolve();return new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';s.onload=res;s.onerror=rej;document.head.appendChild(s)})}
+ window.cngStartLoyaltyScanner=function(){const area=document.getElementById('cngLoyaltyScanner'),st=document.getElementById('cngLoyaltyScanStatus');area.style.display='block';st.textContent='Opening camera…';ensureScannerLib().then(()=>{if(scanner){try{scanner.stop().catch(()=>{})}catch(e){}}scanner=new Html5Qrcode('cngLoyaltyScanner');return scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:220,height:220}},txt=>{const phone=parseScan(txt);if(phone){st.textContent='QR detected: '+phone;try{scanner.stop().then(()=>scanner.clear()).catch(()=>{})}catch(e){}scanner=null;area.style.display='none';document.getElementById('cngLoyaltyPhoneSearch').value=phone;loadCustomer(phone)}},()=>{})}).catch(()=>{st.textContent='Camera scanner could not start. Use Find by Mobile instead.'})};
+
+ window.__cngCameraStream=window.__cngCameraStream||null;
+ window.__cngScanRAF=window.__cngScanRAF||0;
+ window.__cngScannerActive=false;
+ window.__cngLastScanAt=0;
+ window.__cngTorchOn=false;
+
+ function cngLoadJsQR(){
+   if(window.jsQR)return Promise.resolve();
+   if(window.__cngJsQrPromise)return window.__cngJsQrPromise;
+   window.__cngJsQrPromise=new Promise((resolve,reject)=>{
+     const s=document.createElement('script');
+     s.src='https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
+     s.onload=resolve;s.onerror=reject;document.head.appendChild(s);
+   });
+   return window.__cngJsQrPromise;
+ }
+
+ async function cngEnsureCamera(){
+   const existing=window.__cngCameraStream;
+   if(existing && existing.getVideoTracks().some(t=>t.readyState==='live')) return existing;
+   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+     throw new Error('Camera API not supported');
+   }
+   const stream=await navigator.mediaDevices.getUserMedia({
+     video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},
+     audio:false
+   });
+   window.__cngCameraStream=stream;
+   return stream;
+ }
+
+ function cngScannerLoop(){
+   if(!window.__cngScannerActive)return;
+   const v=document.getElementById('cngFsVideo'),canvas=document.getElementById('cngFsCanvas');
+   if(v && canvas && v.readyState>=2 && v.videoWidth && v.videoHeight && window.jsQR){
+     const maxW=900,scale=Math.min(1,maxW/v.videoWidth);
+     canvas.width=Math.max(1,Math.round(v.videoWidth*scale));
+     canvas.height=Math.max(1,Math.round(v.videoHeight*scale));
+     const ctx=canvas.getContext('2d',{willReadFrequently:true});
+     ctx.drawImage(v,0,0,canvas.width,canvas.height);
+     try{
+       const img=ctx.getImageData(0,0,canvas.width,canvas.height);
+       const code=jsQR(img.data,img.width,img.height,{inversionAttempts:'attemptBoth'});
+       if(code && code.data && Date.now()-window.__cngLastScanAt>1200){
+         window.__cngLastScanAt=Date.now();
+         const phone=parseScan(code.data);
+         if(phone){
+           window.__cngScannerActive=false;
+           const st=document.getElementById('cngQuickScanStatus');
+           if(st)st.textContent='✅ Customer found';
+           if(navigator.vibrate)try{navigator.vibrate(70)}catch(e){}
+           setTimeout(()=>{
+             cngCloseQuickScanner();
+             cngOpenLoyaltyAdmin();
+             setTimeout(()=>{
+               const inp=document.getElementById('cngLoyaltyPhoneSearch');
+               if(inp)inp.value=phone;
+               loadCustomer(phone);
+             },180);
+           },180);
+           return;
+         }
+       }
+     }catch(e){}
+   }
+   window.__cngScanRAF=requestAnimationFrame(cngScannerLoop);
+ }
+
+ window.cngOpenQuickScanner=async function(){
+   const m=document.getElementById('cngQuickScannerModal'),v=document.getElementById('cngFsVideo'),st=document.getElementById('cngQuickScanStatus');
+   if(!m||!v)return;
+   m.style.display='flex';m.classList.add('show');document.body.style.overflow='hidden';
+   if(st)st.textContent=window.__cngCameraStream?'Camera ready…':'Opening camera…';
+   try{
+     await cngLoadJsQR();
+     const stream=await cngEnsureCamera();
+     if(v.srcObject!==stream)v.srcObject=stream;
+     await v.play().catch(()=>{});
+     window.__cngScannerActive=true;
+     cancelAnimationFrame(window.__cngScanRAF||0);
+     window.__cngScanRAF=requestAnimationFrame(cngScannerLoop);
+     const track=stream.getVideoTracks()[0];
+     const caps=track&&track.getCapabilities?track.getCapabilities():{};
+     const tb=document.getElementById('cngTorchBtn');
+     if(tb)tb.style.opacity=caps&&caps.torch?1:.35;
+     if(st)st.textContent='Camera ready — scan customer QR';
+   }catch(e){
+     window.__cngScannerActive=false;
+     if(st){
+       const local=location.protocol==='file:';
+       st.textContent=local?'Camera permission may repeat in local file mode. Publish on HTTPS/Firebase Hosting for persistent site permission.':'Camera could not start. Please allow camera permission.';
+     }
+   }
+ };
+
+ window.cngCloseQuickScanner=function(){
+   window.__cngScannerActive=false;
+   cancelAnimationFrame(window.__cngScanRAF||0);
+   const m=document.getElementById('cngQuickScannerModal'),v=document.getElementById('cngFsVideo');
+   if(m){m.classList.remove('show');m.style.display='none'}
+   if(v)try{v.pause()}catch(e){}
+   document.body.style.overflow='';
+   /* Intentionally keep the live MediaStream for this Admin tab/session.
+      This avoids asking camera permission again every time the scanner opens.
+      Tracks are stopped automatically when the page is closed/reloaded. */
+ };
+
+ window.cngQuickManualFind=function(){
+   cngCloseQuickScanner();
+   cngOpenLoyaltyAdmin();
+   setTimeout(()=>{
+     const inp=document.getElementById('cngLoyaltyPhoneSearch');
+     if(inp){inp.focus();inp.scrollIntoView({block:'center',behavior:'smooth'})}
+   },220);
+ };
+
+ window.cngToggleTorch=async function(){
+   const stream=window.__cngCameraStream,btn=document.getElementById('cngTorchBtn');
+   const track=stream&&stream.getVideoTracks?stream.getVideoTracks()[0]:null;
+   if(!track||!track.getCapabilities)return;
+   const caps=track.getCapabilities();
+   if(!caps.torch){if(typeof showToast==='function')showToast('Flashlight is not supported on this camera');return}
+   try{
+     window.__cngTorchOn=!window.__cngTorchOn;
+     await track.applyConstraints({advanced:[{torch:window.__cngTorchOn}]});
+     if(btn)btn.textContent=window.__cngTorchOn?'🔦':'⚡';
+   }catch(e){window.__cngTorchOn=false}
+ };
+
+ window.addEventListener('pagehide',()=>{
+   const s=window.__cngCameraStream;
+   if(s&&s.getTracks)s.getTracks().forEach(t=>{try{t.stop()}catch(e){}});
+   window.__cngCameraStream=null;
+ });
+
+
+ let cngCustomerHistoryCache=[];
+ function cngFmtJoin(ts){try{return new Date(Number(ts)||Date.now()).toLocaleString([], {year:'numeric',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'})}catch(e){return ''}}
+ window.cngRenderCustomerHistory=function(){
+   const list=document.getElementById('cngCustHistList'),cnt=document.getElementById('cngCustHistCount'); if(!list)return;
+   const q=String(document.getElementById('cngCustHistSearch')?.value||'').trim().toLowerCase();
+   let arr=cngCustomerHistoryCache.slice().sort((x,y)=>(Number(y.joinedAt)||0)-(Number(x.joinedAt)||0));
+   if(q)arr=arr.filter(x=>String(x.name||'').toLowerCase().includes(q)||String(x.phone||'').toLowerCase().includes(q));
+   if(cnt)cnt.textContent='('+cngCustomerHistoryCache.length+')';
+   if(!arr.length){list.innerHTML='<div style="text-align:center;color:var(--muted);font-size:10px;padding:20px">No matching customers</div>';return}
+   list.innerHTML=arr.map(x=>'<div class="cngCustHistRow"><div><div class="cngCustHistName">👤 '+escCC(x.name||'Customer')+'</div><div class="cngCustHistPhone">📱 '+escCC(x.phone||'')+'</div></div><div class="cngCustHistTime">Joined<br>'+escCC(cngFmtJoin(x.joinedAt||x.createdAt))+'</div></div>').join('');
+ };
+ db.ref('/customerRegistry').on('value',s=>{
+   const raw=s.val()||{};
+   cngCustomerHistoryCache=Array.isArray(raw)?raw.filter(Boolean):Object.values(raw);
+   cngRenderCustomerHistory();
+ });
+
+ db.ref('/loyaltySettings').on('value',s=>{settings=Object.assign({target:8,rewardName:'Free Coffee',cupImage:''},s.val()||{});if(current)render()});
+
+ db.ref('/loyaltyCustomers').on('value',s=>{
+   const raw=s.val()||{}, arr=Array.isArray(raw)?raw.filter(Boolean):Object.values(raw);
+   arr.forEach(v=>{
+     if(!v||!v.phone)return;
+     db.ref('/customerRegistry/'+safeKey(v.phone)).update({
+       name:v.name||'Customer',phone:v.phone,joinedAt:v.createdAt||v.updatedAt||Date.now(),lastSeenAt:v.lastSeenAt||v.updatedAt||Date.now(),active:true
+     });
+   });
+ });
+
+ db.ref('/loyaltyCustomers').on('value',s=>{const raw=s.val()||{},arr=Array.isArray(raw)?raw.filter(Boolean):Object.values(raw);let cups=0,rewards=0;arr.forEach(v=>{cups+=Math.max(0,Number(v.totalCups)||0);rewards+=Math.max(0,Number(v.redeemedRewards)||0)});const ce=document.getElementById('cngProgCustomers'),cu=document.getElementById('cngProgCups'),re=document.getElementById('cngProgRewards');if(ce)ce.textContent=arr.length;if(cu)cu.textContent=cups;if(re)re.textContent=rewards});
+ db.ref('/settings/shopLogo').on('value',s=>{const e=document.getElementById('cngProgLogo');if(e)e.innerHTML=s.val()?'<img src="'+s.val()+'" alt="logo">':'☕'});
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addAdminUI);else addAdminUI();setTimeout(addAdminUI,700);
+})();
+</script>
+<!-- ===== END CUP AND GO LOYALTY SYSTEM ===== -->
 
 </body>
 </html>
