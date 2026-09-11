@@ -4449,6 +4449,10 @@ function showIntroSavePopup(message){
  <div class="modal-box">
   <div class="modal-header"><div><b style="color:var(--orange)">☕ Loyalty & Rewards</b><div style="font-size:9px;color:var(--muted);margin-top:3px">Customers, QR scanning, rewards and settings</div></div><button class="btn" onclick="cngCloseLoyaltyAdmin()">✕</button></div>
   <div class="modal-body">
+<div id="cngSecurityNotice" style="margin:0 0 12px;padding:11px 12px;border-radius:14px;background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.28);color:#9cf6c4;font-size:10px;line-height:1.55;">
+🔒 Loyalty cups and reward redemption are Admin-only actions. Customer page is read-only for loyalty balances.
+</div>
+
    <div class="cngLoyaltyGrid">
     <div class="cngLoyaltyCard"><h4>📷 Scan Customer QR</h4><button class="cngLoyaltyBtn cngLoyaltyGold" onclick="cngCloseLoyaltyAdmin();setTimeout(cngOpenQuickScanner,180)">OPEN FULL SCREEN SCANNER</button><div id="cngLoyaltyScanner"></div><div class="cngScanStatus" id="cngLoyaltyScanStatus">Camera permission is only used while scanning.</div></div>
     <div class="cngLoyaltyCard"><h4>🔎 Find Customer</h4><label class="cngLoyaltyLabel">Customer mobile number</label><input id="cngLoyaltyPhoneSearch" class="cngLoyaltyInput" type="tel" placeholder="05xxxxxxxx"><button class="cngLoyaltyBtn cngLoyaltyGold" onclick="cngFindLoyaltyCustomer()">FIND CUSTOMER</button></div>
