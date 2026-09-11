@@ -1030,7 +1030,8 @@ input,select,textarea{max-width:100%;}
       <button class="btn" style="padding:4px 10px; border-radius:10px;" onclick="closeModal('modal-owner')">✕</button>
     </div>
     <div class="modal-body">
-      <div class="field"><label>Date</label><input type="date" id="ow-date" onchange="calcOwnerReport()"></div>
+      <div class="field"><label>Date</label><input type="date" id="ow-date" onchange="loadOwnerReportByDate(this.value)"></div>
+      <div id="cng-owner-saved-note" class="cng-owner-saved-note"></div>
       <div style="display:flex;gap:10px;">
         <div class="field" style="flex:1;"><label>Sale Today</label><input type="number" id="ow-sale" oninput="calcOwnerReport()" step="0.01"></div>
         <div class="field" style="flex:1;"><label>ATM</label><input type="number" id="ow-atm" oninput="calcOwnerReport()" step="0.01"></div>
@@ -1077,6 +1078,13 @@ input,select,textarea{max-width:100%;}
       
             <div id="owner-monthly-result" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; font-size:13px; line-height:1.8;">
          Select a month to view totals.
+      </div>
+      <div class="cng-owner-archive-head">
+        <h4>📅 Daily Reports</h4>
+        <span id="owner-monthly-days-count" style="font-size:9px;color:var(--muted);">0 saved</span>
+      </div>
+      <div id="owner-monthly-days" class="cng-owner-days">
+        <div id="owner-monthly-days-empty">No daily reports saved for this month.</div>
       </div>
     </div>
     <div class="modal-footer">
@@ -1588,6 +1596,11 @@ db.ref('/').on('value', (snapshot) => {
     freeItems = parseFirebaseArray(data.freeItems);
     localStorage.setItem('cng_free_items', JSON.stringify(freeItems));
     
+    if(data.ownerReports) {
+      ownerReports = parseFirebaseArray(data.ownerReports).filter(Boolean);
+      localStorage.setItem('cng_owner_reports', JSON.stringify(ownerReports));
+    }
+    
     if(data.ledMatrix) { 
       ledMatrixSettings = data.ledMatrix; 
       localStorage.setItem('cng_led_matrix', JSON.stringify(ledMatrixSettings)); 
@@ -1608,12 +1621,43 @@ db.ref('/').on('value', (snapshot) => {
   }
 }, (error) => { updateSyncStatus('offline'); console.log('Firebase read error:', error); });
 
+
+// ===== OWNER REPORT PERMANENT DAILY ARCHIVE =====
+// Canonical cloud path: /ownerReportsByDate/YYYY-MM-DD
+// This avoids losing old days when another device saves/syncs.
+db.ref('/ownerReportsByDate').on('value', snap => {
+  const raw = snap.val() || {};
+  const byDate = Array.isArray(raw)
+    ? raw.filter(Boolean).reduce((acc,r)=>{ if(r&&r.date) acc[r.date]=r; return acc; },{})
+    : raw;
+
+  const merged = {};
+  (ownerReports || []).forEach(r => { if(r && r.date) merged[r.date] = r; });
+  Object.keys(byDate).forEach(k => {
+    const r = byDate[k];
+    if(r) merged[r.date || k] = {...r, date:(r.date || k)};
+  });
+
+  ownerReports = Object.values(merged).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  localStorage.setItem('cng_owner_reports', JSON.stringify(ownerReports));
+
+  const monthEl=document.getElementById('owner-month-filter');
+  const monthlyModal=document.getElementById('modal-owner-monthly');
+  if(monthEl && monthlyModal && monthlyModal.classList.contains('show')) {
+    renderMonthlyOwnerReport();
+  }
+}, err => console.log('Owner archive read error:', err));
+
+
 // Online/Offline
 window.addEventListener('online', function() {
   isOnline = true;
   updateStatusUI();
   showToast('🔄 Online - Syncing data...');
   syncAllDataToFirebase();
+  (ownerReports||[]).forEach(r=>{
+    if(r&&r.date) db.ref('/ownerReportsByDate/'+r.date).update(r).catch(()=>{});
+  });
 });
 window.addEventListener('offline', function() {
   isOnline = false;
@@ -1945,7 +1989,15 @@ window.executeReportDownload = function() {
 // ======= ADMIN MODULES =======
 function openAdminModal(type) {
   if(type === 'stock') { initStockReceiveUI(); openModal('modal-stock'); }
-  else if(type === 'owner') { calcOwnerReport(); openModal('modal-owner'); }
+  else if(type === 'owner') {
+    const dEl=document.getElementById('ow-date');
+    if(dEl && !dEl.value){
+      const n=new Date();
+      dEl.value=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+    }
+    if(dEl) loadOwnerReportByDate(dEl.value); else calcOwnerReport();
+    openModal('modal-owner');
+  }
   else if(type === 'items') { initUI(); openModal('modal-items'); }
   else if(type === 'due') { renderDueKhata(); openModal('modal-due'); }
   else if(type === 'closing') { safeSet('admin-orders-rpt','innerText',orders.length); let todayRev = orders.reduce((sum,o)=> sum+parseFloat(o.total),0); safeSet('admin-rev','innerText',todayRev.toFixed(2)); openModal('modal-closing'); }
@@ -2294,38 +2346,118 @@ function generateOwnerPDF() {
 function saveOwnerReport() {
   let d = document.getElementById('ow-date').value;
   if (!d) {
-      let now = new Date();
-      d = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const now = new Date();
+    d = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    document.getElementById('ow-date').value = d;
   }
-  let data = calcOwnerReport();
 
-  let existingIdx = ownerReports.findIndex(r => r.date === d);
-  let reportData = {
-      date: d,
-      sale: data.sale,
-      atm: data.atm,
-      water: data.water,
-      lemon: data.lemon,
-      nana: data.nana,
-      more: data.more,
-      plastic: data.plastic,
-      cupBig: data.cupBig,
-      cupSmall: data.cupSmall,
-      totalExp: data.totalExp,
-      intermediateCash: data.intermediateCash,
-      totalCash: data.totalCash,
-      timestamp: Date.now()
+  const data = calcOwnerReport();
+  const old = ownerReports.find(r => r && r.date === d) || {};
+  const reportData = {
+    date: d,
+    sale: data.sale,
+    atm: data.atm,
+    water: data.water,
+    lemon: data.lemon,
+    nana: data.nana,
+    more: data.more,
+    plastic: data.plastic,
+    cupBig: data.cupBig,
+    cupSmall: data.cupSmall,
+    totalExp: data.totalExp,
+    intermediateCash: data.intermediateCash,
+    totalCash: data.totalCash,
+    createdAt: old.createdAt || Date.now(),
+    updatedAt: Date.now(),
+    timestamp: Date.now()
   };
 
-  if(existingIdx > -1) {
-      ownerReports[existingIdx] = reportData;
-  } else {
-      ownerReports.push(reportData);
+  const idx = ownerReports.findIndex(r => r && r.date === d);
+  if(idx >= 0) ownerReports[idx] = reportData;
+  else ownerReports.push(reportData);
+
+  ownerReports.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  localStorage.setItem('cng_owner_reports', JSON.stringify(ownerReports));
+
+  const note=document.getElementById('cng-owner-saved-note');
+  if(note){
+    note.textContent=`✅ Saved report for ${d}. You can open it again anytime.`;
+    note.classList.add('show');
   }
 
-  saveData();
-  if(navigator.onLine) { db.ref('/ownerReports').set(ownerReports); }
-  showToast("✅ Daily Report Saved!");
+  if(navigator.onLine) {
+    // Save this exact date independently so previous days can never be replaced.
+    db.ref('/ownerReportsByDate/' + d).set(reportData)
+      .then(() => db.ref('/ownerReports').set(ownerReports))
+      .then(() => {
+        updateSyncStatus('synced');
+        showToast("✅ Daily Owner Report Saved!");
+      })
+      .catch(err => {
+        console.log('Owner report save error:',err);
+        showToast("⚠️ Saved on this device. Cloud sync pending.");
+      });
+  } else {
+    showToast("📴 Saved on this device. Will sync when online.");
+  }
+}
+
+
+function setOwnerReportFields(r) {
+  const map = {
+    'ow-sale':'sale','ow-atm':'atm','ow-water':'water','ow-lemon':'lemon','ow-nana':'nana',
+    'ow-more':'more','ow-plastic':'plastic','ow-cup-big':'cupBig','ow-cup-small':'cupSmall'
+  };
+  Object.entries(map).forEach(([id,key]) => {
+    const el=document.getElementById(id);
+    if(el) el.value = (r && r[key] != null) ? r[key] : '';
+  });
+  calcOwnerReport();
+}
+
+function loadOwnerReportByDate(date) {
+  if(!date) return;
+  const local = ownerReports.find(r => r && r.date === date);
+  const note=document.getElementById('cng-owner-saved-note');
+
+  if(local) {
+    setOwnerReportFields(local);
+    if(note){
+      note.textContent=`📂 Saved report loaded: ${date}`;
+      note.classList.add('show');
+    }
+  } else {
+    setOwnerReportFields(null);
+    if(note){
+      note.textContent=`🆕 No saved report for ${date}. Enter today's figures and tap Save Daily.`;
+      note.classList.add('show');
+    }
+  }
+
+  if(navigator.onLine) {
+    db.ref('/ownerReportsByDate/' + date).once('value').then(s => {
+      const r=s.val();
+      if(!r) return;
+      const idx=ownerReports.findIndex(x=>x&&x.date===date);
+      if(idx>=0) ownerReports[idx]={...r,date};
+      else ownerReports.push({...r,date});
+      ownerReports.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+      localStorage.setItem('cng_owner_reports',JSON.stringify(ownerReports));
+      setOwnerReportFields({...r,date});
+      if(note){
+        note.textContent=`☁️ Cloud report loaded: ${date}`;
+        note.classList.add('show');
+      }
+    }).catch(()=>{});
+  }
+}
+
+function openSavedOwnerReport(date) {
+  closeModal('modal-owner-monthly');
+  const dateEl=document.getElementById('ow-date');
+  if(dateEl) dateEl.value=date;
+  loadOwnerReportByDate(date);
+  setTimeout(()=>openModal('modal-owner'),160);
 }
 
 function viewMonthlyOwnerReport() {
@@ -2338,49 +2470,71 @@ function viewMonthlyOwnerReport() {
 }
 
 function renderMonthlyOwnerReport() {
-   let month = document.getElementById('owner-month-filter').value;
-   if(!month) return;
+  const month = document.getElementById('owner-month-filter').value;
+  if(!month) return;
 
-   let filtered = ownerReports.filter(r => r.date && r.date.startsWith(month));
-   let resDiv = document.getElementById('owner-monthly-result');
+  const filtered = ownerReports
+    .filter(r => r && r.date && r.date.startsWith(month))
+    .sort((a,b)=>String(b.date).localeCompare(String(a.date)));
 
-   if(filtered.length === 0) {
-       resDiv.innerHTML = `<div style="text-align:center;color:var(--muted);">No reports saved for ${month}</div>`;
-       return;
-   }
+  const resDiv = document.getElementById('owner-monthly-result');
+  const daysDiv = document.getElementById('owner-monthly-days');
+  const countEl = document.getElementById('owner-monthly-days-count');
 
-   let tSale = 0, tAtm = 0, tExp = 0, tCash = 0, tMore = 0;
-   filtered.forEach(r => {
-       tSale += (r.sale || 0);
-       tAtm += (r.atm || 0);
-       tExp += (r.totalExp || 0);
-       tCash += (r.totalCash || 0);
-       tMore += (r.more || 0);
-   });
+  if(countEl) countEl.textContent = `${filtered.length} saved`;
 
-   resDiv.innerHTML = `
-      <div style="display:flex; justify-content:space-between; border-bottom:1px dashed rgba(255,255,255,0.1); padding-bottom:6px; margin-bottom:6px;"><span>Gross Sale:</span> <b style="color:#fff;">${tSale.toFixed(2)} SR</b></div>
-      <div style="display:flex; justify-content:space-between; border-bottom:1px dashed rgba(255,255,255,0.1); padding-bottom:6px; margin-bottom:6px;"><span>Total ATM (Card):</span> <b style="color:var(--blue);">${tAtm.toFixed(2)} SR</b></div>
-      <div style="display:flex; justify-content:space-between; border-bottom:1px dashed rgba(255,255,255,0.1); padding-bottom:6px; margin-bottom:6px;"><span>Total Expenses:</span> <b style="color:var(--red);">${tExp.toFixed(2)} SR</b></div>
-      <div style="display:flex; justify-content:space-between; border-bottom:1px dashed rgba(255,255,255,0.1); padding-bottom:6px; margin-bottom:6px;"><span>Extra Sales (More/Cups):</span> <b style="color:var(--orange);">${tMore.toFixed(2)} SR</b></div>
-      <div style="display:flex; justify-content:space-between; padding-top:6px; font-size:16px;"><span>Final Cash In Hand:</span> <b style="color:var(--green);">${tCash.toFixed(2)} SR</b></div>
-      <div style="text-align:center; font-size:11px; color:var(--muted); margin-top:15px;">Based on ${filtered.length} daily saved reports.</div>
-   `;
+  if(filtered.length === 0) {
+    if(resDiv) resDiv.innerHTML = `<div style="text-align:center;color:var(--muted);">No reports saved for ${month}</div>`;
+    if(daysDiv) daysDiv.innerHTML = `<div id="owner-monthly-days-empty">No daily reports saved for this month.</div>`;
+    return;
+  }
+
+  let tSale=0,tAtm=0,tExp=0,tCash=0,tMore=0,tPlastic=0,tCupBig=0,tCupSmall=0;
+  filtered.forEach(r=>{
+    tSale += Number(r.sale||0);
+    tAtm += Number(r.atm||0);
+    tExp += Number(r.totalExp||0);
+    tCash += Number(r.totalCash||0);
+    tMore += Number(r.more||0);
+    tPlastic += Number(r.plastic||0);
+    tCupBig += Number(r.cupBig||0);
+    tCupSmall += Number(r.cupSmall||0);
+  });
+
+  if(resDiv) resDiv.innerHTML = `
+    <div style="display:flex;justify-content:space-between;border-bottom:1px dashed rgba(255,255,255,.1);padding-bottom:6px;margin-bottom:6px;"><span>Gross Sale:</span><b>${tSale.toFixed(2)} SR</b></div>
+    <div style="display:flex;justify-content:space-between;border-bottom:1px dashed rgba(255,255,255,.1);padding-bottom:6px;margin-bottom:6px;"><span>Total ATM (Card):</span><b style="color:var(--blue);">${tAtm.toFixed(2)} SR</b></div>
+    <div style="display:flex;justify-content:space-between;border-bottom:1px dashed rgba(255,255,255,.1);padding-bottom:6px;margin-bottom:6px;"><span>Total Expenses:</span><b style="color:var(--red);">${tExp.toFixed(2)} SR</b></div>
+    <div style="display:flex;justify-content:space-between;border-bottom:1px dashed rgba(255,255,255,.1);padding-bottom:6px;margin-bottom:6px;"><span>More:</span><b style="color:var(--orange);">${tMore.toFixed(2)} SR</b></div>
+    <div style="display:flex;justify-content:space-between;padding-top:6px;font-size:16px;"><span>Final Cash In Hand:</span><b style="color:var(--green);">${tCash.toFixed(2)} SR</b></div>
+    <div style="text-align:center;font-size:10px;color:var(--muted);margin-top:12px;">${filtered.length} daily reports saved in ${month}</div>`;
+
+  if(daysDiv) {
+    daysDiv.innerHTML = filtered.map(r => `
+      <button class="cng-owner-day" onclick="openSavedOwnerReport('${r.date}')">
+        <div>
+          <div class="cng-owner-day-date">📅 ${r.date}</div>
+          <div class="cng-owner-day-meta">Sale ${Number(r.sale||0).toFixed(2)} SR · ATM ${Number(r.atm||0).toFixed(2)} SR · Expense ${Number(r.totalExp||0).toFixed(2)} SR</div>
+        </div>
+        <div class="cng-owner-day-cash">${Number(r.totalCash||0).toFixed(2)} SR</div>
+      </button>`).join('');
+  }
 }
 
 function getMonthlyOwnerData() {
-   let month = document.getElementById('owner-month-filter').value;
-   if(!month) return null;
-   let filtered = ownerReports.filter(r => r.date && r.date.startsWith(month));
-   if(filtered.length === 0) return { month, count: 0 };
+  const month = document.getElementById('owner-month-filter').value;
+  if(!month) return null;
+  const filtered = ownerReports.filter(r => r && r.date && r.date.startsWith(month));
+  if(filtered.length === 0) return {month,count:0,filtered:[]};
 
-   let tSale = 0, tAtm = 0, tExp = 0, tCash = 0, tMore = 0;
-   filtered.forEach(r => {
-       tSale += (r.sale || 0); tAtm += (r.atm || 0);
-       tExp += (r.totalExp || 0); tCash += (r.totalCash || 0); tMore += (r.more || 0);
-   });
-
-   return { month, count: filtered.length, tSale, tAtm, tExp, tCash, tMore };
+  let tSale=0,tAtm=0,tExp=0,tCash=0,tMore=0,tPlastic=0,tCupBig=0,tCupSmall=0;
+  filtered.forEach(r=>{
+    tSale+=Number(r.sale||0); tAtm+=Number(r.atm||0); tExp+=Number(r.totalExp||0);
+    tCash+=Number(r.totalCash||0); tMore+=Number(r.more||0); tPlastic+=Number(r.plastic||0);
+    tCupBig+=Number(r.cupBig||0); tCupSmall+=Number(r.cupSmall||0);
+  });
+  return {month,count:filtered.length,tSale,tAtm,tExp,tCash,tMore,tPlastic,tCupBig,tCupSmall,
+          filtered:filtered.sort((a,b)=>String(a.date).localeCompare(String(b.date)))};
 }
 
 function sendMonthlyOwnerWhatsApp() {
@@ -2394,45 +2548,45 @@ function sendMonthlyOwnerWhatsApp() {
 }
 
 function generateMonthlyOwnerPDF() {
-  let data = getMonthlyOwnerData();
+  const data = getMonthlyOwnerData();
   if(!data || data.count === 0) return showToast("No data for this month!");
 
-  // সুন্দর ইনভয়েস স্টাইলের PDF ডিজাইন 
-  let html = `
-  <div style="font-family:'Courier New',monospace; background:#fff; color:#000; padding:20px; max-width:400px; margin:auto; border:2px solid #000; border-radius:12px;">
-     <div style="text-align:center; margin-bottom:15px;">
-        <h2 style="margin:0; font-size:26px; text-transform:uppercase; font-weight:900;">${appSettings.shopName}</h2>
-        <p style="margin:5px 0; font-size:12px; color:#555; font-weight:bold;">📊 MONTHLY OWNER REPORT</p>
-        <p style="margin:8px 0 0 0; font-size:14px; font-weight:bold;">Date: ${data.month}</p>
-     </div>
-     <table style="width:100%; font-size:14px; border-collapse: collapse; margin-bottom: 15px;">
-        <tr style="border-top:2px dashed #000;">
-           <td style="padding:8px 0;">Gross Sale:</td>
-           <td style="text-align:right; font-weight:bold;">${data.tSale.toFixed(2)} SR</td>
-        </tr>
-        <tr style="border-bottom:2px solid #000;">
-           <td style="padding:8px 0;">Total ATM (Card):</td>
-           <td style="text-align:right; font-weight:bold;">${data.tAtm.toFixed(2)} SR</td>
-        </tr>
-        <tr>
-           <td style="padding:8px 0;">Total Expenses:</td>
-           <td style="text-align:right; font-weight:bold; color:#d9534f;">${data.tExp.toFixed(2)} SR</td>
-        </tr>
-        <tr style="border-bottom:2px dashed #000;">
-           <td style="padding:8px 0;">Extra Sales:</td>
-           <td style="text-align:right; font-weight:bold;">${data.tMore.toFixed(2)} SR</td>
-        </tr>
-     </table>
-     <div style="background:#f0f0f0; padding:12px; border-radius:8px; border:1px solid #000; text-align:center;">
-        <span style="font-size:16px; font-weight:900;">TOTAL CASH: </span>
-        <span style="font-size:18px; font-weight:900; color:#000;">${data.tCash.toFixed(2)} SR</span>
-     </div>
-     <div style="text-align:center; margin-top:15px; font-size:11px; color:#555;">
-        ✅ Generated from ${data.count} daily saved reports.
-     </div>
+  const rows = data.filtered.map(r => `
+    <tr style="border-bottom:1px solid #ddd;">
+      <td style="padding:6px 3px;">${r.date}</td>
+      <td style="padding:6px 3px;text-align:right;">${Number(r.sale||0).toFixed(2)}</td>
+      <td style="padding:6px 3px;text-align:right;">${Number(r.totalExp||0).toFixed(2)}</td>
+      <td style="padding:6px 3px;text-align:right;font-weight:bold;">${Number(r.totalCash||0).toFixed(2)}</td>
+    </tr>`).join('');
+
+  const html = `
+  <div style="font-family:'Courier New',monospace;background:#fff;color:#000;padding:18px;max-width:520px;margin:auto;border:2px solid #000;border-radius:12px;">
+    <div style="text-align:center;margin-bottom:12px;">
+      <h2 style="margin:0;font-size:24px;text-transform:uppercase;">${appSettings.shopName}</h2>
+      <p style="margin:5px 0;font-size:12px;font-weight:bold;">📊 MONTHLY OWNER REPORT</p>
+      <p style="margin:5px 0;font-size:13px;">Month: ${data.month}</p>
+    </div>
+    <table style="width:100%;font-size:11px;border-collapse:collapse;margin-bottom:14px;">
+      <thead><tr style="border-top:2px solid #000;border-bottom:2px solid #000;">
+        <th style="padding:6px 3px;text-align:left;">Date</th>
+        <th style="padding:6px 3px;text-align:right;">Sale</th>
+        <th style="padding:6px 3px;text-align:right;">Exp.</th>
+        <th style="padding:6px 3px;text-align:right;">Cash</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <table style="width:100%;font-size:13px;border-collapse:collapse;">
+      <tr><td>Gross Sale</td><td style="text-align:right;font-weight:bold;">${data.tSale.toFixed(2)} SR</td></tr>
+      <tr><td>Total ATM</td><td style="text-align:right;font-weight:bold;">${data.tAtm.toFixed(2)} SR</td></tr>
+      <tr><td>Total Expenses</td><td style="text-align:right;font-weight:bold;">${data.tExp.toFixed(2)} SR</td></tr>
+      <tr><td>More</td><td style="text-align:right;font-weight:bold;">${data.tMore.toFixed(2)} SR</td></tr>
+      <tr style="border-top:2px dashed #000;"><td style="padding-top:8px;font-weight:900;">TOTAL CASH</td><td style="padding-top:8px;text-align:right;font-size:16px;font-weight:900;">${data.tCash.toFixed(2)} SR</td></tr>
+    </table>
+    <div style="text-align:center;margin-top:12px;font-size:10px;color:#555;">Generated from ${data.count} saved daily reports.</div>
   </div>`;
- document.getElementById('pdf-report-content').innerHTML = html;
-  reportTextForShare = `Monthly Report: ${data.tCash.toFixed(2)} SR Cash.`;
+
+  document.getElementById('pdf-report-content').innerHTML = html;
+  reportTextForShare = `Monthly Owner Report ${data.month}: ${data.tCash.toFixed(2)} SR cash from ${data.count} daily reports.`;
   openModal('report-preview-modal');
 }
 
@@ -2906,6 +3060,30 @@ function downloadStockPDF() {
 #cngFsCanvas{display:none!important}
 .cngFsShade,.cngFsScanFrame{z-index:3!important}
 .cngFsScannerTop,.cngFsScannerBottom{z-index:5!important}
+</style>
+
+
+<style id="cng-owner-archive-css">
+.cng-owner-archive-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0 9px}
+.cng-owner-archive-head h4{margin:0;font-size:12px;color:var(--orange)}
+.cng-owner-days{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.cng-owner-day{
+  width:100%;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;
+  text-align:left;padding:11px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.045);color:var(--text);cursor:pointer
+}
+.cng-owner-day:active{transform:scale(.985)}
+.cng-owner-day-date{font-size:11px;font-weight:900;color:#fff}
+.cng-owner-day-meta{font-size:9px;color:var(--muted);margin-top:3px;line-height:1.45}
+.cng-owner-day-cash{font-size:12px;font-weight:900;color:var(--green);white-space:nowrap}
+.cng-owner-saved-note{
+  display:none;margin:8px 0 12px;padding:9px 10px;border-radius:12px;
+  background:rgba(0,230,118,.09);border:1px solid rgba(0,230,118,.24);
+  color:#9af2bd;font-size:10px;line-height:1.45
+}
+.cng-owner-saved-note.show{display:block}
+#owner-monthly-result{margin-bottom:12px}
+#owner-monthly-days-empty{text-align:center;color:var(--muted);font-size:10px;padding:12px}
 </style>
 
 </head><body><div style="width: 1050px; margin: auto;">${cleanHTML}</div></body></html>`;
