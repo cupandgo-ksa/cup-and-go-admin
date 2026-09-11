@@ -2888,6 +2888,26 @@ function downloadStockPDF() {
 }
 </style>
 
+
+
+<style id="cng-working-camera-restore">
+#cngFsVideo{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  background:#05070a!important;
+  z-index:1!important;
+}
+#cngFsCanvas{display:none!important}
+.cngFsShade,.cngFsScanFrame{z-index:3!important}
+.cngFsScannerTop,.cngFsScannerBottom{z-index:5!important}
+</style>
+
 </head><body><div style="width: 1050px; margin: auto;">${cleanHTML}</div></body></html>`;
 
   let opt = {
@@ -4431,7 +4451,7 @@ function showIntroSavePopup(message){
       <button class="cngFsIconBtn" id="cngTorchBtn" onclick="cngToggleTorch()" aria-label="Flashlight">⚡</button>
     </div>
     <div class="cngFsScannerStage">
-      <video id="cngFsVideo" autoplay playsinline muted></video>
+<video id="cngFsVideo" autoplay playsinline muted></video>
       <canvas id="cngFsCanvas"></canvas>
       <div class="cngFsShade"></div>
       <div class="cngFsScanFrame"><i></i><div class="cngFsScanLine"></div></div>
@@ -4663,6 +4683,72 @@ function showIntroSavePopup(message){
 })();
 </script>
 <!-- ===== END CUP AND GO LOYALTY SYSTEM ===== -->
+
+
+
+
+<script id="cng-android-back-fix-v2">
+(function(){
+  let scannerHistoryActive=false;
+  let handlingPop=false;
+
+  function scannerIsOpen(){
+    const m=document.getElementById('cngQuickScannerModal');
+    if(!m)return false;
+    return m.classList.contains('show') || getComputedStyle(m).display!=='none';
+  }
+
+  function closeScannerOnly(){
+    window.__cngScannerActive=false;
+    cancelAnimationFrame(window.__cngScanRAF||0);
+    const m=document.getElementById('cngQuickScannerModal');
+    const v=document.getElementById('cngFsVideo');
+    if(m){m.classList.remove('show');m.style.display='none'}
+    if(v)try{v.pause()}catch(e){}
+    document.body.style.overflow='';
+    /* Keep MediaStream alive just like the working original scanner. */
+  }
+
+  const originalOpen=window.cngOpenQuickScanner;
+  window.cngOpenQuickScanner=async function(){
+    if(!scannerHistoryActive){
+      try{history.pushState({cngOverlay:'scanner'},'',location.href);scannerHistoryActive=true}catch(e){}
+    }
+    return originalOpen.apply(this,arguments);
+  };
+
+  const originalClose=window.cngCloseQuickScanner;
+  window.cngCloseQuickScanner=function(){
+    if(handlingPop){
+      closeScannerOnly();
+      return;
+    }
+    if(scannerHistoryActive){
+      scannerHistoryActive=false;
+      closeScannerOnly();
+      try{history.back()}catch(e){}
+      return;
+    }
+    return originalClose.apply(this,arguments);
+  };
+
+  window.addEventListener('popstate',function(){
+    if(scannerIsOpen()||scannerHistoryActive){
+      handlingPop=true;
+      scannerHistoryActive=false;
+      closeScannerOnly();
+      setTimeout(()=>{handlingPop=false},0);
+    }
+  });
+
+  try{
+    if(!history.state){
+      history.replaceState({cngPage:'app'},'',location.href);
+      history.pushState({cngPage:'home'},'',location.href);
+    }
+  }catch(e){}
+})();
+</script>
 
 </body>
 </html>
