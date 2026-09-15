@@ -3056,6 +3056,22 @@ function saveProduct() {
       i=document.getElementById('inp-icon').value,
       cat=document.getElementById('inp-cat-select').value;
   const customerUnavailable=!!document.getElementById('inp-customer-soldout')?.checked;
+  const fieldValue=id=>(document.getElementById(id)?.value||'').trim();
+  const productDetails={
+    nameAr:fieldValue('inp-name-ar'),
+    descriptionEn:fieldValue('inp-desc-en'),
+    descriptionAr:fieldValue('inp-desc-ar'),
+    size:fieldValue('inp-size'),
+    calories:fieldValue('inp-calories'),
+    temperature:fieldValue('inp-temperature')||'both',
+    ingredientsEn:fieldValue('inp-ingredients-en'),
+    ingredientsAr:fieldValue('inp-ingredients-ar'),
+    allergensEn:fieldValue('inp-allergens-en'),
+    allergensAr:fieldValue('inp-allergens-ar'),
+    isNew:!!document.getElementById('inp-is-new')?.checked,
+    isOffer:!!document.getElementById('inp-is-offer')?.checked,
+    isPopular:!!document.getElementById('inp-is-popular')?.checked
+  };
   if(n && p) {
     const finalIcon=uploadedImageUrl!==""?uploadedImageUrl:(i||'☕');
     if(editingProductId) {
@@ -3066,10 +3082,11 @@ function saveProduct() {
         products[index].category=cat;
         products[index].icon=finalIcon;
         products[index].customerUnavailable=customerUnavailable;
+        Object.assign(products[index],productDetails);
         cart.forEach(c=>{if(c.id===editingProductId){c.name=n;c.price=parseFloat(p);}});
       }
     } else {
-      products.push({id:Date.now(),name:n,category:cat,price:parseFloat(p),icon:finalIcon,customerUnavailable});
+      products.push({id:Date.now(),name:n,category:cat,price:parseFloat(p),icon:finalIcon,customerUnavailable,...productDetails});
     }
     saveData();
     initUI();
@@ -4817,7 +4834,7 @@ function showIntroSavePopup(message){
       'inp-name-ar':'nameAr','inp-desc-en':'descriptionEn','inp-desc-ar':'descriptionAr','inp-size':'size','inp-calories':'calories',
       'inp-ingredients-en':'ingredientsEn','inp-ingredients-ar':'ingredientsAr','inp-allergens-en':'allergensEn','inp-allergens-ar':'allergensAr'
     };
-    Object.entries(map).forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.value=p[key]||'';});
+    Object.entries(map).forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.value=p[key]||(key==='descriptionEn'?p.description:'')||'';});
     const temp=document.getElementById('inp-temperature');if(temp)temp.value=p.temperature||'both';
     [['inp-is-new','isNew'],['inp-is-offer','isOffer'],['inp-is-popular','isPopular']].forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.checked=!!p[key];});
   }
@@ -4921,5 +4938,21 @@ html{width:100%;min-width:320px;min-height:100%;overflow-x:hidden;-webkit-text-s
   image-rendering:auto!important;
 }
 </style>
+<style id="cng-fast-menu-images-style">
+.cng-img-loading{position:relative;overflow:hidden;background:#efe8e1!important}.cng-img-loading::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(105deg,transparent 28%,rgba(255,255,255,.68) 46%,transparent 64%);transform:translateX(-110%);animation:cngImageShimmer 1.15s ease-in-out infinite}.cng-img-loaded::after{display:none}@keyframes cngImageShimmer{to{transform:translateX(110%)}}
+</style>
+<script id="cng-fast-menu-images-script">
+(function(){
+  const selector='img.admin-product-img,img.item-img,img.item-image';
+  function prepare(){
+    document.querySelectorAll(selector).forEach((img,index)=>{
+      if(img.dataset.cngPrepared)return;img.dataset.cngPrepared='1';
+      const first=index<6;img.loading=first?'eager':'lazy';img.decoding='async';img.setAttribute('fetchpriority',first?'high':'low');
+      const box=img.parentElement;if(box){box.classList.add('cng-img-loading');const done=()=>{box.classList.remove('cng-img-loading');box.classList.add('cng-img-loaded')};if(img.complete)done();else{img.addEventListener('load',done,{once:true});img.addEventListener('error',done,{once:true})}}
+    });
+  }
+  document.addEventListener('DOMContentLoaded',()=>{prepare();new MutationObserver(prepare).observe(document.body,{childList:true,subtree:true})});
+})();
+</script>
 </body>
 </html>
