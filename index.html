@@ -4243,7 +4243,7 @@ async function handleIntroAdFile(event){
     }
 
     showToast(isVideo?'⏳ Uploading intro video...':'⏳ Uploading intro photo...');
-    let media;
+    let media,previewData='';
     if(isVideo) {
       media=await readFileAsDataURL(f);
     } else {
@@ -4253,6 +4253,8 @@ async function handleIntroAdFile(event){
       } catch(hostError) {
         media=await compressCustomerImage(f,1080,1600,.76);
       }
+      // Small fast preview appears instantly; the original HD image replaces it after loading.
+      previewData=await compressCustomerImage(f,720,1280,.68);
     }
     const config={
       enabled:true,
@@ -4263,6 +4265,7 @@ async function handleIntroAdFile(event){
 
     // Save large media separately so /settings stays lightweight and the customer can load config first.
     await db.ref('/customerIntroAd/media').set(media);
+    await db.ref('/customerIntroAd/preview').set(previewData);
     await db.ref('/customerIntroAd/config').set(config);
 
     // Keep only lightweight compatibility metadata under settings (no base64 media here).
