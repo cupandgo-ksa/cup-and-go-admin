@@ -1371,6 +1371,8 @@ let isProductImageUploading = false;
 let isOnline = navigator.onLine;
 let currentReportDate = "";
 let isFirstLoad = true;
+let firebaseInitialSnapshotLoaded = false;
+let pendingCloudSync = false;
 
 // ======= HELPER FUNCTIONS =======
 function safeSet(id, prop, val) { let el = document.getElementById(id); if(el) el[prop] = val; }
@@ -1457,6 +1459,13 @@ function updateSyncStatus(status) {
 // ======= FIREBASE REAL-TIME SYNC =======
 function syncAllDataToFirebase() {
   if(!navigator.onLine) { updateSyncStatus('offline'); return; }
+  // Never let a fresh browser's empty local cache overwrite cloud products
+  // before the first Firebase snapshot has been received.
+  if(!firebaseInitialSnapshotLoaded) {
+    pendingCloudSync = true;
+    updateSyncStatus('syncing');
+    return;
+  }
   updateSyncStatus('syncing');
   // IMPORTANT: use update(), not set(), so customer-only realtime branches
   // (/customerNotifications and /customerOrderHistory) are never deleted by an admin sync.
@@ -1542,6 +1551,11 @@ db.ref('/').on('value', (snapshot) => {
     updateSyncStatus('synced');
     isFirstLoad = false;
   }
+  firebaseInitialSnapshotLoaded = true;
+  if(pendingCloudSync) {
+    pendingCloudSync = false;
+    syncAllDataToFirebase();
+  }
 }, (error) => { updateSyncStatus('offline'); console.log('Firebase read error:', error); });
 
 
@@ -1594,7 +1608,12 @@ function generateQRCode() {
   const container = document.getElementById('qr-container');
   if (!container) return;
   const menuUrl = 'https://cupandgo-ksa.github.io/cup-and-go-menu/';
-  container.innerHTML = `<img src="data:image/png;base64,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" alt="Cup And Go Menu QR" style="width:130px;height:130px;display:block" aria-label="Scan to open Cup And Go menu">`;
+  container.innerHTML = '';
+  new QRCode(container, {
+    text: menuUrl, width: 130, height: 130,
+    colorDark: '#000000', colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
+  });
   container.onclick = function() {
     try { window.open(menuUrl, '_blank'); } catch(e) { location.href = menuUrl; }
   };
@@ -2890,7 +2909,16 @@ function sendStockWhatsApp() {
 }
 
 // ======= DUE KHATA =======
-function renderDueKhata() { let tb=document.getElementById('due-table'); tb.innerHTML=''; dueKhata.forEach((d,idx)=>{ tb.innerHTML+=`<tr><td style="padding:10px 0;"><b>${d.name}</b><br><small style="color:var(--muted);">${d.phone}</small></td><td><b style="color:var(--red);">${d.amt}</b></td><td style="text-align:right;"><button class="btn btn-success" style="padding:6px 12px;font-size:10px;" onclick="openDuePay(${idx})">Pay</button></td></tr>`; }); }
+function renderDueKhata() {
+  // The Due UI was intentionally removed. Keep legacy synced data harmless so
+  // it can never interrupt Firebase loading, product rendering or cloud sync.
+  let tb = document.getElementById('due-table');
+  if(!tb) return;
+  tb.innerHTML = '';
+  dueKhata.forEach((d,idx)=>{
+    tb.innerHTML += `<tr><td style="padding:10px 0;"><b>${d.name}</b><br><small style="color:var(--muted);">${d.phone}</small></td><td><b style="color:var(--red);">${d.amt}</b></td><td style="text-align:right;"><button class="btn btn-success" style="padding:6px 12px;font-size:10px;" onclick="openDuePay(${idx})">Pay</button></td></tr>`;
+  });
+}
 function addDueRecord() { let n=document.getElementById('due-name').value; let p=document.getElementById('due-phone').value; let a=parseFloat(document.getElementById('due-amt').value); if(n && a>0) { dueKhata.push({name:n,phone:p||'',amt:a}); document.getElementById('due-name').value=''; document.getElementById('due-phone').value=''; document.getElementById('due-amt').value=''; renderDueKhata(); saveData(); showToast("Due Added!"); } }
 let activeDueIdx=null;
 function openDuePay(idx) { activeDueIdx=idx; let d=dueKhata[idx]; document.getElementById('due-pay-name').innerText=d.name; document.getElementById('due-pay-current').innerText=d.amt; document.getElementById('due-pay-input').value=''; openModal('modal-due-pay'); }
@@ -2901,7 +2929,11 @@ function openCategoryManager() { closeModal('modal-items'); renderCategoryListUI
 function renderCategoryListUI() { let list=document.getElementById('cat-list-ui'); list.innerHTML=''; appSettings.categories.forEach((cat,idx)=>{ list.innerHTML+=`<div style="display:flex;justify-content:space-between;padding:10px;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);border-radius:10px;margin-bottom:8px;"><span>${cat}</span><button class="btn btn-delete" style="padding:4px 8px;font-size:10px;" onclick="deleteCategoryUI(${idx})">🗑️</button></div>`; }); }
 function addCategoryUI() { let val=document.getElementById('new-cat-name').value.trim(); if(val) { appSettings.categories.push(val); document.getElementById('new-cat-name').value=''; renderCategoryListUI(); saveData(); renderCatBar(); } }
 function deleteCategoryUI(idx) { if(appSettings.categories.length<=1) return showToast("Need 1 category!"); appSettings.categories.splice(idx,1); renderCategoryListUI(); saveData(); renderCatBar(); }
-function renderCatBar() { let bar=document.getElementById('cat-bar'); bar.innerHTML=`<button class="cat-btn ${currentCategory==='All'?'active':''}" onclick="filterCategory('All')">All</button>`; appSettings.categories.forEach(c=>{ bar.innerHTML+=`<button class="cat-btn ${currentCategory===c?'active':''}" onclick="filterCategory('${c}')">${c}</button>`; }); }
+function productCategory(p) { return String((p && p.category) || 'Other').trim() || 'Other'; }
+function getAllProductCategories() {
+  return [...new Set([...(appSettings.categories || []), ...products.map(productCategory)].filter(Boolean))];
+}
+function renderCatBar() { let bar=document.getElementById('cat-bar'); bar.innerHTML=`<button class="cat-btn ${currentCategory==='All'?'active':''}" onclick="filterCategory('All')">All</button>`; getAllProductCategories().forEach(c=>{ bar.innerHTML+=`<button class="cat-btn ${currentCategory===c?'active':''}" onclick="filterCategory('${c}')">${c}</button>`; }); }
 
 // ======= PERMISSIONS =======
 const permList = [
@@ -3508,17 +3540,17 @@ function initUI() {
   let html = '';
 
   if (currentCategory === 'All') {
-    appSettings.categories.forEach(cat => {
-      let catProds = products.filter(p => p.category === cat);
+    getAllProductCategories().forEach(cat => {
+      let catProds = products.filter(p => productCategory(p) === cat);
       if (catProds.length > 0) {
         html += `<h4 style="color:var(--orange); font-size:15px; border-bottom:1px dashed rgba(229,193,88,0.2); padding-bottom:6px; margin-top:16px; margin-bottom:12px;">${cat}</h4>`;
-        html += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">`;
+        html += `<div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; align-items:stretch;">`;
                                 catProds.forEach(p => {
               let icn = (p.icon && p.icon.length > 10) 
                   ? `<div class="admin-product-img-wrap"><img src="${p.icon}" class="admin-product-img" loading="lazy" decoding="async"></div>` 
                   : `<div style="width:100%; height:110px; background:rgba(255,255,255,0.05); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:40px;">${p.icon || '☕'}</div>`;
               
-              html += `<div class="product-card" id="card-${p.id}" onclick="addToCart(${p.id})" style="padding:8px; text-align:center;">
+              html += `<div class="product-card" id="card-${p.id}" onclick="addToCart(${p.id})" style="padding:8px; text-align:center; min-width:0; height:100%;">
                 <div style="position:relative; width:100%;">
                   ${icn}
                 </div>
@@ -3531,11 +3563,11 @@ function initUI() {
       }
     });
   } else {
-    let catProds = products.filter(p => p.category === currentCategory);
-    html += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">`;
+    let catProds = products.filter(p => productCategory(p) === currentCategory);
+    html += `<div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; align-items:stretch;">`;
     catProds.forEach(p => {
       let icn = (p.icon && p.icon.length > 10) ? `<div class="admin-product-img-wrap"><img src="${p.icon}" class="admin-product-img" loading="lazy" decoding="async"></div>` : (p.icon || '☕');
-      html += `<div class="product-card" id="card-${p.id}" onclick="addToCart(${p.id})" style="padding:10px; text-align:center;">
+      html += `<div class="product-card" id="card-${p.id}" onclick="addToCart(${p.id})" style="padding:10px; text-align:center; min-width:0; height:100%;">
         <div>${icn}</div>
         <b style="font-size:13px; display:block; margin-top:8px; margin-bottom:5px;">${p.name}</b>
         <div class="p-price">${appSettings.currency} ${p.price}</div>
