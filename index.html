@@ -1593,8 +1593,8 @@ window.addEventListener('offline', function() {
 function generateQRCode() {
   const container = document.getElementById('qr-container');
   if (!container) return;
-  const menuUrl = 'https://sites.google.com/view/cup-and-go-menu/home';
-  container.innerHTML = `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZoAAAGaAQAAAAAefbjOAAAC6ElEQVR4nO2bQY6kMAxFvwcklkHqA9RRUjeYI436SH0DOEofYCSyRAr6s7CTgupVSzVQXTiLiKJ4IkiWY387Qnx7jL++zwAOOeSQQw455NBrQmKjBcYekGtqdcIoLeSaygPXQ5bn0I4QSJKIJMmpsasBDYFg92yqzw1P/k0OPQJKxQGoUwjZ7km/6B/qQY5ankMHQiGDnACSGRzQkMP/eZNDPwHiUDwDkDoicpYnWp5Du0GB5goiMzikjiI9ICId5QpzGYctz6G9oVFE1ASuqaP8mQDEOgGLphpHLc+h/SCNFldS9ngxV0Agg8As3Dyw6/IcOgiSKwAgWTbB935Rl6H3RmnVjRy0PId21yOKFFGSC801pvUjAEyUcD3ipSGzCJWkAACBahuIU0PEqSGHQLtyizgXVBMOpI5AqMlFEsHYH708h/aA1lvCgIaIE7CSpMxblOzTVezTQGEW0651WF0DQDEQ9xHngLaVLlj0oC5D9WxzHhxQg44n/yaHHgaFDL5fMjiEWUycChlAmAVAo+rlz/omh747Sq6BknjewoXiI9QsolfDTwFVPeIWO+bN/2FTAHWLeHlIVUqxyUIIjL//tgSWFkgtJHIRAk2WvZfn0O7QJrLchJeWjG70K48sXx/CvR1Y0buI2lXetlYat4hXh4qPqBJ17ZwCNp7BVeyTQPedtyunEFd2kOF6xMmgJKpZag18lG7dXTlq063rEWeASl0jcKVU6tAeKrIWRb2ucR7opkdYQ10VJcZ+Eds/Pr07/wzQSo8A0GQi9ShTkyV+tADSm1oI916eQ7tDXyPLsk1oPFlF7dvDvmucAqpnurTZUs90ddRJWyxDjSh+yDc59BBovMxi5zUus4hcZindVIufBD4lVH2Edk5Nm5aqh77JoWeESv4QCCABiNNblvgpANBQ4scbzUpS57vGCSDcQklU2dpCyXImuJQ0vK5xBuj+TNf2iuY89FfjPsIhhxxyyCGHHFqNf9XWcX2s3LcXAAAAAElFTkSuQmCC" alt="Cup And Go Menu QR" style="width:130px;height:130px;display:block" aria-label="Scan to open Cup And Go menu">`;
+  const menuUrl = 'https://cupandgo-ksa.github.io/cup-and-go-menu/';
+  container.innerHTML = `<img src="data:image/png;base64,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" alt="Cup And Go Menu QR" style="width:130px;height:130px;display:block" aria-label="Scan to open Cup And Go menu">`;
   container.onclick = function() {
     try { window.open(menuUrl, '_blank'); } catch(e) { location.href = menuUrl; }
   };
@@ -4787,5 +4787,31 @@ function showIntroSavePopup(message){
 html{width:100%;min-width:320px;min-height:100%;overflow-x:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:manipulation}body{width:100%;min-height:100vh;min-height:100dvh;overflow-x:hidden;box-sizing:border-box}*,*::before,*::after{box-sizing:border-box}img,video,canvas,svg{max-width:100%}.container{width:100%;max-width:720px;margin-left:auto;margin-right:auto}.modal{padding:12px;padding-block:max(12px,env(safe-area-inset-top),env(safe-area-inset-bottom));padding-inline:max(12px,env(safe-area-inset-left),env(safe-area-inset-right))}.modal-box{max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px)}.modal-body{min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}.bottom-nav{bottom:max(12px,env(safe-area-inset-bottom));left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right))}button,a,[onclick]{touch-action:manipulation;-webkit-tap-highlight-color:transparent}input,select,textarea{font-size:16px;min-width:0}@media(min-width:768px){.container{max-width:820px}.modal-box{max-width:560px}}@media(min-width:1100px){.container{max-width:960px}}@supports not (height:100dvh){body{min-height:-webkit-fill-available}}
 </style>
 
+<style id="cng-final-identical-menu-media-v2">
+/* Identical Admin/Customer product media: portrait menu artwork, full image, no crop. */
+.admin-product-img-wrap{
+  width:100%!important;
+  height:auto!important;
+  aspect-ratio:4/5!important;
+  overflow:hidden!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:0!important;
+  background:#f1f2f4!important;
+  border-radius:12px!important;
+}
+.admin-product-img{
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  padding:0!important;
+  margin:0!important;
+  display:block!important;
+  image-rendering:auto!important;
+}
+</style>
 </body>
 </html>
