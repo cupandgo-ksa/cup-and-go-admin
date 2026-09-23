@@ -1020,7 +1020,7 @@ input,select,textarea{max-width:100%;}
 
 <div id="modal-cats" class="modal"><div class="modal-box"><div class="modal-header"><h3 style="color:var(--orange); font-size:16px; font-weight:900;">🗂️ Categories</h3><button class="btn" style="padding:4px 10px; border-radius:10px;" onclick="closeModal('modal-cats')">✕</button></div><div class="modal-body"><div style="display:flex; gap:8px; margin-bottom:15px;"><input type="text" id="new-cat-name" placeholder="New Category" style="flex:1; padding:10px; border-radius:10px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:#fff;"><button class="btn btn-success" onclick="addCategoryUI()">Add</button></div><div id="cat-list-ui"></div></div></div></div>
 
-<div id="p-modal" class="modal"><div class="modal-box"><div class="modal-header"><h3 id="p-modal-title" style="color:var(--orange); font-size:16px; font-weight:900;">Create Item</h3><button class="btn" style="padding:4px 10px; border-radius:10px;" onclick="closeModal('p-modal')">✕</button></div><div class="modal-body"><div class="field"><label>Item Name</label><input type="text" id="inp-name" placeholder="e.g. Spanish Latte"></div><div class="field"><label>Category</label><select id="inp-cat-select" style="width:100%; border:1.5px solid var(--glass-border); background:rgba(255,255,255,0.05); color:var(--text); border-radius:16px; padding:12px; font-weight:600;"></select></div><div class="field"><label>Price (<span class="dyn-currency">SR</span>)</label><input type="number" id="inp-price" placeholder="18" step="0.01"></div><div class="field"><label>Customer App Availability</label><label style="display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--glass-border);border-radius:14px;background:rgba(255,255,255,.04);cursor:pointer;"><input type="checkbox" id="inp-customer-soldout" style="width:18px;height:18px;accent-color:#ff5252;"><span style="font-size:12px;font-weight:800;">Mark as SOLD OUT / Unavailable for customers</span></label></div><div class="field"><label>Menu Image (Clear HD)</label><div style="display:flex; gap:10px;"><input type="text" id="inp-icon" value="☕" style="flex:1;"><label for="inp-file" class="btn" style="background:rgba(255,255,255,0.1); color:var(--orange); display:flex; align-items:center; justify-content:center; padding:0 15px; cursor:pointer; border-radius:16px; border:1px solid var(--orange);">📷 Gallery</label><input type="file" id="inp-file" accept="image/*" style="display:none;" onchange="handleImageUploadFree(event)"></div><div class="hd-upload-note">Gallery photo is optimized up to 1600px for a clear customer menu. No API key or private image service is used.</div><div id="upload-status" style="font-size:11px; font-weight:bold; color:var(--orange); margin-top:6px; display:none;">Preparing clear HD image...</div><img id="inp-image-preview" class="admin-hd-upload-preview" alt="Selected menu item preview" style="display:none;"></div></div><div class="modal-footer"><button class="btn btn-primary" id="btn-save-product" style="width:100%; border-radius:16px;" onclick="saveProduct()">Save Item</button></div></div></div>
+<div id="p-modal" class="modal"><div class="modal-box"><div class="modal-header"><h3 id="p-modal-title" style="color:var(--orange); font-size:16px; font-weight:900;">Create Item</h3><button class="btn" style="padding:4px 10px; border-radius:10px;" onclick="closeModal('p-modal')">✕</button></div><div class="modal-body"><div class="field"><label>Item Name</label><input type="text" id="inp-name" placeholder="e.g. Spanish Latte"></div><div class="field"><label>Category</label><select id="inp-cat-select" style="width:100%; border:1.5px solid var(--glass-border); background:rgba(255,255,255,0.05); color:var(--text); border-radius:16px; padding:12px; font-weight:600;"></select></div><div class="field"><label>Price (<span class="dyn-currency">SR</span>)</label><input type="number" id="inp-price" placeholder="18" step="0.01"></div><div class="field"><label>Customer App Availability</label><label style="display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--glass-border);border-radius:14px;background:rgba(255,255,255,.04);cursor:pointer;"><input type="checkbox" id="inp-customer-soldout" style="width:18px;height:18px;accent-color:#ff5252;"><span style="font-size:12px;font-weight:800;">Mark as SOLD OUT / Unavailable for customers</span></label></div><div class="field"><label>Menu Image (Fast Card + HD Preview)</label><div style="display:flex; gap:10px;"><input type="text" id="inp-icon" value="☕" style="flex:1;"><label for="inp-file" class="btn" style="background:rgba(255,255,255,0.1); color:var(--orange); display:flex; align-items:center; justify-content:center; padding:0 15px; cursor:pointer; border-radius:16px; border:1px solid var(--orange);">📷 Gallery</label><input type="file" id="inp-file" accept="image/*" style="display:none;" onchange="handleImageUploadFree(event)"></div><div class="hd-upload-note">One photo automatically creates a lightweight card image and a separate HD preview.</div><div id="upload-status" style="font-size:11px; font-weight:bold; color:var(--orange); margin-top:6px; display:none;">Preparing fast card + HD preview...</div><img id="inp-image-preview" class="admin-hd-upload-preview" alt="Selected menu item preview" style="display:none;"></div></div><div class="modal-footer"><button class="btn btn-primary" id="btn-save-product" style="width:100%; border-radius:16px;" onclick="saveProduct()">Save Item</button></div></div></div>
 
 <div id="modal-closing" class="modal"><div class="modal-box"><div class="modal-header"><h3 style="color:var(--orange); font-size:16px; font-weight:900;" data-i18n="daily_close">🔥 Daily Closing</h3><button class="btn" style="padding:4px 10px; border-radius:10px;" onclick="closeModal('modal-closing')">✕</button></div><div class="modal-body"><p style="font-size:12px; color:var(--muted); margin-bottom:15px; text-align:center;">Generates closing report for today's orders.</p><div style="display:flex;justify-content:space-between;margin-bottom:20px;background:rgba(255,255,255,0.05);padding:15px;border-radius:16px;"><div style="text-align:center;"><span style="font-size:11px;color:var(--muted);">Orders</span><br><b id="admin-orders-rpt" style="font-size:22px;">0</b></div><div style="text-align:center;"><span style="font-size:11px;color:var(--muted);">Revenue</span><br><b style="font-size:22px;color:var(--orange);"><span id="admin-rev">0.00</span></b></div></div></div><div class="modal-footer"><button class="btn btn-primary" style="width:100%;border-radius:22px;" onclick="proceedToClosingPin()">📥 Execute Closing</button></div></div></div>
 
@@ -1366,7 +1366,7 @@ let ledMatrixSettings = JSON.parse(localStorage.getItem('cng_led_matrix')) || {
 
 let cart = []; let currentLoginRole = sessionStorage.getItem('cng_role') || null; 
 let pendingAction = null; let currentCartTotal = 0; let currentCategory = 'All';
-let uploadedImageUrl = ""; let pendingShopLogo = ""; let editingProductId = null; let activeOrderForShare = null; let reportTextForShare = "";
+let uploadedImageUrl = ""; let uploadedImageHDUrl = ""; let pendingShopLogo = ""; let editingProductId = null; let activeOrderForShare = null; let reportTextForShare = "";
 let isProductImageUploading = false;
 let isOnline = navigator.onLine;
 let currentReportDate = "";
@@ -2964,7 +2964,9 @@ function optimizeImageForHosting(file, purpose='image') {
     const type = String(file?.type || '').toLowerCase();
     if(!file || !type.startsWith('image/') || type.includes('gif') || type.includes('svg') || purpose === 'shop-logo') return resolve(file);
     const presets = {
-      'menu-product': {w:1200, h:1200, q:0.82},
+      'menu-product': {w:1800, h:1800, q:0.88},
+      'menu-product-card': {w:520, h:650, q:0.62},
+      'menu-product-hd': {w:1800, h:1800, q:0.88},
       'promo-banner': {w:1600, h:900, q:0.80},
       'customer-intro': {w:1080, h:1600, q:0.80}
     };
@@ -2985,7 +2987,7 @@ function optimizeImageForHosting(file, purpose='image') {
         canvas.toBlob((blob) => {
           URL.revokeObjectURL(objectUrl);
           if(!blob || blob.size >= file.size) return resolve(file);
-          const baseName = String(file.name || purpose).replace(/.[^.]+$/, '') || purpose;
+          const baseName = String(file.name || purpose).replace(/\.[^.]+$/, '') || purpose;
           resolve(new File([blob], baseName + '.jpg', {type:'image/jpeg', lastModified:Date.now()}));
         }, 'image/jpeg', cfg.q);
       } catch(error) {
@@ -3044,13 +3046,13 @@ function setProductImageUploadState(uploading) {
   if(saveBtn) {
     saveBtn.disabled = isProductImageUploading;
     saveBtn.style.opacity = isProductImageUploading ? '.55' : '1';
-    saveBtn.innerText = isProductImageUploading ? 'Uploading HD image…' : 'Save Item';
+    saveBtn.innerText = isProductImageUploading ? 'Creating card + HD images…' : 'Save Item';
   }
 }
 
 function openItemModal(id=null) {
   const imageNote=document.querySelector('#p-modal .hd-upload-note');
-  if(imageNote) imageNote.textContent='Gallery photo uploads to permanent HD hosting. If hosting is unavailable, a compressed Firebase backup is used automatically.';
+  if(imageNote) imageNote.textContent='One upload creates a lightweight menu card image and a separate HD image for customer preview.';
   const sel=document.getElementById('inp-cat-select');
   sel.innerHTML='';
   appSettings.categories.forEach(c=>sel.innerHTML+=`<option value="${c}">${c}</option>`);
@@ -3062,6 +3064,7 @@ function openItemModal(id=null) {
     editingProductId=id;
     const p=products.find(x=>x.id===id);
     const currentIcon=String(p?.icon||'');
+    const currentHD=String(p?.imageHD||p?.imageHd||p?.hdImage||currentIcon);
     const hasImage=isHostedMenuImage(currentIcon);
     document.getElementById('p-modal-title').innerText="Edit Item";
     document.getElementById('inp-name').value=p?.name||'';
@@ -3070,6 +3073,7 @@ function openItemModal(id=null) {
     const so=document.getElementById('inp-customer-soldout');
     if(so) so.checked=!!(p?.customerUnavailable||p?.soldOut);
     uploadedImageUrl=hasImage?currentIcon:"";
+    uploadedImageHDUrl=isHostedMenuImage(currentHD)?currentHD:uploadedImageUrl;
     document.getElementById('inp-icon').value=hasImage?"HD Image Attached 🖼️":(currentIcon||'☕');
     setProductImagePreview(hasImage?currentIcon:'');
   } else {
@@ -3081,6 +3085,7 @@ function openItemModal(id=null) {
     const so=document.getElementById('inp-customer-soldout');
     if(so) so.checked=false;
     uploadedImageUrl="";
+    uploadedImageHDUrl="";
     setProductImagePreview('');
   }
   const status=document.getElementById('upload-status');
@@ -3114,6 +3119,7 @@ function saveProduct() {
   };
   if(n && p) {
     const finalIcon=uploadedImageUrl!==""?uploadedImageUrl:(i||'☕');
+    const finalHD=uploadedImageHDUrl||finalIcon;
     if(editingProductId) {
       const index=products.findIndex(x=>x.id===editingProductId);
       if(index>-1){
@@ -3121,12 +3127,13 @@ function saveProduct() {
         products[index].price=parseFloat(p);
         products[index].category=cat;
         products[index].icon=finalIcon;
+        products[index].imageHD=finalHD;
         products[index].customerUnavailable=customerUnavailable;
         Object.assign(products[index],productDetails);
         cart.forEach(c=>{if(c.id===editingProductId){c.name=n;c.price=parseFloat(p);}});
       }
     } else {
-      products.push({id:Date.now(),name:n,category:cat,price:parseFloat(p),icon:finalIcon,customerUnavailable,...productDetails});
+      products.push({id:Date.now(),name:n,category:cat,price:parseFloat(p),icon:finalIcon,imageHD:finalHD,customerUnavailable,...productDetails});
     }
     saveData();
     initUI();
@@ -3185,6 +3192,7 @@ async function handleImageUploadFree(event) {
   if(!file) return;
   const statusEl=document.getElementById('upload-status');
   const previousImage=uploadedImageUrl;
+  const previousHDImage=uploadedImageHDUrl;
   const maxBytes=32*1024*1024;
 
   if(!String(file.type||'').startsWith('image/')) {
@@ -3203,24 +3211,30 @@ async function handleImageUploadFree(event) {
     setProductImageUploadState(true);
     statusEl.style.display='block';
     statusEl.style.color='var(--orange)';
-    statusEl.innerText='⏳ Uploading original HD image…';
+    statusEl.innerText='⏳ Creating fast card image + HD preview…';
 
     previewUrl=URL.createObjectURL(file);
     setProductImagePreview(previewUrl);
 
     try {
-      const hostedUrl=await uploadImageToImgBB(file,'menu-product');
-      uploadedImageUrl=hostedUrl;
-      rememberHostedImage(hostedUrl,file,'menu-product');
-      document.getElementById('inp-icon').value='Permanent HD Image Ready ✅';
-      setProductImagePreview(hostedUrl);
-      statusEl.innerText='✅ Original HD image hosted permanently — safe to Save';
+      const [cardUrl,hdUrl]=await Promise.all([
+        uploadImageToImgBB(file,'menu-product-card'),
+        uploadImageToImgBB(file,'menu-product-hd')
+      ]);
+      uploadedImageUrl=cardUrl;
+      uploadedImageHDUrl=hdUrl;
+      rememberHostedImage(cardUrl,file,'menu-product-card');
+      rememberHostedImage(hdUrl,file,'menu-product-hd');
+      document.getElementById('inp-icon').value='Fast Card + HD Preview Ready ✅';
+      setProductImagePreview(hdUrl);
+      statusEl.innerText='✅ Fast card image + HD preview ready — safe to Save';
       statusEl.style.color='var(--green)';
       showToast('✅ Permanent HD menu image is ready');
     } catch(hostError) {
       statusEl.innerText='⚠️ HD host unavailable — creating Firebase backup image…';
       const optimized=await createLocalMenuImageFallback(file);
       uploadedImageUrl=optimized.url;
+      uploadedImageHDUrl=optimized.url;
       document.getElementById('inp-icon').value='Firebase Backup Image Ready ✅';
       setProductImagePreview(optimized.url);
       statusEl.innerText=`⚠️ Backup image ready (${optimized.width} × ${optimized.height}px) — safe to Save`;
@@ -3229,6 +3243,7 @@ async function handleImageUploadFree(event) {
     }
   } catch(err) {
     uploadedImageUrl=previousImage;
+    uploadedImageHDUrl=previousHDImage;
     setProductImagePreview(previousImage);
     statusEl.innerText=`❌ Image processing failed: ${err?.message||'Please try again'}`;
     statusEl.style.color='var(--red)';
@@ -4915,9 +4930,9 @@ function showIntroSavePopup(message){
     const label=field?.querySelector(':scope > label');
     const note=field?.querySelector('.hd-upload-note');
     const status=document.getElementById('upload-status');
-    if(label)label.textContent='Menu Image (Clear HD)';
-    if(note)note.textContent='Gallery photo is optimized up to 1600px for a clear customer menu. No API key or private image service is used.';
-    if(status&&status.style.display==='none')status.textContent='Preparing clear HD image...';
+    if(label)label.textContent='Menu Image (Fast Card + HD Preview)';
+    if(note)note.textContent='One photo automatically creates a lightweight card image and a separate HD preview.';
+    if(status&&status.style.display==='none')status.textContent='Preparing fast card + HD preview...';
   }
   updateCopy();document.addEventListener('DOMContentLoaded',updateCopy);
 })();
@@ -4999,4 +5014,3 @@ html{width:100%;min-width:320px;min-height:100%;overflow-x:hidden;-webkit-text-s
 </script>
 </body>
 </html>
-
