@@ -916,6 +916,7 @@ input,select,textarea{max-width:100%;}
         <div class="quick-card" id="admin-card-history" onclick="openAdminModal('history')"><div class="quick-icon" style="color:var(--blue);">📅</div><span style="font-size:12px;font-weight:700;" data-i18n="hist_lbl">History</span></div>
         <div class="quick-card" id="admin-card-monthly" onclick="openAdminModal('monthly')"><div class="quick-icon" style="color:var(--orange);">📊</div><span style="font-size:12px;font-weight:700;" data-i18n="monthly_rpt">Monthly</span></div>
         <div class="quick-card" id="admin-card-settings" onclick="openAdminModal('security')"><div class="quick-icon" style="color:var(--orange);">⚙️</div><span style="font-size:12px;font-weight:700;" data-i18n="settings_lbl">Settings</span></div>
+        <div class="quick-card" id="admin-card-website" onclick="openWebsiteControl()"><div class="quick-icon" style="color:#7CFF9B;">🌐</div><span style="font-size:12px;font-weight:700;">Website</span></div>
         <div class="quick-card" id="admin-card-free" onclick="openAdminModal('free')"><div class="quick-icon" style="color:#FFD700;">🎁</div><span style="font-size:12px;font-weight:700;">Free Items</span></div>
         <div class="quick-card" id="admin-card-about" onclick="openModal('about-modal')"><div class="quick-icon" style="color:var(--green);">ℹ️</div><span style="font-size:12px;font-weight:700;">About</span></div>
         <div class="quick-card" onclick="backupAllData()" style="border:2px solid var(--green);"><div class="quick-icon" style="color:var(--green);">💾</div><span style="font-size:12px;font-weight:700;">Backup Data</span></div>
@@ -933,6 +934,26 @@ input,select,textarea{max-width:100%;}
   </nav>
 </div>
 
+<div id="modal-website-control" class="modal">
+  <div class="modal-box" style="max-width:760px;">
+    <div class="modal-header"><h3 style="color:var(--orange);font-size:16px;font-weight:900;">🌐 Website Control</h3><button class="btn" style="padding:4px 10px;border-radius:10px;" onclick="closeModal('modal-website-control')">✕</button></div>
+    <div class="modal-body" style="max-height:72vh;overflow:auto;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><button class="btn btn-success" onclick="saveWebsiteControl()" style="flex:1;min-width:140px;border-radius:14px;">💾 Save Website</button><button class="btn" onclick="window.open('https://cupandgo-ksa.github.io/cup-and-go-menu/website/','_blank')" style="flex:1;min-width:140px;border-radius:14px;background:rgba(10,132,255,.18);color:#73b8ff;">↗ Open Website</button></div>
+      <div class="card" style="padding:14px;margin-bottom:12px;">
+        <label style="display:flex;align-items:center;gap:10px;font-weight:800;margin-bottom:12px;"><input id="website-enabled" type="checkbox" style="width:18px;height:18px;accent-color:var(--green);"> Website enabled</label>
+        <div class="field"><label>Brand Name</label><input id="website-brand" type="text" placeholder="CUP AND GO"></div>
+        <div class="field"><label>Menu / Order URL</label><input id="website-menu-url" type="url" placeholder="https://..."></div>
+        <div class="field"><label>Auto slide (seconds)</label><input id="website-slide-seconds" type="number" min="3.5" max="30" step=".5"></div>
+        <div class="field"><label>Experience text — English</label><textarea id="website-exp-en" rows="3" style="width:100%;padding:12px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--glass-border);color:var(--text);"></textarea></div>
+        <div class="field"><label>Experience text — Arabic</label><textarea id="website-exp-ar" rows="3" dir="rtl" style="width:100%;padding:12px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--glass-border);color:var(--text);"></textarea></div>
+        <div class="field"><label>Final CTA — English</label><input id="website-final-en" type="text"></div>
+        <div class="field"><label>Final CTA — Arabic</label><input id="website-final-ar" type="text" dir="rtl"></div>
+      </div>
+      <div id="website-slide-editors"></div>
+      <p style="font-size:10px;opacity:.65;line-height:1.6;margin-top:10px;">Website settings save only to <b>/website/config</b>. POS, orders and existing menu data are not overwritten.</p>
+    </div>
+  </div>
+</div>
 <!-- ALL MODALS (সংক্ষিপ্ত) -->
 <div id="modal-stock" class="modal"><div class="modal-box"><div class="modal-header"><h3 style="color:var(--orange); font-size:16px; font-weight:900;">📥 Stock Receive</h3><button class="btn" style="padding:4px 10px; border-radius:10px;" onclick="closeModal('modal-stock')">✕</button></div><div class="modal-body"><div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;"><input type="date" id="stock-date-input" onchange="loadStockForSelectedDate()" style="flex:1; min-width:120px; padding:10px; border-radius:12px; background:rgba(255,255,255,0.08); border:1px solid var(--glass-border); color:#fff; font-weight:bold;"><input type="text" id="stock-search-input" placeholder="🔍 Search" oninput="filterStockItems()" style="flex:1; min-width:100px; padding:10px; border-radius:12px; background:rgba(255,255,255,0.08); border:1px solid var(--glass-border); color:#fff; font-weight:bold;"><button class="btn btn-primary" style="padding:10px 14px; font-size:11px;" onclick="openStockItemModal()">+ New</button><button class="btn btn-success" style="padding:10px 14px; font-size:11px;" onclick="openMonthlyStockSheet()">📊 Sheet</button></div><div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:16px; border:1px solid var(--glass-border); max-height:320px; overflow-y:auto;" id="stock-items-inputs-container"></div><div id="stock-summary" style="margin-top:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:12px; font-size:11px; display:none;"><span>📦 Items: <b id="stock-total-items">0</b></span><span style="margin-left:15px;">⚠️ Low: <b id="stock-low-count" style="color:var(--red);">0</b></span></div></div><div class="modal-footer"><button class="btn btn-primary" style="width:100%; border-radius:18px; padding:12px;" onclick="saveDailyStockEntry()">💾 Save</button></div></div></div>
 
@@ -1794,7 +1815,8 @@ function printContent(elementId) {
 
 
 </head>
-  <body><div class="print-shell">${content.innerHTML}</div></body>
+  <body><div class="print-shell">${content.innerHTML}</div><script src="website-control.js"></script>
+</body>
   </html>`;
 
   let w = null;
