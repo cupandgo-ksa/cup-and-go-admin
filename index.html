@@ -2965,8 +2965,8 @@ function optimizeImageForHosting(file, purpose='image') {
     if(!file || !type.startsWith('image/') || type.includes('gif') || type.includes('svg') || purpose === 'shop-logo') return resolve(file);
     const presets = {
       'menu-product': {w:1800, h:1800, q:0.86},
-      'menu-product-card': {w:1080, h:1350, q:0.86},
-      'menu-product-hd': {w:1800, h:1800, q:0.86},
+      'menu-product-card': {w:900, h:1125, q:0.82, format:'image/webp', ext:'webp'},
+      'menu-product-hd': {w:1800, h:1800, q:0.86, format:'image/jpeg', ext:'jpg'},
       'promo-banner': {w:1600, h:900, q:0.80},
       'customer-intro': {w:1080, h:1600, q:0.80}
     };
@@ -2988,8 +2988,10 @@ function optimizeImageForHosting(file, purpose='image') {
           URL.revokeObjectURL(objectUrl);
           if(!blob || blob.size >= file.size) return resolve(file);
           const baseName = String(file.name || purpose).replace(/\.[^.]+$/, '') || purpose;
-          resolve(new File([blob], baseName + '.jpg', {type:'image/jpeg', lastModified:Date.now()}));
-        }, 'image/jpeg', cfg.q);
+          const outputType = cfg.format || 'image/jpeg';
+          const outputExt = cfg.ext || (outputType==='image/webp'?'webp':'jpg');
+          resolve(new File([blob], baseName + '.' + outputExt, {type:outputType, lastModified:Date.now()}));
+        }, cfg.format || 'image/jpeg', cfg.q);
       } catch(error) {
         URL.revokeObjectURL(objectUrl);
         resolve(file);
