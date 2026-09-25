@@ -2965,7 +2965,7 @@ function optimizeImageForHosting(file, purpose='image') {
     if(!file || !type.startsWith('image/') || type.includes('gif') || type.includes('svg') || purpose === 'shop-logo') return resolve(file);
     const presets = {
       'menu-product': {w:1800, h:1800, q:0.86},
-      'menu-product-card': {w:640, h:800, q:0.74},
+      'menu-product-card': {w:1080, h:1350, q:0.86},
       'menu-product-hd': {w:1800, h:1800, q:0.86},
       'promo-banner': {w:1600, h:900, q:0.80},
       'customer-intro': {w:1080, h:1600, q:0.80}
