@@ -938,7 +938,7 @@ input,select,textarea{max-width:100%;}
   <div class="modal-box" style="max-width:760px;">
     <div class="modal-header"><h3 style="color:var(--orange);font-size:16px;font-weight:900;">🌐 Website Control</h3><button class="btn" style="padding:4px 10px;border-radius:10px;" onclick="closeModal('modal-website-control')">✕</button></div>
     <div class="modal-body" style="max-height:72vh;overflow:auto;">
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><button class="btn btn-success" onclick="saveWebsiteControl()" style="flex:1;min-width:140px;border-radius:14px;">💾 Save Website</button><button class="btn" onclick="window.open('https://cupandgo-ksa.github.io/cup-and-go-menu/website/','_blank')" style="flex:1;min-width:140px;border-radius:14px;background:rgba(10,132,255,.18);color:#73b8ff;">↗ Open Website</button></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><button class="btn btn-success" onclick="saveWebsiteControl()" style="flex:1;min-width:140px;border-radius:14px;">💾 Save Website</button><button class="btn" onclick="window.open('https://cupandgoksa.com/','_blank')" style="flex:1;min-width:140px;border-radius:14px;background:rgba(10,132,255,.18);color:#73b8ff;">↗ Open Website</button></div>
       <div class="card" style="padding:14px;margin-bottom:12px;">
         <label style="display:flex;align-items:center;gap:10px;font-weight:800;margin-bottom:12px;"><input id="website-enabled" type="checkbox" style="width:18px;height:18px;accent-color:var(--green);"> Website enabled</label>
         <div class="field"><label>Brand Name</label><input id="website-brand" type="text" placeholder="CUP AND GO"></div>
@@ -5040,7 +5040,7 @@ html{width:100%;min-width:320px;min-height:100%;overflow-x:hidden;-webkit-text-s
 const websiteControlDefaults={
   enabled:true,
   brandName:'CUP AND GO',
-  menuUrl:'https://cupandgo-ksa.github.io/cup-and-go-menu/',
+  menuUrl:'https://cupandgoksa.com/menu/',
   autoSlideMs:6500,
   experienceTextEn:'Fast enough for your day. Premium enough to remember. Cup And Go brings clean design, fresh taste and a little theatre to every cup.',
   experienceTextAr:'سريع ليناسب يومك، وفاخر بما يكفي لتتذكره. كوب أند جو يجمع الطعم الطازج والتصميم النظيف في كل كوب.',
@@ -5120,7 +5120,7 @@ async function openWebsiteControl(){
   }
   document.getElementById('website-enabled').checked=c.enabled!==false;
   document.getElementById('website-brand').value=c.brandName||'CUP AND GO';
-  document.getElementById('website-menu-url').value=c.menuUrl||websiteControlDefaults.menuUrl;
+  document.getElementById('website-menu-url').value=websiteControlDefaults.menuUrl;
   document.getElementById('website-slide-seconds').value=(Number(c.autoSlideMs)||6500)/1000;
   document.getElementById('website-exp-en').value=c.experienceTextEn||websiteControlDefaults.experienceTextEn;
   document.getElementById('website-exp-ar').value=c.experienceTextAr||websiteControlDefaults.experienceTextAr;
@@ -5150,7 +5150,7 @@ async function saveWebsiteControl(){
   const cfg={
     enabled:document.getElementById('website-enabled').checked,
     brandName:document.getElementById('website-brand').value.trim()||'CUP AND GO',
-    menuUrl:document.getElementById('website-menu-url').value.trim()||websiteControlDefaults.menuUrl,
+    menuUrl:websiteControlDefaults.menuUrl,
     autoSlideMs:Math.max(3500,Math.round((parseFloat(document.getElementById('website-slide-seconds').value)||6.5)*1000)),
     experienceTextEn:document.getElementById('website-exp-en').value.trim(),
     experienceTextAr:document.getElementById('website-exp-ar').value.trim(),
