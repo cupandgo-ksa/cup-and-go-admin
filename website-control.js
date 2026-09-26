@@ -251,7 +251,7 @@ async function uploadWebsiteStoreImage(ev,i){
     showToast('Uploading store photo…');
     const url=await uploadImageToImgBB(file,'promo-banner');
     document.getElementById('website-store-url-'+i).value=url;
-    const p=document.getElementById('website-store-preview-'+i),e=document.getElementById('website-store-empty-'+i');p.src=url;p.style.display='block';e.style.display='none';
+    const p=document.getElementById('website-store-preview-'+i),e=document.getElementById('website-store-empty-'+i);p.src=url;p.style.display='block';e.style.display='none';
     if(typeof rememberHostedImage==='function')rememberHostedImage(url,file,'website-store-photo');
     showToast('✅ Store photo ready');
   }catch(err){console.error(err);showToast('❌ Store photo upload failed')}
