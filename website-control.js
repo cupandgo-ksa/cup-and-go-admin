@@ -205,7 +205,7 @@ function ensureWebsiteBrandGalleryFields(){
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><b style="color:var(--orange)">Brand + Store Photos</b><span style="font-size:10px;opacity:.55;">Mobile website</span></div>'+
     '<div class="field"><label>Stylish shop-name PNG</label><div style="display:grid;grid-template-columns:95px 1fr;gap:10px;align-items:center;"><div style="height:70px;border-radius:14px;border:1px dashed var(--glass-border);display:grid;place-items:center;overflow:hidden;background:rgba(255,255,255,.04);"><img id="website-brand-image-preview" style="max-width:100%;max-height:100%;object-fit:contain;display:none"><span id="website-brand-image-empty" style="font-size:9px;opacity:.5;">PNG</span></div><div><label class="btn" style="display:flex;align-items:center;justify-content:center;padding:11px;border-radius:12px;cursor:pointer;background:rgba(255,255,255,.08);color:var(--orange);">📷 Upload shop-name PNG<input type="file" accept="image/png,image/webp,image/*" style="display:none" onchange="uploadWebsiteBrandImage(event)"></label><button type="button" class="btn" onclick="removeWebsiteBrandImage()" style="width:100%;margin-top:7px;padding:9px;border-radius:12px;background:rgba(255,59,48,.1);color:#ff8179;">Remove</button></div></div><input id="website-brand-image-url" type="hidden"></div>'+
     '<div style="font-size:10px;font-weight:900;color:var(--orange);margin:16px 0 9px;">Store / Signboard slideshow — 3 photos</div>'+
-    '<div id="website-store-gallery-fields" style="display:grid;gap:10px;"></div>'+
+    '<div id="website-store-gallery-fields" style="display:grid;gap:10px;"></div>'+'<div style="font-size:10px;font-weight:900;color:var(--orange);margin:18px 0 9px;">3D Signboard Artwork</div>'+'<div style="display:grid;grid-template-columns:95px 1fr;gap:10px;align-items:center;padding:9px;border-radius:14px;border:1px solid var(--glass-border);background:rgba(255,255,255,.035);"><div style="height:86px;border-radius:12px;overflow:hidden;background:rgba(255,255,255,.04);display:grid;place-items:center;"><img id="website-signboard-preview" style="width:100%;height:100%;object-fit:contain;display:none"><span id="website-signboard-empty" style="font-size:9px;opacity:.5;">Signboard</span></div><div><label class="btn" style="display:flex;align-items:center;justify-content:center;padding:10px;border-radius:11px;cursor:pointer;background:rgba(255,255,255,.08);color:var(--orange);">🪧 Upload signboard image<input type="file" accept="image/*" style="display:none" onchange="uploadWebsiteSignboardImage(event)"></label><button type="button" class="btn" onclick="removeWebsiteSignboardImage()" style="width:100%;margin-top:6px;padding:8px;border-radius:11px;background:rgba(255,59,48,.1);color:#ff8179;">Remove</button><input id="website-signboard-image-url" type="hidden"></div></div>'+
     '<p style="font-size:9px;opacity:.52;line-height:1.6;margin-top:9px;">These 3 photos slide automatically in the middle of the website. Upload your storefront, signboard or interior photos.</p>';
   if(extra&&extra.parentNode)extra.parentNode.insertBefore(box,extra);
   else host.parentNode.insertBefore(box,host);
@@ -221,13 +221,15 @@ function fillWebsiteBrandGalleryFields(c){
   const brand=c.brandImageUrl||'';
   const bi=document.getElementById('website-brand-image-url'),bp=document.getElementById('website-brand-image-preview'),be=document.getElementById('website-brand-image-empty');
   if(bi)bi.value=brand;if(bp){if(brand){bp.src=brand;bp.style.display='block'}else{bp.removeAttribute('src');bp.style.display='none'}}if(be)be.style.display=brand?'none':'block';
+  const sign=c.signboardImageUrl||'',si=document.getElementById('website-signboard-image-url'),sp=document.getElementById('website-signboard-preview'),se=document.getElementById('website-signboard-empty');if(si)si.value=sign;if(sp){if(sign){sp.src=sign;sp.style.display='block'}else{sp.removeAttribute('src');sp.style.display='none'}}if(se)se.style.display=sign?'none':'block';
   const g=Array.isArray(c.storeGallery)?c.storeGallery:[];
   [0,1,2].forEach(i=>{const u=g[i]||'',inp=document.getElementById('website-store-url-'+i),pr=document.getElementById('website-store-preview-'+i),em=document.getElementById('website-store-empty-'+i);if(inp)inp.value=u;if(pr){if(u){pr.src=u;pr.style.display='block'}else{pr.removeAttribute('src');pr.style.display='none'}}if(em)em.style.display=u?'none':'block';});
 }
 function readWebsiteBrandGalleryFields(){
   return{
     brandImageUrl:document.getElementById('website-brand-image-url')?.value?.trim()||'',
-    storeGallery:[0,1,2].map(i=>document.getElementById('website-store-url-'+i)?.value?.trim()||'').filter(Boolean)
+    storeGallery:[0,1,2].map(i=>document.getElementById('website-store-url-'+i)?.value?.trim()||'').filter(Boolean),
+    signboardImageUrl:document.getElementById('website-signboard-image-url')?.value?.trim()||''
   };
 }
 async function uploadWebsiteBrandImage(ev){
@@ -259,4 +261,21 @@ async function uploadWebsiteStoreImage(ev,i){
 }
 function removeWebsiteStoreImage(i){
   const inp=document.getElementById('website-store-url-'+i),p=document.getElementById('website-store-preview-'+i),e=document.getElementById('website-store-empty-'+i);if(inp)inp.value='';if(p){p.removeAttribute('src');p.style.display='none'}if(e)e.style.display='block';showToast('Store photo removed');
+}
+
+async function uploadWebsiteSignboardImage(ev){
+  const file=ev.target.files&&ev.target.files[0];if(!file)return;
+  try{
+    showToast('Uploading signboard image…');
+    const url=await uploadImageToImgBB(file,'promo-banner');
+    const i=document.getElementById('website-signboard-image-url'),p=document.getElementById('website-signboard-preview'),e=document.getElementById('website-signboard-empty');
+    if(i)i.value=url;if(p){p.src=url;p.style.display='block'}if(e)e.style.display='none';
+    if(typeof rememberHostedImage==='function')rememberHostedImage(url,file,'website-signboard');
+    showToast('✅ Signboard ready');
+  }catch(err){console.error(err);showToast('❌ Signboard upload failed')}
+  ev.target.value='';
+}
+function removeWebsiteSignboardImage(){
+  const i=document.getElementById('website-signboard-image-url'),p=document.getElementById('website-signboard-preview'),e=document.getElementById('website-signboard-empty');
+  if(i)i.value='';if(p){p.removeAttribute('src');p.style.display='none'}if(e)e.style.display='block';showToast('Signboard removed');
 }
