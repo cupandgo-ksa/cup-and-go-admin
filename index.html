@@ -3127,6 +3127,7 @@ function saveProduct() {
   const customerUnavailable=!!document.getElementById('inp-customer-soldout')?.checked;
   const fieldValue=id=>(document.getElementById(id)?.value||'').trim();
   const productDetails={
+    nameEn:n.trim(),
     nameAr:fieldValue('inp-name-ar'),
     descriptionEn:fieldValue('inp-desc-en'),
     descriptionAr:fieldValue('inp-desc-ar'),
