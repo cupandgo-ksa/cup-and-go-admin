@@ -90,6 +90,7 @@ async function openWebsiteControl(){
   renderWebsiteSlideEditors(c);
   fillWebsiteExtraFields(c);
   fillWebsiteBrandGalleryFields(c);
+  fillWebsiteBaristas(c);
   openModal('modal-website-control');
 }
 function readWebsiteSlide(i){
@@ -119,6 +120,7 @@ async function saveWebsiteControl(){
     slides:[0,1,2,3].map(readWebsiteSlide),
     ...readWebsiteExtraFields(),
     ...readWebsiteBrandGalleryFields(),
+    ...readWebsiteBaristas(),
     updatedAt:firebase.database.ServerValue.TIMESTAMP
   };
   try{await db.ref('/website/config').set(cfg);websiteSlidesWorking=cfg.slides;showToast('✅ Website animation updated live');}
@@ -278,4 +280,78 @@ async function uploadWebsiteSignboardImage(ev){
 function removeWebsiteSignboardImage(){
   const i=document.getElementById('website-signboard-image-url'),p=document.getElementById('website-signboard-preview'),e=document.getElementById('website-signboard-empty');
   if(i)i.value='';if(p){p.removeAttribute('src');p.style.display='none'}if(e)e.style.display='block';showToast('Signboard removed');
+}
+
+function ensureWebsiteBaristaFields(){
+  const anchor=document.getElementById('website-extra-fields')||document.getElementById('website-slide-editors');
+  if(!anchor||document.getElementById('website-barista-fields'))return;
+  const box=document.createElement('div');
+  box.id='website-barista-fields';
+  box.className='card';
+  box.style.cssText='padding:14px;margin:0 0 12px;';
+  box.innerHTML=
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><b style="color:var(--orange)">☕ Baristas</b><span style="font-size:10px;opacity:.55;">English + العربية</span></div>'+
+    '<p style="font-size:9px;opacity:.58;line-height:1.6;margin:0 0 12px;">Add up to 3 baristas. Empty slots stay hidden on the public website.</p>'+
+    '<div id="website-barista-list" style="display:grid;gap:12px;"></div>';
+  anchor.parentNode.insertBefore(box,anchor);
+  const list=document.getElementById('website-barista-list');
+  list.innerHTML=[0,1,2].map(i=>
+    '<div style="padding:11px;border:1px solid var(--glass-border);border-radius:16px;background:rgba(255,255,255,.035);">'+
+      '<div style="font-size:10px;font-weight:900;color:var(--orange);margin-bottom:9px;">Barista '+(i+1)+'</div>'+
+      '<div style="display:grid;grid-template-columns:92px 1fr;gap:11px;align-items:center;">'+
+        '<div style="height:92px;width:92px;border-radius:50%;overflow:hidden;background:rgba(255,255,255,.05);border:1px dashed var(--glass-border);display:grid;place-items:center;">'+
+          '<img id="website-barista-preview-'+i+'" style="width:100%;height:100%;object-fit:cover;display:none"><span id="website-barista-empty-'+i+'" style="font-size:9px;opacity:.5;text-align:center;">Barista<br>Photo</span>'+
+        '</div>'+
+        '<div>'+
+          '<label class="btn" style="display:flex;align-items:center;justify-content:center;padding:10px;border-radius:11px;cursor:pointer;background:rgba(255,255,255,.08);color:var(--orange);">📷 Upload photo<input type="file" accept="image/*" style="display:none" onchange="uploadWebsiteBaristaImage(event,'+i+')"></label>'+
+          '<button type="button" class="btn" onclick="removeWebsiteBaristaImage('+i+')" style="width:100%;margin-top:6px;padding:8px;border-radius:11px;background:rgba(255,59,48,.1);color:#ff8179;">Remove photo</button>'+
+          '<input id="website-barista-image-'+i+'" type="hidden">'+
+        '</div>'+
+      '</div>'+
+      '<div class="field" style="margin-top:10px;"><label>Name — English</label><input id="website-barista-en-'+i+'" type="text" placeholder="Barista name"></div>'+
+      '<div class="field"><label>الاسم — عربي</label><input id="website-barista-ar-'+i+'" type="text" dir="rtl" placeholder="اسم الباريستا"></div>'+
+    '</div>'
+  ).join('');
+}
+function fillWebsiteBaristas(c){
+  ensureWebsiteBaristaFields();
+  const arr=Array.isArray(c.baristas)?c.baristas:[];
+  [0,1,2].forEach(i=>{
+    const b=arr[i]||{},url=b.imageUrl||'';
+    const en=document.getElementById('website-barista-en-'+i),ar=document.getElementById('website-barista-ar-'+i),im=document.getElementById('website-barista-image-'+i),pr=document.getElementById('website-barista-preview-'+i),em=document.getElementById('website-barista-empty-'+i);
+    if(en)en.value=b.nameEn||'';
+    if(ar)ar.value=b.nameAr||'';
+    if(im)im.value=url;
+    if(pr){if(url){pr.src=url;pr.style.display='block'}else{pr.removeAttribute('src');pr.style.display='none'}}
+    if(em)em.style.display=url?'none':'block';
+  });
+}
+function readWebsiteBaristas(){
+  const baristas=[0,1,2].map(i=>({
+    nameEn:document.getElementById('website-barista-en-'+i)?.value?.trim()||'',
+    nameAr:document.getElementById('website-barista-ar-'+i)?.value?.trim()||'',
+    imageUrl:document.getElementById('website-barista-image-'+i)?.value?.trim()||''
+  }));
+  return {baristas};
+}
+async function uploadWebsiteBaristaImage(ev,i){
+  const file=ev.target.files&&ev.target.files[0];if(!file)return;
+  try{
+    showToast('Uploading barista photo…');
+    const url=await uploadImageToImgBB(file,'promo-banner');
+    const input=document.getElementById('website-barista-image-'+i),pr=document.getElementById('website-barista-preview-'+i),em=document.getElementById('website-barista-empty-'+i);
+    if(input)input.value=url;
+    if(pr){pr.src=url;pr.style.display='block'}
+    if(em)em.style.display='none';
+    if(typeof rememberHostedImage==='function')rememberHostedImage(url,file,'website-barista');
+    showToast('✅ Barista photo ready');
+  }catch(err){console.error(err);showToast('❌ Barista photo upload failed')}
+  ev.target.value='';
+}
+function removeWebsiteBaristaImage(i){
+  const input=document.getElementById('website-barista-image-'+i),pr=document.getElementById('website-barista-preview-'+i),em=document.getElementById('website-barista-empty-'+i);
+  if(input)input.value='';
+  if(pr){pr.removeAttribute('src');pr.style.display='none'}
+  if(em)em.style.display='block';
+  showToast('Barista photo removed');
 }
