@@ -1,7 +1,7 @@
 const websiteControlDefaults={
   enabled:true,
   brandName:'CUP AND GO',
-  menuUrl:'https://cupandgo-ksa.github.io/cup-and-go-menu/',
+  menuUrl:'https://cupandgoksa.com/menu/',
   autoSlideMs:6500,
   experienceTextEn:'Fast enough for your day. Premium enough to remember. Cup And Go brings clean design, fresh taste and a little theatre to every cup.',
   experienceTextAr:'سريع ليناسب يومك، وفاخر بما يكفي لتتذكره. كوب أند جو يجمع الطعم الطازج والتصميم النظيف في كل كوب.',
@@ -81,7 +81,7 @@ async function openWebsiteControl(){
   }
   document.getElementById('website-enabled').checked=c.enabled!==false;
   document.getElementById('website-brand').value=c.brandName||'CUP AND GO';
-  document.getElementById('website-menu-url').value=c.menuUrl||websiteControlDefaults.menuUrl;
+  document.getElementById('website-menu-url').value=websiteControlDefaults.menuUrl;
   document.getElementById('website-slide-seconds').value=(Number(c.autoSlideMs)||6500)/1000;
   document.getElementById('website-exp-en').value=c.experienceTextEn||websiteControlDefaults.experienceTextEn;
   document.getElementById('website-exp-ar').value=c.experienceTextAr||websiteControlDefaults.experienceTextAr;
@@ -111,7 +111,7 @@ async function saveWebsiteControl(){
   const cfg={
     enabled:document.getElementById('website-enabled').checked,
     brandName:document.getElementById('website-brand').value.trim()||'CUP AND GO',
-    menuUrl:document.getElementById('website-menu-url').value.trim()||websiteControlDefaults.menuUrl,
+    menuUrl:websiteControlDefaults.menuUrl,
     autoSlideMs:Math.max(3500,Math.round((parseFloat(document.getElementById('website-slide-seconds').value)||6.5)*1000)),
     experienceTextEn:document.getElementById('website-exp-en').value.trim(),
     experienceTextAr:document.getElementById('website-exp-ar').value.trim(),
