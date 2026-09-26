@@ -1815,7 +1815,7 @@ function printContent(elementId) {
 
 
 </head>
-  <body><div class="print-shell">${content.innerHTML}</div><script src="website-control.js"></script>
+  <body><div class="print-shell">${content.innerHTML}</div>
 </body>
   </html>`;
 
@@ -5036,5 +5036,5 @@ html{width:100%;min-width:320px;min-height:100%;overflow-x:hidden;-webkit-text-s
   document.addEventListener('DOMContentLoaded',()=>{prepare();new MutationObserver(prepare).observe(document.body,{childList:true,subtree:true})});
 })();
 </script>
-</body>
+<script src="website-control.js?v=6"></script>\n</body>
 </html>
