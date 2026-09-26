@@ -88,6 +88,7 @@ async function openWebsiteControl(){
   document.getElementById('website-final-en').value=c.finalTextEn||websiteControlDefaults.finalTextEn;
   document.getElementById('website-final-ar').value=c.finalTextAr||websiteControlDefaults.finalTextAr;
   renderWebsiteSlideEditors(c);
+  fillWebsiteExtraFields(c);
   openModal('modal-website-control');
 }
 function readWebsiteSlide(i){
@@ -115,6 +116,7 @@ async function saveWebsiteControl(){
     finalTextEn:document.getElementById('website-final-en').value.trim(),
     finalTextAr:document.getElementById('website-final-ar').value.trim(),
     slides:[0,1,2,3].map(readWebsiteSlide),
+    ...readWebsiteExtraFields(),
     updatedAt:firebase.database.ServerValue.TIMESTAMP
   };
   try{await db.ref('/website/config').set(cfg);websiteSlidesWorking=cfg.slides;showToast('✅ Website animation updated live');}
@@ -142,4 +144,49 @@ function removeWebsiteSlideImage(i){
   if(hidden)hidden.value='';if(preview){preview.removeAttribute('src');preview.style.display='none'}if(empty)empty.style.display='block';
   websiteSlidesWorking[i]=websiteSlidesWorking[i]||{};websiteSlidesWorking[i].imageUrl='';
   showToast('Animation image removed');
+}
+
+function ensureWebsiteExtraFields(){
+  const host=document.getElementById('website-slide-editors');if(!host||document.getElementById('website-extra-fields'))return;
+  const wrap=document.createElement('div');wrap.id='website-extra-fields';wrap.className='card';wrap.style.cssText='padding:14px;margin:0 0 12px;';
+  wrap.innerHTML=
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><b style="color:var(--orange)">About + Contact</b><span style="font-size:10px;opacity:.55;">Website footer</span></div>'+
+    '<div class="field"><label>Popular items to show</label><select id="website-popular-limit" style="width:100%;padding:12px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid var(--glass-border);color:var(--text);"><option value="5">5 items</option><option value="6">6 items</option></select></div>'+
+    '<div class="field"><label>About title — English</label><input id="website-about-title-en" type="text" placeholder="About Cup And Go"></div>'+
+    '<div class="field"><label>About title — Arabic</label><input id="website-about-title-ar" type="text" dir="rtl" placeholder="عن كوب أند جو"></div>'+
+    '<div class="field"><label>About text — English</label><textarea id="website-about-text-en" rows="5" style="width:100%;padding:12px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--glass-border);color:var(--text);" placeholder="Write a detailed description about the shop..."></textarea></div>'+
+    '<div class="field"><label>About text — Arabic</label><textarea id="website-about-text-ar" rows="5" dir="rtl" style="width:100%;padding:12px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--glass-border);color:var(--text);" placeholder="اكتب وصفاً مفصلاً عن المتجر..."></textarea></div>'+
+    '<div class="field"><label>Google Maps / Location URL</label><input id="website-location-url" type="url" placeholder="https://maps.app.goo.gl/..."></div>'+
+    '<div class="field"><label>WhatsApp number</label><input id="website-whatsapp" type="tel" placeholder="9665XXXXXXXX"></div>'+
+    '<div class="field"><label>Instagram ID or URL</label><input id="website-instagram" type="text" placeholder="Cupandgo.ksa"></div>'+
+    '<div class="field"><label>TikTok ID or URL</label><input id="website-tiktok" type="text" placeholder="@cupandgo..."></div>'+
+    '<p style="font-size:9px;opacity:.5;line-height:1.6;margin-top:8px;">Leave any contact field empty to hide it from the website.</p>';
+  host.parentNode.insertBefore(wrap,host);
+}
+function fillWebsiteExtraFields(c){
+  ensureWebsiteExtraFields();
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v==null?'':v};
+  set('website-popular-limit',String(Number(c.popularLimit)||6));
+  set('website-about-title-en',c.aboutTitleEn||'');
+  set('website-about-title-ar',c.aboutTitleAr||'');
+  set('website-about-text-en',c.aboutTextEn||'');
+  set('website-about-text-ar',c.aboutTextAr||'');
+  set('website-location-url',c.locationUrl||'');
+  set('website-whatsapp',c.whatsapp||'');
+  set('website-instagram',c.instagram||'');
+  set('website-tiktok',c.tiktok||'');
+}
+function readWebsiteExtraFields(){
+  const val=id=>document.getElementById(id)?.value?.trim()||'';
+  return {
+    popularLimit:Math.min(6,Math.max(5,Number(val('website-popular-limit'))||6)),
+    aboutTitleEn:val('website-about-title-en'),
+    aboutTitleAr:val('website-about-title-ar'),
+    aboutTextEn:val('website-about-text-en'),
+    aboutTextAr:val('website-about-text-ar'),
+    locationUrl:val('website-location-url'),
+    whatsapp:val('website-whatsapp'),
+    instagram:val('website-instagram'),
+    tiktok:val('website-tiktok')
+  };
 }
