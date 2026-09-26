@@ -89,6 +89,7 @@ async function openWebsiteControl(){
   document.getElementById('website-final-ar').value=c.finalTextAr||websiteControlDefaults.finalTextAr;
   renderWebsiteSlideEditors(c);
   fillWebsiteExtraFields(c);
+  fillWebsiteBrandGalleryFields(c);
   openModal('modal-website-control');
 }
 function readWebsiteSlide(i){
@@ -117,6 +118,7 @@ async function saveWebsiteControl(){
     finalTextAr:document.getElementById('website-final-ar').value.trim(),
     slides:[0,1,2,3].map(readWebsiteSlide),
     ...readWebsiteExtraFields(),
+    ...readWebsiteBrandGalleryFields(),
     updatedAt:firebase.database.ServerValue.TIMESTAMP
   };
   try{await db.ref('/website/config').set(cfg);websiteSlidesWorking=cfg.slides;showToast('✅ Website animation updated live');}
@@ -189,4 +191,72 @@ function readWebsiteExtraFields(){
     instagram:val('website-instagram'),
     tiktok:val('website-tiktok')
   };
+}
+
+function ensureWebsiteBrandGalleryFields(){
+  const extra=document.getElementById('website-extra-fields');
+  const host=extra||document.getElementById('website-slide-editors');
+  if(!host||document.getElementById('website-brand-gallery-fields'))return;
+  const box=document.createElement('div');
+  box.id='website-brand-gallery-fields';
+  box.className='card';
+  box.style.cssText='padding:14px;margin:0 0 12px;';
+  box.innerHTML=
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><b style="color:var(--orange)">Brand + Store Photos</b><span style="font-size:10px;opacity:.55;">Mobile website</span></div>'+
+    '<div class="field"><label>Stylish shop-name PNG</label><div style="display:grid;grid-template-columns:95px 1fr;gap:10px;align-items:center;"><div style="height:70px;border-radius:14px;border:1px dashed var(--glass-border);display:grid;place-items:center;overflow:hidden;background:rgba(255,255,255,.04);"><img id="website-brand-image-preview" style="max-width:100%;max-height:100%;object-fit:contain;display:none"><span id="website-brand-image-empty" style="font-size:9px;opacity:.5;">PNG</span></div><div><label class="btn" style="display:flex;align-items:center;justify-content:center;padding:11px;border-radius:12px;cursor:pointer;background:rgba(255,255,255,.08);color:var(--orange);">📷 Upload shop-name PNG<input type="file" accept="image/png,image/webp,image/*" style="display:none" onchange="uploadWebsiteBrandImage(event)"></label><button type="button" class="btn" onclick="removeWebsiteBrandImage()" style="width:100%;margin-top:7px;padding:9px;border-radius:12px;background:rgba(255,59,48,.1);color:#ff8179;">Remove</button></div></div><input id="website-brand-image-url" type="hidden"></div>'+
+    '<div style="font-size:10px;font-weight:900;color:var(--orange);margin:16px 0 9px;">Store / Signboard slideshow — 3 photos</div>'+
+    '<div id="website-store-gallery-fields" style="display:grid;gap:10px;"></div>'+
+    '<p style="font-size:9px;opacity:.52;line-height:1.6;margin-top:9px;">These 3 photos slide automatically in the middle of the website. Upload your storefront, signboard or interior photos.</p>';
+  if(extra&&extra.parentNode)extra.parentNode.insertBefore(box,extra);
+  else host.parentNode.insertBefore(box,host);
+  const g=document.getElementById('website-store-gallery-fields');
+  g.innerHTML=[0,1,2].map(i=>
+    '<div style="display:grid;grid-template-columns:86px 1fr;gap:10px;align-items:center;padding:9px;border-radius:14px;border:1px solid var(--glass-border);background:rgba(255,255,255,.035);">'+
+      '<div style="height:76px;border-radius:12px;overflow:hidden;background:rgba(255,255,255,.04);display:grid;place-items:center;"><img id="website-store-preview-'+i+'" style="width:100%;height:100%;object-fit:cover;display:none"><span id="website-store-empty-'+i+'" style="font-size:9px;opacity:.5;">Photo '+(i+1)+'</span></div>'+
+      '<div><label class="btn" style="display:flex;align-items:center;justify-content:center;padding:10px;border-radius:11px;cursor:pointer;background:rgba(255,255,255,.08);color:var(--orange);">📷 Upload photo '+(i+1)+'<input type="file" accept="image/*" style="display:none" onchange="uploadWebsiteStoreImage(event,'+i+')"></label><button type="button" class="btn" onclick="removeWebsiteStoreImage('+i+')" style="width:100%;margin-top:6px;padding:8px;border-radius:11px;background:rgba(255,59,48,.1);color:#ff8179;">Remove</button><input id="website-store-url-'+i+'" type="hidden"></div>'+
+    '</div>').join('');
+}
+function fillWebsiteBrandGalleryFields(c){
+  ensureWebsiteBrandGalleryFields();
+  const brand=c.brandImageUrl||'';
+  const bi=document.getElementById('website-brand-image-url'),bp=document.getElementById('website-brand-image-preview'),be=document.getElementById('website-brand-image-empty');
+  if(bi)bi.value=brand;if(bp){if(brand){bp.src=brand;bp.style.display='block'}else{bp.removeAttribute('src');bp.style.display='none'}}if(be)be.style.display=brand?'none':'block';
+  const g=Array.isArray(c.storeGallery)?c.storeGallery:[];
+  [0,1,2].forEach(i=>{const u=g[i]||'',inp=document.getElementById('website-store-url-'+i),pr=document.getElementById('website-store-preview-'+i),em=document.getElementById('website-store-empty-'+i);if(inp)inp.value=u;if(pr){if(u){pr.src=u;pr.style.display='block'}else{pr.removeAttribute('src');pr.style.display='none'}}if(em)em.style.display=u?'none':'block';});
+}
+function readWebsiteBrandGalleryFields(){
+  return{
+    brandImageUrl:document.getElementById('website-brand-image-url')?.value?.trim()||'',
+    storeGallery:[0,1,2].map(i=>document.getElementById('website-store-url-'+i)?.value?.trim()||'').filter(Boolean)
+  };
+}
+async function uploadWebsiteBrandImage(ev){
+  const file=ev.target.files&&ev.target.files[0];if(!file)return;
+  try{
+    showToast('Uploading shop-name PNG…');
+    const url=await uploadImageToImgBB(file,'shop-logo');
+    document.getElementById('website-brand-image-url').value=url;
+    const p=document.getElementById('website-brand-image-preview'),e=document.getElementById('website-brand-image-empty');p.src=url;p.style.display='block';e.style.display='none';
+    if(typeof rememberHostedImage==='function')rememberHostedImage(url,file,'website-brand-png');
+    showToast('✅ Shop-name image ready');
+  }catch(err){console.error(err);showToast('❌ Brand image upload failed')}
+  ev.target.value='';
+}
+function removeWebsiteBrandImage(){
+  const i=document.getElementById('website-brand-image-url'),p=document.getElementById('website-brand-image-preview'),e=document.getElementById('website-brand-image-empty');if(i)i.value='';if(p){p.removeAttribute('src');p.style.display='none'}if(e)e.style.display='block';showToast('Brand image removed');
+}
+async function uploadWebsiteStoreImage(ev,i){
+  const file=ev.target.files&&ev.target.files[0];if(!file)return;
+  try{
+    showToast('Uploading store photo…');
+    const url=await uploadImageToImgBB(file,'promo-banner');
+    document.getElementById('website-store-url-'+i).value=url;
+    const p=document.getElementById('website-store-preview-'+i),e=document.getElementById('website-store-empty-'+i');p.src=url;p.style.display='block';e.style.display='none';
+    if(typeof rememberHostedImage==='function')rememberHostedImage(url,file,'website-store-photo');
+    showToast('✅ Store photo ready');
+  }catch(err){console.error(err);showToast('❌ Store photo upload failed')}
+  ev.target.value='';
+}
+function removeWebsiteStoreImage(i){
+  const inp=document.getElementById('website-store-url-'+i),p=document.getElementById('website-store-preview-'+i),e=document.getElementById('website-store-empty-'+i);if(inp)inp.value='';if(p){p.removeAttribute('src');p.style.display='none'}if(e)e.style.display='block';showToast('Store photo removed');
 }
