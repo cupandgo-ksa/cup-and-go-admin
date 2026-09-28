@@ -3286,12 +3286,25 @@ async function handleLogoUpload(event) {
     const hostedUrl=await uploadImageToImgBB(file,'shop-logo');
     pendingShopLogo=hostedUrl;
     rememberHostedImage(hostedUrl,file,'shop-logo');
-    textEl.value='✅ Permanent HD Logo Ready';
+    try {
+      // Updating this one setting makes the public website refresh without saving unrelated Admin data.
+      await db.ref('/settings/shopLogo').set(hostedUrl);
+      appSettings.shopLogo=hostedUrl;
+      pendingShopLogo='';
+      localStorage.setItem('cng_settings',JSON.stringify(appSettings));
+      const hdLogo=document.getElementById('top-header-logo');
+      if(hdLogo) hdLogo.innerHTML='<img src="'+hostedUrl+'" alt="Logo">';
+      textEl.value='✅ Logo Live on Website';
+      showToast('✅ Logo updated on website');
+    } catch(syncError) {
+      textEl.value='⚠️ Logo uploaded — tap Save Settings';
+      showToast('⚠️ Upload ready; tap Save Settings to retry');
+    }
   } catch(hostError) {
     textEl.value='Preparing backup logo...';
     const backup=await compressCustomerImage(file,600,600,.84);
     pendingShopLogo=backup;
-    textEl.value='⚠️ Backup Logo Ready';
+    textEl.value='⚠️ Backup Logo Ready — tap Save Settings';
   }
   event.target.value='';
 }
