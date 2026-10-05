@@ -1,11 +1,22 @@
-# Firebase security deployment
+# Firebase deployment status
 
-Customer sign-in uses Email/Password. First registration requires name, email and a password of at least 8 characters. Returning customers sign in with email and password. Firebase Authentication handles passwords; the database and local profile cache never store them. Password reset is available.
+The live RTDB rules have not yet been replaced. Do not publish database.rules.json until the owner's existing phone POS is running the updated private Admin HTML and its Firebase UID has been approved.
 
-Profiles are stored privately under customerProfiles/{auth.uid}, including a bounded, resized JPEG avatar, name and optional phone/car. Returning customers restore their own profile. Orders, history and chat are bound to the authenticated password account UID. Anonymous and phone authentication are not used.
+## Admin access
 
-Google login remains reserved for the verified owner account islamiclibrary2.0@gmail.com. Public menus read publicSettings instead of private settings. The authenticated Admin mirrors only the explicit public field allowlist before enabling restrictive rules.
+The private Admin file preserves the existing PIN screen and PIN editing. It uses a separate persistent anonymous Firebase identity named cng-admin. This identity alone grants no access. On first open it displays a non-secret Device ID (Firebase UID). The owner must approve that exact device through the authenticated Firebase Console at /_security/admins/<UID>/active = true. Client writes to the allowlist are denied. Never authorize a visitor/menu/customer UID or a browser test identity as the owner's phone. Google owner access remains as an optional recovery rule, not an Admin login UI.
 
-Before publishing database rules: enable Email/Password and Google, authorize actual serving origins, deploy Admin and verify owner login/publicSettings mirror, use the Firebase Rules playground or emulator, then deploy customer/menu pages with the rules. Verify live login, order ownership, profile persistence and public menu. Existing UIDless orders remain visible to Admin; they cannot safely be linked to a newly created customer account by phone alone.
+Publish only after enrollment and verify the phone's PIN/cloud connection, public menu and customer paths. Resetting application storage requires device re-enrollment. A new file copied to another device creates a separate identity and must be approved separately.
 
-Run node tests/firebase-security.cjs and node tests/customer-account.cjs from a checkout adjusted to use the rules and source fixtures. Local tests use a modeled rules evaluator and mocked Firebase, and do not replace Firebase emulator or live verification.
+## Customer access
+
+Customer accounts use email/password, private profiles, UID-scoped orders/history/chat and private notifications. Queries require orderByChild('ownerUid').equalTo(auth.uid). Account names/photos are editable; passwords stay in Firebase Auth. Checkout maps each item to its database productKey. Rules validate real product ID/name/price, availability, bounded positive integer quantities, valid Cash/Card choice, customer source and allowed fields. Customers cannot alter submitted order status, edit others' records, forge admin chat messages, change products or shop settings. Customer pending cancellation is limited to 60 seconds. Admin recomputes accepted and archived totals from line items.
+
+Menu/homepage read publicSettings and products, not private settings/PINs. Menu rating auth uses a separate cng-menu-ratings identity and does not grant POS access. Admin mirrors only whitelisted public settings. Public broadcasts and UID-private notifications use separate paths.
+
+## Tests
+
+node tests/firebase-security.cjs
+node tests/customer-account.cjs
+
+These are modeled permission and mocked client tests, not Firebase emulator tests. Rules Playground additionally compiled the current draft and allowed unauthenticated product reads while denying unauthenticated root reads and unapproved device root reads. No real customer credentials, purchase or account creation were tested.
