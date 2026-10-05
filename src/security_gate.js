@@ -1,4 +1,5 @@
-const cngRawDb = firebase.database();
+const cngAdminApp = firebase.initializeApp(firebase.app().options, 'cng-admin');
+const cngRawDb = cngAdminApp.database();
 const CNG_OWNER_EMAIL = 'islamiclibrary2.0@gmail.com';
 let cngCloudAuthorized = false;
 let cngResolveCloud;
@@ -58,15 +59,15 @@ function cngPublishPublicSettings(settings,current) {
   const form=gate.querySelector('form'),message=gate.querySelector('#cng-auth-message'),button=form.querySelector('button');
   form.addEventListener('submit',async event=>{
     event.preventDefault();button.disabled=true;message.textContent='Signing in…';
-    try {await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());}
+    try {await cngAdminApp.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);await cngAdminApp.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());}
     catch(error){message.textContent='Could not sign in. Check your Google account and connection.';button.disabled=false;}
   });
-  firebase.auth().onAuthStateChanged(async user=>{
+  cngAdminApp.auth().onAuthStateChanged(async user=>{
     if(!user){cngCloudAuthorized=false;gate.style.display='flex';button.disabled=false;return;}
     message.textContent='Checking POS access…';
     try {
       const allowed=user.email===CNG_OWNER_EMAIL && user.emailVerified && user.providerData.some(provider=>provider.providerId==='google.com');
-      if(!allowed){message.textContent='Please use the shop owner’s Google account.';await firebase.auth().signOut();return;}
+      if(!allowed){message.textContent='Please use the shop owner’s Google account.';await cngAdminApp.auth().signOut();return;}
       cngCloudAuthorized=true;gate.style.display='none';cngResolveCloud();
     } catch(error){message.textContent='Could not verify access. Check the database rules and your connection.';button.disabled=false;}
   });
