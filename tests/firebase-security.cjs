@@ -75,6 +75,9 @@ assert(!permission('write','customerOrders/'+newKey,guest,{...newOrder,items:[{.
 assert(!permission('write','customerOrders/'+newKey,guest,{...newOrder,items:[{...newOrder.items[0],qty:-1}]}));
 assert(!permission('write','customerOrders/'+newKey,guest,{...newOrder,items:[{...newOrder.items[0],productKey:'missing'}]}));
 assert(!permission('write','customerOrders/'+newKey,guest,{...newOrder,adminApproved:true}));
+assert(!permission('write','customerOrders/'+newKey,guest,{...newOrder,items:[{...newOrder.items[0],name:'Other product'}]}));
+tree.products[0].customerUnavailable=true;assert(!permission('write','customerOrders/'+newKey,guest,newOrder));delete tree.products[0].customerUnavailable;
+
 assert(!permission('write','customerChats/customerA/messages/new',guest,{sender:'customer',text:'Hello',timestamp:now,admin:true}));
 assert(!permission('write','customerChats/customerA/unreadCustomer',guest,9));
 assert(permission('write','customerChats/customerA/unreadCustomer',guest,0));
