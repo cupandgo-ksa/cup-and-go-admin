@@ -40,7 +40,7 @@
       "$product": {
         "votes": {
           "$uid": {
-            ".write": "(auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || ((auth != null && auth.token.firebase.sign_in_provider === 'password') && auth.uid === $uid && !data.exists() && newData.exists())",
+            ".write": "(auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth != null && auth.uid === $uid && !data.exists() && newData.exists())",
             ".validate": "newData.hasChildren(['stars', 'updatedAt'])",
             "stars": {
               ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 5 && newData.val() % 1 === 0"
