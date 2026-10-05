@@ -3,8 +3,8 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const rules=JSON.parse(fs.readFileSync('security-package/database.rules.json')).rules;
 const owner={uid:'owner',token:{email:'islamiclibrary2.0@gmail.com',email_verified:true,firebase:{sign_in_provider:'google.com'}}};
-const guest={uid:'customerA',token:{firebase:{sign_in_provider:'anonymous'}}};
-const other={uid:'customerB',token:{firebase:{sign_in_provider:'anonymous'}}};
+const guest={uid:'customerA',token:{firebase:{sign_in_provider:'password'}}};
+const other={uid:'customerB',token:{firebase:{sign_in_provider:'password'}}};
 const now=1760000000000;
 const order={ownerUid:'customerA',id:now,items:[{name:'Coffee',price:10,qty:1}],total:10,timestamp:now,status:'new',customerName:'Customer'};
 const key='customerA_'+now;
@@ -47,7 +47,12 @@ assert(!permission('write','customerChats/customerA/messages/new',guest,{sender:
 assert(!permission('write','customerChats/customerA/messages/adminMessage',guest,{sender:'customer',text:'Changed',timestamp:now}));
 assert(!permission('write','_security/admins/attacker',owner,true));
 assert(permission('read','customerPrivateNotifications/customerA',guest));assert(!permission('read','customerPrivateNotifications/customerA',other));
-console.log('30 modeled permission assertions passed (not a Firebase emulator).');
+assert(!permission('read','customerOrders/'+key,{uid:'customerA',token:{firebase:{sign_in_provider:'anonymous'}}}));
+assert(permission('read','customerProfiles/customerA',guest));assert(!permission('read','customerProfiles/customerA',other));
+assert(!permission('read','customerProfiles/customerA',null));
+assert(permission('write','customerProfiles/customerA',guest,{name:'A',updatedAt:now}));
+assert(!permission('write','customerProfiles/customerA',other,{name:'B',updatedAt:now}));
+console.log('36 modeled permission assertions passed (not a Firebase emulator).');
 // Verify reads wait for authorization, early writes cannot mutate, and the
 // settings mirror never copies PINs, cashier credentials or reporting settings.
 const calls=[];let authCallback;
