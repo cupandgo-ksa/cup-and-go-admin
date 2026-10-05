@@ -6,7 +6,7 @@ let saved=null,logout=false;
 const auth={onAuthStateChanged:cb=>callbacks.push(cb),createUserWithEmailAndPassword:async(email,password)=>{assert.equal(email,'a@example.com');assert.equal(password,'private-secret');callbacks[0](user);return{user};},signInWithEmailAndPassword:async()=>({user}),signOut:async()=>{logout=true;},sendPasswordResetEmail:async()=>{}};
 const database=()=>({ref:path=>({async set(value){writes.push({path,value});saved=structuredClone(value);},async once(){return{val:()=>saved};}})});database.ServerValue={TIMESTAMP:{'.sv':'timestamp'}};
 const context=vm.createContext({firebase:{auth:()=>auth,database},document:{head:elem('head'),body:elem('body'),createElement:()=>elem('created'+Math.random()),getElementById:elem,querySelector:()=>elem('target')},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,String(v)),removeItem:k=>storage.delete(k)},window:{},location:{reload(){logout=true;}},Image:class{},URL,Promise,Error,String});
-vm.runInContext(fs.readFileSync('customer_account.js','utf8'),context);
+vm.runInContext(fs.readFileSync(require('node:path').join(__dirname,'../src/customer_account.js'),'utf8'),context);
 (async()=>{
  await callbacks[0](null);assert.equal(storage.has('cng_phone'),false);await assert.rejects(context.window.cngRequireCustomer());
  elem('cngAccountName').value='Ashik';elem('cngAccountEmail').value='a@example.com';elem('cngAccountPassword').value='private-secret';
