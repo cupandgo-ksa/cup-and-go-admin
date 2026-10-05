@@ -60,7 +60,7 @@ function ref(path){return {key:path.split('/').filter(Boolean).at(-1),toString:(
 const message={textContent:''},button={disabled:false};const form={querySelector:()=>button,addEventListener:()=>{}};
 const gate={style:{},querySelector:selector=>selector==='form'?form:message};
 const auth={onAuthStateChanged:cb=>{authCallback=cb;},signOut:()=>Promise.resolve()};
-const ctx=vm.createContext({firebase:{database:()=>({ref}),auth:()=>auth},document:{createElement:()=>gate,body:{appendChild:()=>{}}},showToast:()=>{},location:{reload:()=>{}},Promise,Proxy,Error,JSON});
+const ctx=vm.createContext({firebase:{app:()=>({options:{}}),initializeApp:(options,name)=>{assert.equal(name,'cng-admin');return{database:()=>({ref}),auth:()=>auth};}},document:{createElement:()=>gate,body:{appendChild:()=>{}}},showToast:()=>{},location:{reload:()=>{}},Promise,Proxy,Error,JSON});
 const fields=['shopName','shopLogo','categories'];
 vm.runInContext(fs.readFileSync(require('node:path').join(__dirname,'../src/security_gate.js'),'utf8').replace('__PUBLIC_FIELDS__',JSON.stringify(fields)),ctx);
 (async()=>{
