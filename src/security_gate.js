@@ -51,24 +51,33 @@ function cngPublishPublicSettings(settings,current) {
   cngPublicSettingsSignature=signature;
   cngRawDb.ref('/publicSettings').set(visible).catch(()=>{cngPublicSettingsSignature='';showToast('Could not update public menu settings');});
 }
-(function cngFirebaseLoginGate(){
-  const gate=document.createElement('div');gate.id='cng-firebase-login';
+(function cngDeviceAccess(){
+  const gate=document.createElement('div');gate.id='cng-device-activation';
   gate.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#071b20;display:flex;align-items:center;justify-content:center;padding:22px;color:white;font-family:Arial,sans-serif';
-  gate.innerHTML='<form style="width:100%;max-width:360px;padding:28px;background:#ffffff0d;border:1px solid #ffffff22;border-radius:24px"><h2 style="margin:0 0 12px">Cup And Go</h2><p>تسجيل الدخول الآمن · Secure sign-in</p><button type="submit" style="width:100%;padding:14px;margin-top:12px;border:0;border-radius:12px;background:#e5c158;font-weight:bold">المتابعة باستخدام Google · Continue with Google</button><p id="cng-auth-message" role="status" style="font-size:13px;line-height:1.5">Sign in with the shop owner’s Google account.</p></form>';
+  gate.innerHTML='<section style="width:100%;max-width:390px;padding:28px;background:#ffffff0d;border:1px solid #ffffff22;border-radius:24px"><h2>Cup And Go</h2><p>One-time device activation · تفعيل الجهاز</p><p id="cng-device-message" role="status">Connecting your device…</p><label>Device ID<input id="cng-device-id" readonly aria-label="Device ID" style="display:block;width:100%;box-sizing:border-box;padding:12px;margin-top:8px;font-size:14px"></label><p style="font-size:13px;line-height:1.6">Send this Device ID to the shop owner for approval. After approval, use your existing PIN as usual. This ID is not a password.</p><button id="cng-device-retry" type="button">Retry connection</button></section>';
   document.body.appendChild(gate);
-  const form=gate.querySelector('form'),message=gate.querySelector('#cng-auth-message'),button=form.querySelector('button');
-  form.addEventListener('submit',async event=>{
-    event.preventDefault();button.disabled=true;message.textContent='Signing in…';
-    try {await cngAdminApp.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);await cngAdminApp.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());}
-    catch(error){message.textContent='Could not sign in. Check your Google account and connection.';button.disabled=false;}
-  });
+  const message=gate.querySelector('#cng-device-message'),deviceId=gate.querySelector('#cng-device-id');
+  gate.querySelector('#cng-device-retry').onclick=()=>location.reload();
+  let permissionRef=null,creating=false;
   cngAdminApp.auth().onAuthStateChanged(async user=>{
-    if(!user){cngCloudAuthorized=false;gate.style.display='flex';button.disabled=false;return;}
-    message.textContent='Checking POS access…';
-    try {
-      const allowed=user.email===CNG_OWNER_EMAIL && user.emailVerified && user.providerData.some(provider=>provider.providerId==='google.com');
-      if(!allowed){message.textContent='Please use the shop owner’s Google account.';await cngAdminApp.auth().signOut();return;}
-      cngCloudAuthorized=true;gate.style.display='none';cngResolveCloud();
-    } catch(error){message.textContent='Could not verify access. Check the database rules and your connection.';button.disabled=false;}
+    cngCloudAuthorized=false;
+    if(permissionRef){permissionRef.off();permissionRef=null;}
+    gate.style.display='flex';
+    if(!user){
+      if(creating)return;creating=true;
+      try{await cngAdminApp.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);await cngAdminApp.auth().signInAnonymously();}
+      catch(error){message.textContent='Could not connect. Check your internet connection and retry.';}
+      finally{creating=false;}return;
+    }
+    deviceId.value=user.uid;
+    if(!user.isAnonymous){message.textContent='This device needs its own activation identity. Contact the shop owner.';return;}
+    message.textContent='Waiting for owner approval. Keep this page open; after approval your normal PIN screen will appear.';
+    permissionRef=cngRawDb.ref('/_security/admins/'+user.uid);
+    permissionRef.on('value',snapshot=>{
+      const allowed=snapshot.child('active').val()===true;
+      cngCloudAuthorized=allowed;gate.style.display=allowed?'none':'flex';
+      if(allowed)cngResolveCloud();
+      else message.textContent='Waiting for owner approval. Send the Device ID above to the shop owner.';
+    },error=>{cngCloudAuthorized=false;gate.style.display='flex';message.textContent='Could not check device approval. Check your connection and retry.';});
   });
 })();
