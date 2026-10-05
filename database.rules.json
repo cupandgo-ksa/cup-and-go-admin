@@ -1,0 +1,127 @@
+{
+  "rules": {
+    ".read": "auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com'",
+    ".write": false,
+    "_security": {
+      "admins": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": false
+        }
+      }
+    },
+    "$branch": {
+      ".write": "$branch !== '_security' && (auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com')"
+    },
+    "publicSettings": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com'"
+    },
+    "products": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com'"
+    },
+    "ledMatrix": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com'"
+    },
+    "customerIntroAd": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com'"
+    },
+    "website": {
+      ".write": "auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com'",
+      "config": {
+        ".read": true
+      }
+    },
+    "menuRatings": {
+      ".read": true,
+      "$product": {
+        "votes": {
+          "$uid": {
+            ".write": "(auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth != null && auth.uid === $uid && !data.exists() && newData.exists())",
+            ".validate": "newData.hasChildren(['stars', 'updatedAt'])",
+            "stars": {
+              ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 5 && newData.val() % 1 === 0"
+            },
+            "updatedAt": {
+              ".validate": "newData.isNumber() && newData.val() <= now && newData.val() >= now - 300000"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
+      },
+      ".write": "auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com'"
+    },
+    "publicNotifications": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com'"
+    },
+    "customerPrivateNotifications": {
+      ".write": "auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com'",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid"
+      }
+    },
+    "customerOrders": {
+      ".write": "auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com'",
+      ".read": "auth != null && query.orderByChild === 'ownerUid' && query.equalTo === auth.uid",
+      ".indexOn": [
+        "ownerUid"
+      ],
+      "$key": {
+        ".read": "auth != null && data.child('ownerUid').val() === auth.uid",
+        ".write": "(auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth != null && ((!data.exists() && newData.child('ownerUid').val() === auth.uid && newData.child('status').val() === 'new') || (data.child('ownerUid').val() === auth.uid && data.child('status').val() === 'new' && now < data.child('timestamp').val() + 60000 && !newData.exists())))",
+        ".validate": "(auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (newData.hasChildren(['ownerUid','id','items','total','timestamp','status','customerName']) && $key === auth.uid + '_' + newData.child('id').val() && newData.child('timestamp').isNumber() && newData.child('timestamp').val() <= now + 10000 && newData.child('timestamp').val() >= now - 60000 && newData.child('total').isNumber() && newData.child('total').val() >= 0 && newData.child('customerName').isString() && newData.child('customerName').val().length <= 200)"
+      }
+    },
+    "customerOrderHistory": {
+      ".write": "auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com'",
+      ".read": "auth != null && query.orderByChild === 'ownerUid' && query.equalTo === auth.uid",
+      ".indexOn": [
+        "ownerUid"
+      ],
+      "$key": {
+        ".read": "auth != null && data.child('ownerUid').val() === auth.uid",
+        ".write": "(auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth != null && newData.child('ownerUid').val() === auth.uid && !data.exists() && newData.child('status').val() === 'cancelled' && root.child('customerOrders').child($key).child('ownerUid').val() === auth.uid && root.child('customerOrders').child($key).child('status').val() === 'new' && now < root.child('customerOrders').child($key).child('timestamp').val() + 60000 && newData.child('id').val() === root.child('customerOrders').child($key).child('id').val() && newData.child('total').val() === root.child('customerOrders').child($key).child('total').val())"
+      }
+    },
+    "customerChats": {
+      ".write": "auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com'",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "customerName": {
+          ".write": "auth != null && auth.uid === $uid"
+        },
+        "customerPhone": {
+          ".write": "auth != null && auth.uid === $uid"
+        },
+        "updatedAt": {
+          ".write": "auth != null && auth.uid === $uid"
+        },
+        "lastMessage": {
+          ".write": "auth != null && auth.uid === $uid"
+        },
+        "lastSender": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "(auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || newData.val() === 'customer' || newData.val() === data.val()"
+        },
+        "unreadAdmin": {
+          ".write": "auth != null && auth.uid === $uid"
+        },
+        "unreadCustomer": {
+          ".write": "auth != null && auth.uid === $uid"
+        },
+        "messages": {
+          "$message": {
+            ".write": "(auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth != null && auth.uid === $uid && !data.exists() && newData.exists() && newData.child('sender').val() === 'customer')",
+            ".validate": "(auth != null && auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (newData.hasChildren(['sender','text','timestamp']) && newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('text').val().length <= 2000 && newData.child('timestamp').isNumber())"
+          }
+        }
+      }
+    }
+  }
+}
