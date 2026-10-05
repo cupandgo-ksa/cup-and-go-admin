@@ -52,7 +52,8 @@ assert(permission('read','customerProfiles/customerA',guest));assert(!permission
 assert(!permission('read','customerProfiles/customerA',null));
 assert(permission('write','customerProfiles/customerA',guest,{name:'A',updatedAt:now}));
 assert(!permission('write','customerProfiles/customerA',other,{name:'B',updatedAt:now}));
-console.log('36 modeled permission assertions passed (not a Firebase emulator).');
+assert(!permission('write',"customerOrders/customerA_1');alert(1);('",guest,{...newOrder,id:"1');alert(1);('"}));
+console.log('37 modeled permission assertions passed (not a Firebase emulator).');
 // Verify reads wait for authorization, early writes cannot mutate, and the
 // settings mirror never copies PINs, cashier credentials or reporting settings.
 const calls=[];let authCallback;
