@@ -6,10 +6,10 @@ const owner={uid:'owner',token:{email:'islamiclibrary2.0@gmail.com',email_verifi
 const guest={uid:'customerA',token:{firebase:{sign_in_provider:'password'}}};
 const other={uid:'customerB',token:{firebase:{sign_in_provider:'password'}}};
 const now=1760000000000;
-const order={ownerUid:'customerA',id:now,items:[{name:'Coffee',price:10,qty:1}],total:10,timestamp:now,status:'new',customerName:'Customer'};
+const order={ownerUid:'customerA',id:now,items:[{id:1,productKey:'0',name:'Coffee',price:10,qty:1,note:''}],total:10,timestamp:now,status:'new',customerName:'Customer',paymentMethod:'Cash',orderSource:'customer'};
 const key='customerA_'+now;
-const tree={_security:{admins:{deviceA:{active:true},revoked:{active:false}}},customerOrders:{[key]:order},customerChats:{customerA:{messages:{adminMessage:{sender:'admin',text:'Ready',timestamp:now}}}}};
-function snap(value){return {val:()=>value??null,exists:()=>value!==null&&value!==undefined,child:path=>snap(path.split('/').reduce((v,k)=>v?.[k],value)),hasChildren:keys=>keys.every(k=>value?.[k]!==null&&value?.[k]!==undefined),isNumber:()=>typeof value==='number',isString:()=>typeof value==='string'};}
+const tree={products:{0:{id:1,name:'Coffee',price:10}},_security:{admins:{deviceA:{active:true},revoked:{active:false}}},customerOrders:{[key]:order},customerChats:{customerA:{messages:{adminMessage:{sender:'admin',text:'Ready',timestamp:now}}}}};
+function snap(value){return {val:()=>value??null,exists:()=>value!==null&&value!==undefined,child:path=>snap(path.split('/').reduce((v,k)=>v?.[k],value)),hasChildren:keys=>keys?keys.every(k=>value?.[k]!==null&&value?.[k]!==undefined):!!value&&Object.keys(value).length>0,isNumber:()=>typeof value==='number',isString:()=>typeof value==='string'};}
 function expression(expr,auth,path,value,query={},vars={}){if(typeof expr==='boolean')return expr;const current=path.split('/').filter(Boolean).reduce((v,k)=>v?.[k],tree);try{return Function('auth','data','newData','root','now','query',...Object.keys(vars),'return '+expr)(auth,snap(current),snap(value),snap(tree),now,query,...Object.values(vars))===true;}catch{return false;}}
 function permission(operation,path,auth,value,query={}){
  const parts=path.split('/').filter(Boolean);let nodes=[{rule:rules,path:'',vars:{}}];let granted=false;const visited=[];
@@ -20,7 +20,17 @@ function permission(operation,path,auth,value,query={}){
   nodes=next;
  }
  if(operation!=='write'||value===null)return granted;
- for(const node of nodes){if(node.rule['.validate']!==undefined&&!expression(node.rule['.validate'],auth,path,value,query,node.vars))return false;}
+ function valid(rule,path,value,vars){
+  if(value===null)return true;
+  if(rule['.validate']!==undefined&&!expression(rule['.validate'],auth,path,value,query,vars))return false;
+  if(value&&typeof value==='object')for(const [key,child] of Object.entries(value)){
+   const wildcard=Object.keys(rule).find(k=>k.startsWith('$'));
+   const childRule=rule[key]||rule[wildcard];
+   if(childRule&&!valid(childRule,path+'/'+key,child,rule[key]?vars:{...vars,[wildcard]:key}))return false;
+  }
+  return true;
+ }
+ for(const node of nodes)if(!valid(node.rule,path,value,node.vars))return false;
  return granted;
 }
 assert(!permission('read','/',null));assert(!permission('write','/',null,{}));
@@ -60,6 +70,14 @@ assert(!permission('read','/',{...device,uid:'revoked'}));
 assert(!permission('read','/',{uid:'deviceA',token:{firebase:{sign_in_provider:'password'}}}));
 assert(!permission('write','_security/admins/deviceA',device,{active:true}));
 assert(!permission('write','_security/admins/unknownDevice',{...device,uid:'unknownDevice'},{active:true}));
+assert(!permission('write','customerOrders/'+newKey,guest,{...newOrder,paymentMethod:'paid'}));
+assert(!permission('write','customerOrders/'+newKey,guest,{...newOrder,items:[{...newOrder.items[0],price:0}]}));
+assert(!permission('write','customerOrders/'+newKey,guest,{...newOrder,items:[{...newOrder.items[0],qty:-1}]}));
+assert(!permission('write','customerOrders/'+newKey,guest,{...newOrder,items:[{...newOrder.items[0],productKey:'missing'}]}));
+assert(!permission('write','customerOrders/'+newKey,guest,{...newOrder,adminApproved:true}));
+assert(!permission('write','customerChats/customerA/messages/new',guest,{sender:'customer',text:'Hello',timestamp:now,admin:true}));
+assert(!permission('write','customerChats/customerA/unreadCustomer',guest,9));
+assert(permission('write','customerChats/customerA/unreadCustomer',guest,0));
 console.log('Modeled customer and approved-device permission assertions passed (not a Firebase emulator).');
 // Verify reads wait for authorization, early writes cannot mutate, and the
 // settings mirror never copies PINs, cashier credentials or reporting settings.
