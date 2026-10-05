@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
-const rules=JSON.parse(fs.readFileSync('security-package/database.rules.json')).rules;
+const rules=JSON.parse(fs.readFileSync(require('node:path').join(__dirname,'../database.rules.json'))).rules;
 const owner={uid:'owner',token:{email:'islamiclibrary2.0@gmail.com',email_verified:true,firebase:{sign_in_provider:'google.com'}}};
 const guest={uid:'customerA',token:{firebase:{sign_in_provider:'password'}}};
 const other={uid:'customerB',token:{firebase:{sign_in_provider:'password'}}};
@@ -62,7 +62,7 @@ const gate={style:{},querySelector:selector=>selector==='form'?form:message};
 const auth={onAuthStateChanged:cb=>{authCallback=cb;},signOut:()=>Promise.resolve()};
 const ctx=vm.createContext({firebase:{database:()=>({ref}),auth:()=>auth},document:{createElement:()=>gate,body:{appendChild:()=>{}}},showToast:()=>{},location:{reload:()=>{}},Promise,Proxy,Error,JSON});
 const fields=['shopName','shopLogo','categories'];
-vm.runInContext(fs.readFileSync('security_gate.js','utf8').replace('__PUBLIC_FIELDS__',JSON.stringify(fields)),ctx);
+vm.runInContext(fs.readFileSync(require('node:path').join(__dirname,'../src/security_gate.js'),'utf8').replace('__PUBLIC_FIELDS__',JSON.stringify(fields)),ctx);
 (async()=>{
  vm.runInContext("db.ref('/orders').on('value',()=>{});db.ref('/blocked').set({x:1}).catch(()=>{});",ctx);
  await Promise.resolve();assert.equal(calls.length,0);
