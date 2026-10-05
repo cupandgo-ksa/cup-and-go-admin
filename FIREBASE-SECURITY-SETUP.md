@@ -1,24 +1,11 @@
-# Firebase security change — staged, not deployed
+# Firebase security deployment
 
-Project: cup-and-go-pos-e0ad1
+Customer sign-in uses Email/Password. First registration requires name, email and a password of at least 8 characters. Returning customers sign in with email and password. Firebase Authentication handles passwords; the database and local profile cache never store them. Password reset is available.
 
-Google sign-in has been enabled in Firebase Console. Anonymous sign-in remains disabled pending the owner's explicit approval. The production database rules and default GitHub branches have not been changed.
+Profiles are stored privately under customerProfiles/{auth.uid}, including a bounded, resized JPEG avatar, name and optional phone/car. Returning customers restore their own profile. Orders, history and chat are bound to the authenticated password account UID. Anonymous and phone authentication are not used.
 
-The security/firebase-access-20261005 branch in cup-and-go-admin, cup-and-go-menu and cup-and-go-customer contains the updated active pages. The admin branch contains database.rules.json.
+Google login remains reserved for the verified owner account islamiclibrary2.0@gmail.com. Public menus read publicSettings instead of private settings. The authenticated Admin mirrors only the explicit public field allowlist before enabling restrictive rules.
 
-The Admin uses the verified owner Google account. Public pages use publicSettings rather than settings, so PINs and cashier settings are private. Customer order reads query ownerUid; new orders use stable ownerUid/id keys. Chat and targeted notifications are private to that UID. Product ratings require authenticated identity and cannot be edited by the customer after submission.
+Before publishing database rules: enable Email/Password and Google, authorize actual serving origins, deploy Admin and verify owner login/publicSettings mirror, use the Firebase Rules playground or emulator, then deploy customer/menu pages with the rules. Verify live login, order ownership, profile persistence and public menu. Existing UIDless orders remain visible to Admin; they cannot safely be linked to a newly created customer account by phone alone.
 
-Prerequisites before coordinated deployment:
-
-1. Owner explicitly approves anonymous guest sign-in for customer identity and ratings.
-2. Enable Anonymous sign-in, without automatic account deletion.
-3. Authorize the actual serving domains cupandgo-ksa.github.io and cupandgoksa.com in Firebase Auth.
-4. Test the rules in Firebase Rules playground / emulator, including owner access, unauthenticated public reads, denied private reads and writes, customer creation/cancellation, private chat, and immutable ratings.
-5. Seed publicSettings using only the public field allowlist in the Admin code, before switching public pages.
-6. Publish all changed active pages and restrictive database rules in a coordinated maintenance window; confirm GitHub Pages build status and verify Admin Google login and public menu live.
-
-Existing orders, reports, settings and chats are retained. Historical customer records lacking ownerUid cannot safely be automatically linked by phone number; they stay readable in the owner's Admin. Customer local cache or browser storage deletion may change the anonymous UID and make earlier customer orders inaccessible on that device.
-
-Validation completed so far: all inline JavaScript in the five changed HTML sources passed Node syntax checks; local modeled rules and Admin gate/projection tests passed. These are not Firebase-emulator tests and do not prove production deployment.
-
-Do not paste or publish these rules alone while the old client files are active.
+Run node tests/firebase-security.cjs and node tests/customer-account.cjs from a checkout adjusted to use the rules and source fixtures. Local tests use a modeled rules evaluator and mocked Firebase, and do not replace Firebase emulator or live verification.
