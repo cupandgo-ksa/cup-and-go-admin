@@ -8,7 +8,7 @@ const other={uid:'customerB',token:{firebase:{sign_in_provider:'password'}}};
 const now=1760000000000;
 const order={ownerUid:'customerA',id:now,items:[{name:'Coffee',price:10,qty:1}],total:10,timestamp:now,status:'new',customerName:'Customer'};
 const key='customerA_'+now;
-const tree={customerOrders:{[key]:order},customerChats:{customerA:{messages:{adminMessage:{sender:'admin',text:'Ready',timestamp:now}}}}};
+const tree={_security:{admins:{deviceA:{active:true},revoked:{active:false}}},customerOrders:{[key]:order},customerChats:{customerA:{messages:{adminMessage:{sender:'admin',text:'Ready',timestamp:now}}}}};
 function snap(value){return {val:()=>value??null,exists:()=>value!==null&&value!==undefined,child:path=>snap(path.split('/').reduce((v,k)=>v?.[k],value)),hasChildren:keys=>keys.every(k=>value?.[k]!==null&&value?.[k]!==undefined),isNumber:()=>typeof value==='number',isString:()=>typeof value==='string'};}
 function expression(expr,auth,path,value,query={},vars={}){if(typeof expr==='boolean')return expr;const current=path.split('/').filter(Boolean).reduce((v,k)=>v?.[k],tree);try{return Function('auth','data','newData','root','now','query',...Object.keys(vars),'return '+expr)(auth,snap(current),snap(value),snap(tree),now,query,...Object.values(vars))===true;}catch{return false;}}
 function permission(operation,path,auth,value,query={}){
@@ -53,11 +53,18 @@ assert(!permission('read','customerProfiles/customerA',null));
 assert(permission('write','customerProfiles/customerA',guest,{name:'A',updatedAt:now}));
 assert(!permission('write','customerProfiles/customerA',other,{name:'B',updatedAt:now}));
 assert(!permission('write',"customerOrders/customerA_1');alert(1);('",guest,{...newOrder,id:"1');alert(1);('"}));
-console.log('37 modeled permission assertions passed (not a Firebase emulator).');
+const device={uid:'deviceA',token:{firebase:{sign_in_provider:'anonymous'}}};
+assert(permission('read','/',device));assert(permission('write','products',device,{}));
+assert(!permission('read','/',{...device,uid:'unknownDevice'}));
+assert(!permission('read','/',{...device,uid:'revoked'}));
+assert(!permission('read','/',{uid:'deviceA',token:{firebase:{sign_in_provider:'password'}}}));
+assert(!permission('write','_security/admins/deviceA',device,{active:true}));
+assert(!permission('write','_security/admins/unknownDevice',{...device,uid:'unknownDevice'},{active:true}));
+console.log('Modeled customer and approved-device permission assertions passed (not a Firebase emulator).');
 // Verify reads wait for authorization, early writes cannot mutate, and the
 // settings mirror never copies PINs, cashier credentials or reporting settings.
-const calls=[];let authCallback;
-function ref(path){return {key:path.split('/').filter(Boolean).at(-1),toString:()=>path,on:(...args)=>calls.push(['on',path,args[0]]),off:()=>{},once:()=>{calls.push(['once',path]);return Promise.resolve(snap({}));},set:value=>{calls.push(['set',path,value]);return Promise.resolve();},transaction:update=>{calls.push(['transaction',path,update([order])]);return Promise.resolve({committed:true});}};}
+const calls=[];let authCallback, approvalCallback;
+function ref(path){return {key:path.split('/').filter(Boolean).at(-1),toString:()=>path,on:(...args)=>{calls.push(['on',path,args[0]]);if(path.startsWith('/_security/'))approvalCallback=args[1];},off:()=>{},once:()=>{calls.push(['once',path]);return Promise.resolve(snap({}));},set:value=>{calls.push(['set',path,value]);return Promise.resolve();},transaction:update=>{calls.push(['transaction',path,update([order])]);return Promise.resolve({committed:true});}};}
 const message={textContent:''},button={disabled:false};const form={querySelector:()=>button,addEventListener:()=>{}};
 const gate={style:{},querySelector:selector=>selector==='form'?form:message};
 const auth={onAuthStateChanged:cb=>{authCallback=cb;},signOut:()=>Promise.resolve()};
@@ -67,11 +74,17 @@ vm.runInContext(fs.readFileSync(require('node:path').join(__dirname,'../src/secu
 (async()=>{
  vm.runInContext("db.ref('/orders').on('value',()=>{});db.ref('/blocked').set({x:1}).catch(()=>{});",ctx);
  await Promise.resolve();assert.equal(calls.length,0);
- await authCallback({email:'islamiclibrary2.0@gmail.com',emailVerified:true,providerData:[{providerId:'google.com'}]});await Promise.resolve();
+ await authCallback({uid:'deviceA',isAnonymous:true});await Promise.resolve();
+ assert(!calls.some(c=>c[0]==='on'&&c[1]==='/orders'));
+ approvalCallback(snap({active:false}));await Promise.resolve();
+ assert(!calls.some(c=>c[0]==='on'&&c[1]==='/orders'));
+ approvalCallback(snap({active:true}));await Promise.resolve();
  assert(calls.some(c=>c[0]==='on'&&c[1]==='/orders'));
  vm.runInContext("cngPublishPublicSettings({shopName:'Cup And Go',adminPin:'secret',cashiers:[{pin:'secret'}],shopLogo:'logo'},null)",ctx);
  const published=calls.find(c=>c[0]==='set'&&c[1]==='/publicSettings')[2];assert.equal(published.shopName,'Cup And Go');assert(!('adminPin'in published));assert(!('cashiers'in published));
  await vm.runInContext("db.ref('/customerOrders').transaction(current=>current)",ctx);
  const mapped=calls.find(c=>c[0]==='transaction')[2];assert(mapped[key]);assert(!Array.isArray(mapped));
- console.log('Admin authorization gate, public projection and stable order-key checks passed.');
+ approvalCallback(snap({active:false}));
+ await assert.rejects(vm.runInContext("db.ref('/products').set({x:1})",ctx));
+ console.log('Device activation, approval/revocation, public projection and stable order-key checks passed.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
