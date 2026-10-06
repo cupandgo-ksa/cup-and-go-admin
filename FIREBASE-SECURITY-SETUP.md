@@ -1,22 +1,44 @@
-# Firebase deployment status
+# Firebase security deployment status
 
-The live RTDB rules have not yet been replaced. Do not publish database.rules.json until the owner's existing phone POS is running the updated private Admin HTML and its Firebase UID has been approved.
+## Current code
 
-## Admin access
+The Admin page now uses Firebase Authentication behind the existing 4-digit PIN screen. The visible Admin flow stays PIN-only.
 
-The private Admin file preserves the existing PIN screen and PIN editing. It uses a separate persistent anonymous Firebase identity named cng-admin. This identity alone grants no access. On first open it displays a non-secret Device ID (Firebase UID). The owner must approve that exact device through the authenticated Firebase Console at /_security/admins/<UID>/active = true. Client writes to the allowlist are denied. Never authorize a visitor/menu/customer UID or a browser test identity as the owner's phone. Google owner access remains as an optional recovery rule, not an Admin login UI.
-
-Publish only after enrollment and verify the phone's PIN/cloud connection, public menu and customer paths. Resetting application storage requires device re-enrollment. A new file copied to another device creates a separate identity and must be approved separately.
+- Firebase Auth account used internally: `pos-admin@cupandgoksa.com`
+- The PIN is converted to the Firebase Auth password inside the Admin app.
+- On the first secure login, while the old open RTDB rules are still live, the app verifies the existing Admin PIN and creates the protected Auth account automatically.
+- After that first login, any phone can use the same Admin PIN. Firebase keeps the session on trusted devices.
+- A cashier can use the normal cashier PIN on a device after the owner Admin PIN has authenticated that device at least once.
+- Changing the Admin PIN in Settings also updates the Firebase Auth password.
+- The Admin database connection is held behind an Auth gate, so private database listeners and writes do not start before Admin authentication.
 
 ## Customer access
 
-Customer accounts use email/password, private profiles, UID-scoped orders/history/chat and private notifications. Queries require orderByChild('ownerUid').equalTo(auth.uid). Account names/photos are editable; passwords stay in Firebase Auth. Checkout maps each item to its database productKey. Rules validate real product ID/name/price, availability, bounded positive integer quantities, valid Cash/Card choice, customer source and allowed fields. Customers cannot alter submitted order status, edit others' records, forge admin chat messages, change products or shop settings. Customer pending cancellation is limited to 60 seconds. Admin recomputes accepted and archived totals from line items.
+The live customer page already uses Firebase Email/Password accounts and UID-scoped private data.
 
-Menu/homepage read publicSettings and products, not private settings/PINs. Menu rating auth uses a separate cng-menu-ratings identity and does not grant POS access. Admin mirrors only whitelisted public settings. Public broadcasts and UID-private notifications use separate paths.
+- Products and the public shop settings remain publicly readable.
+- Customer profiles are readable/writable only by their own UID.
+- Customer orders/history are UID-scoped.
+- Broadcast notifications use `/publicNotifications`.
+- Private order notifications use `/customerPrivateNotifications/<uid>`.
+- Customer chat is UID-scoped.
 
-## Tests
+## Rules
 
-node tests/firebase-security.cjs
-node tests/customer-account.cjs
+`database.rules.json` is ready for the PIN-backed Admin Auth account and customer UID rules.
 
-These are modeled permission and mocked client tests, not Firebase emulator tests. Rules Playground additionally compiled the current draft and allowed unauthenticated product reads while denying unauthenticated root reads and unapproved device root reads. No real customer credentials, purchase or account creation were tested.
+Do not publish the secure rules before the owner completes one successful Admin PIN login after this code update. That first login creates the internal Firebase Auth Admin account from the existing PIN.
+
+After the first successful secure Admin login, publish `database.rules.json` to Realtime Database.
+
+## Deployment files
+
+`.firebaserc` points to project `cup-and-go-pos-e0ad1`.
+
+`firebase.json` deploys `database.rules.json` as Realtime Database rules.
+
+CLI command:
+
+```bash
+firebase deploy --only database
+```
