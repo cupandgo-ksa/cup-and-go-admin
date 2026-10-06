@@ -1312,7 +1312,7 @@ function cngGuardReference(ref){
       cngWaitForAdminCloud().then(()=>{if(entry.active)target.on(event,callback,error,context);}).catch(err=>{if(typeof error==='function')error(err);});
       return callback;
     };
-    if(property==='off') return (event,callback,context)=>{ entry=false; if(cngCloudAuthorized) return target.off(event,callback,context); };
+    if(property==='off') return (event,callback,context)=>{ if(cngCloudAuthorized) return target.off(event,callback,context); };
     if(property==='once') return (...args)=>cngWaitForAdminCloud().then(()=>target.once(...args));
     if(['set','update','remove','setPriority','setWithPriority'].includes(property)) return (...args)=>cngWaitForAdminCloud().then(()=>target[property](...args));
     if(property==='transaction') return (update,completed,applyLocally)=>{
