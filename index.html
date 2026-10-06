@@ -14,6 +14,7 @@
 </script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@700&family=Great+Vibes&family=Dancing+Script:wght@700&family=Righteous&family=Russo+One&family=Orbitron:wght@700&family=Press+Start+2P&family=VT323&family=Pacifico&family=Lobster&family=Monoton&family=Fredoka+One&family=Abril+Fatface&family=Playfair+Display:ital,wght@1,700&family=Rampart+One&family=Staatliches&family=Tourney:wght@900&family=Zen+Dots&family=Black+Ops+One&family=Six+Caps&family=Monofett&display=swap" rel="stylesheet">
@@ -1271,8 +1272,125 @@ const firebaseConfig = {
   messagingSenderId: "600197868931", 
   appId: "1:600197868931:web:22ef6fbe0a809afd161ab6" 
 };
-firebase.initializeApp(firebaseConfig); 
-const db = firebase.database();
+firebase.initializeApp(firebaseConfig);
+const cngRawDb = firebase.database();
+const cngAuth = firebase.auth();
+const CNG_ADMIN_AUTH_EMAIL = 'pos-admin@cupandgoksa.com';
+let cngCloudAuthorized = false;
+let cngAuthStateResolved = false;
+let cngResolveAuthState;
+const cngAdminAuthStateReady = new Promise(resolve => { cngResolveAuthState = resolve; });
+let cngCloudWaiters = [];
+
+function cngIsAdminAuthUser(user){
+  return !!(user && String(user.email||'').toLowerCase()===CNG_ADMIN_AUTH_EMAIL && user.providerData && user.providerData.some(p=>p.providerId==='password'));
+}
+function cngAdminPassword(pin){
+  return 'CNG-POS-' + String(pin||'').trim() + '-A9!2026';
+}
+function cngResolveCloudWaiters(){
+  const list=cngCloudWaiters.splice(0);
+  list.forEach(x=>x.resolve());
+}
+function cngWaitForAdminCloud(){
+  if(cngCloudAuthorized) return Promise.resolve();
+  return new Promise((resolve,reject)=>cngCloudWaiters.push({resolve,reject}));
+}
+function cngOrdersArrayToSecureMap(value){
+  if(!Array.isArray(value)) return value;
+  const out={};
+  value.filter(Boolean).forEach(order=>{
+    const key=(order.ownerUid||'legacy')+'_'+String(order.id||Date.now());
+    out[key]=order;
+  });
+  return out;
+}
+function cngGuardReference(ref){
+  return new Proxy(ref,{get(target,property){
+    if(property==='on') return (event,callback,error,context)=>{
+      const entry={active:true};
+      cngWaitForAdminCloud().then(()=>{if(entry.active)target.on(event,callback,error,context);}).catch(err=>{if(typeof error==='function')error(err);});
+      return callback;
+    };
+    if(property==='off') return (event,callback,context)=>{ entry=false; if(cngCloudAuthorized) return target.off(event,callback,context); };
+    if(property==='once') return (...args)=>cngWaitForAdminCloud().then(()=>target.once(...args));
+    if(['set','update','remove','setPriority','setWithPriority'].includes(property)) return (...args)=>cngWaitForAdminCloud().then(()=>target[property](...args));
+    if(property==='transaction') return (update,completed,applyLocally)=>{
+      return cngWaitForAdminCloud().then(()=>target.transaction(current=>{
+        let next=update(current);
+        if(['customerOrders','customerOrderHistory'].includes(target.key)) next=cngOrdersArrayToSecureMap(next);
+        return next;
+      },completed,applyLocally));
+    };
+    if(property==='push') return (value,callback)=>{
+      const child=target.push();
+      const wrapped=cngGuardReference(child);
+      if(value===undefined) return wrapped;
+      const p=cngWaitForAdminCloud().then(()=>child.set(value)).then(()=>wrapped);
+      if(callback) p.then(()=>callback(null),callback);
+      return p;
+    };
+    const value=target[property];
+    if(typeof value==='function') return (...args)=>{
+      const result=value.apply(target,args);
+      return result && typeof result.once==='function' ? cngGuardReference(result) : result;
+    };
+    return value;
+  }});
+}
+const db = { ref:path=>cngGuardReference(cngRawDb.ref(path)) };
+
+function cngBuildPublicSettings(){
+  const keys=['shopName','shopLogo','ownerPhone','categories','waitTime','promoBanners','offerPosterImage','location','currency'];
+  const out={};
+  keys.forEach(k=>{ if(appSettings && appSettings[k]!==undefined && appSettings[k]!==null) out[k]=appSettings[k]; });
+  return out;
+}
+
+cngAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
+cngAuth.onAuthStateChanged(user=>{
+  cngCloudAuthorized=cngIsAdminAuthUser(user);
+  if(cngCloudAuthorized) cngResolveCloudWaiters();
+  if(!cngAuthStateResolved){ cngAuthStateResolved=true; cngResolveAuthState(cngCloudAuthorized); }
+});
+
+async function cngAuthenticateAdminPin(pin){
+  if(!navigator.onLine){ const e=new Error('Internet required on a new device'); e.code='cng/offline'; throw e; }
+  const password=cngAdminPassword(pin);
+  try{
+    const result=await cngAuth.signInWithEmailAndPassword(CNG_ADMIN_AUTH_EMAIL,password);
+    if(!cngIsAdminAuthUser(result.user)){ const e=new Error('Unauthorized account'); e.code='cng/not-admin'; throw e; }
+    return result.user;
+  }catch(error){
+    const bootstrapCodes=['auth/user-not-found','auth/invalid-credential','auth/invalid-login-credentials'];
+    if(!bootstrapCodes.includes(error.code)) throw error;
+    let legacyPin='';
+    try{ legacyPin=String((await cngRawDb.ref('/settings/adminPin').once('value')).val()||''); }catch(e){}
+    if(!legacyPin || legacyPin!==String(pin)){ const e=new Error('Incorrect PIN'); e.code='cng/wrong-pin'; throw e; }
+    try{
+      const created=await cngAuth.createUserWithEmailAndPassword(CNG_ADMIN_AUTH_EMAIL,password);
+      return created.user;
+    }catch(createError){
+      if(createError.code==='auth/email-already-in-use'){
+        const e=new Error('Admin PIN account exists but the PIN does not match.'); e.code='cng/pin-sync'; throw e;
+      }
+      throw createError;
+    }
+  }
+}
+
+async function cngChangeAdminAuthPin(oldPin,newPin){
+  if(String(oldPin)===String(newPin)) return;
+  if(!cngAuth.currentUser || !cngIsAdminAuthUser(cngAuth.currentUser)) throw new Error('Admin authentication required');
+  try{
+    await cngAuth.currentUser.updatePassword(cngAdminPassword(newPin));
+  }catch(error){
+    if(error.code==='auth/requires-recent-login'){
+      await cngAuth.signInWithEmailAndPassword(CNG_ADMIN_AUTH_EMAIL,cngAdminPassword(oldPin));
+      await cngAuth.currentUser.updatePassword(cngAdminPassword(newPin));
+    }else throw error;
+  }
+}
 
 // ======= iOS DETECTION =======
 (function() {
@@ -1492,6 +1610,7 @@ function syncAllDataToFirebase() {
   // (/customerNotifications and /customerOrderHistory) are never deleted by an admin sync.
   db.ref('/').update({
     settings: appSettings,
+    publicSettings: cngBuildPublicSettings(),
     products: products,
     orders: orders,
     history: history30Days,
@@ -3602,11 +3721,18 @@ function applySettingsToUI() {
 }
 
 // ======= SAVE SETTINGS =======
-function saveSettings() {
+async function saveSettings() {
   appSettings.shopName=document.getElementById('set-name').value||"Cup And Go";
   appSettings.currency=document.getElementById('set-curr').value||"SR";
   appSettings.vatRate=parseFloat(document.getElementById('set-vat').value)||0;
-  appSettings.adminPin=document.getElementById('set-admin-pin').value||"1234";
+  const previousAdminPin=String(appSettings.adminPin||"1234");
+  const requestedAdminPin=String(document.getElementById('set-admin-pin').value||"1234").trim();
+  if(!/^\d{4}$/.test(requestedAdminPin)) return showToast("❌ Admin PIN must be 4 digits");
+  if(requestedAdminPin!==previousAdminPin){
+    try{ await cngChangeAdminAuthPin(previousAdminPin,requestedAdminPin); }
+    catch(e){ console.warn(e); return showToast("❌ Could not securely change Admin PIN"); }
+  }
+  appSettings.adminPin=requestedAdminPin;
   appSettings.targetSales=parseFloat(document.getElementById('set-target-rev').value)||2000;
   appSettings.targetOrders=parseFloat(document.getElementById('set-target-ord').value)||100;
   appSettings.ownerPhone=document.getElementById('set-owner-phone').value||"";
@@ -3827,34 +3953,47 @@ let enteredPin="";
 function typePin(num) { if(enteredPin.length<4){ enteredPin+=num; updatePinDisplay(); } }
 function clearPin() { enteredPin=enteredPin.slice(0,-1); updatePinDisplay(); }
 function updatePinDisplay() { let display=""; for(let i=0;i<4;i++){ display+=(i<enteredPin.length)?"● ":"_ "; } safeSet('pin-dots','innerText',display.trim()); }
-function submitPin() {
-  if(navigator.onLine) {
-    db.ref('/settings/adminPin').once('value', (snapshot) => {
-      let firebasePin = snapshot.val();
-      if(firebasePin) {
-        appSettings.adminPin = firebasePin;
-        localStorage.setItem('cng_settings', JSON.stringify(appSettings));
-      }
+async function submitPin() {
+  const pin=String(enteredPin||'');
+  if(pin.length!==4){ showToast("❌ Enter your 4-digit PIN"); enteredPin=""; updatePinDisplay(); return; }
+  try{
+    if(cngCloudAuthorized){
+      try{
+        const snapshot=await db.ref('/settings/adminPin').once('value');
+        const firebasePin=String(snapshot.val()||'');
+        if(firebasePin){ appSettings.adminPin=firebasePin; localStorage.setItem('cng_settings',JSON.stringify(appSettings)); }
+      }catch(e){}
       checkPinAndLogin();
-    });
-  } else {
-    checkPinAndLogin();
+      return;
+    }
+    await cngAuthenticateAdminPin(pin);
+    appSettings.adminPin=pin;
+    localStorage.setItem('cng_settings',JSON.stringify(appSettings));
+    sessionStorage.setItem('cng_active_cashier','Admin');
+    loginAs('admin');
+    showToast("🔐 Secure admin connected");
+  }catch(error){
+    console.warn('Admin sign-in failed',error && error.code);
+    if(error && error.code==='cng/offline') showToast("❌ Internet is required the first time on this device");
+    else if(error && error.code==='auth/operation-not-allowed') showToast("❌ Firebase Email/Password sign-in must be enabled");
+    else if(error && error.code==='auth/too-many-requests') showToast("❌ Too many attempts. Try again later");
+    else if(error && error.code==='cng/pin-sync') showToast("❌ Admin PIN needs Firebase re-sync");
+    else showToast("❌ Incorrect PIN!");
+  }finally{
+    enteredPin=""; updatePinDisplay();
   }
 }
 
 function checkPinAndLogin() {
-  if(enteredPin===appSettings.adminPin) { 
-    sessionStorage.setItem('cng_active_cashier','Admin'); 
-    loginAs('admin'); 
-  }
-  else { 
-    let foundCashier=appSettings.cashiers.find(c=>c.pin===enteredPin); 
-    if(foundCashier){ 
-      sessionStorage.setItem('cng_active_cashier',foundCashier.name); 
-      loginAs('cashier'); 
-    } else { 
-      showToast("❌ Incorrect PIN!"); 
-    } 
+  if(enteredPin===appSettings.adminPin) {
+    sessionStorage.setItem('cng_active_cashier','Admin');
+    loginAs('admin');
+  } else {
+    let foundCashier=appSettings.cashiers.find(c=>c.pin===enteredPin);
+    if(foundCashier){
+      if(!cngCloudAuthorized){ showToast("🔐 Owner PIN required once on this device"); }
+      else { sessionStorage.setItem('cng_active_cashier',foundCashier.name); loginAs('cashier'); }
+    } else showToast("❌ Incorrect PIN!");
   }
   enteredPin=""; updatePinDisplay();
 }
@@ -3875,7 +4014,8 @@ function logout() {
   currentLoginRole=null; 
   sessionStorage.removeItem('cng_role');
   sessionStorage.removeItem('cng_active_cashier');
-  clearRememberedLogin(); 
+  clearRememberedLogin();
+  try{ cngAuth.signOut(); }catch(e){}
   let app=document.getElementById('app-content'), lock=document.getElementById('lock-screen'); 
   if(app) app.style.display='none'; 
   if(lock) lock.classList.add('show'); 
@@ -3907,49 +4047,40 @@ if (document.readyState === 'loading') {
 
 // ======= ONLOAD =======
 window.onload = function() {
-  applySettingsToUI(); 
-  initUI(); 
-  updateHistory(); 
-  updateMonthlyDash(); 
+  applySettingsToUI();
+  initUI();
+  updateHistory();
+  updateMonthlyDash();
   updateAnalytics();
   currentCategory='All';
-  
   updateSyncStatus('syncing');
-  
-  const rememberedLogin = getRememberedLogin();
-  if(!currentLoginRole && rememberedLogin){
-    currentLoginRole = rememberedLogin.role;
-    sessionStorage.setItem('cng_role', rememberedLogin.role);
-    sessionStorage.setItem('cng_active_cashier', rememberedLogin.activeName || (rememberedLogin.role==='admin'?'Admin':'Cashier'));
-  }
-  if(currentLoginRole) {
-    // Show the premium intro every time, even on remembered-login devices.
-    // After the intro finishes, enter the app directly without asking for the PIN again.
-    const intro=document.getElementById('intro-screen');
-    const lock=document.getElementById('lock-screen');
-    if(lock) lock.classList.remove('show');
-    if(intro){
-      intro.style.display='flex';
-      intro.classList.remove('splash-exit');
-      setTimeout(()=>{
-        intro.classList.add('splash-exit');
-        setTimeout(()=>{
-          intro.style.display='none';
-          loginAs(currentLoginRole,true);
-        },980);
-      },2500);
-    } else {
-      loginAs(currentLoginRole,true);
+
+  cngAdminAuthStateReady.then(()=>{
+    const rememberedLogin=getRememberedLogin();
+    if(cngCloudAuthorized && !currentLoginRole && rememberedLogin){
+      currentLoginRole=rememberedLogin.role;
+      sessionStorage.setItem('cng_role',rememberedLogin.role);
+      sessionStorage.setItem('cng_active_cashier',rememberedLogin.activeName||(rememberedLogin.role==='admin'?'Admin':'Cashier'));
     }
-  } else { 
-    setTimeout(()=>{ openLockScreen(); },2500); 
-  }
-  setTimeout(generateQRCode, 600);
-  
-  setTimeout(() => {
-    if(navigator.onLine) updateSyncStatus('synced');
-    else updateSyncStatus('offline');
-  }, 5000);
+    if(cngCloudAuthorized && currentLoginRole){
+      const intro=document.getElementById('intro-screen');
+      const lock=document.getElementById('lock-screen');
+      if(lock) lock.classList.remove('show');
+      if(intro){
+        intro.style.display='flex'; intro.classList.remove('splash-exit');
+        setTimeout(()=>{ intro.classList.add('splash-exit'); setTimeout(()=>{ intro.style.display='none'; loginAs(currentLoginRole,true); },980); },2500);
+      }else loginAs(currentLoginRole,true);
+    }else{
+      currentLoginRole=null;
+      sessionStorage.removeItem('cng_role');
+      sessionStorage.removeItem('cng_active_cashier');
+      clearRememberedLogin();
+      setTimeout(()=>openLockScreen(),1200);
+    }
+  }).catch(()=>setTimeout(()=>openLockScreen(),1200));
+
+  setTimeout(generateQRCode,600);
+  setTimeout(()=>{ if(navigator.onLine && cngCloudAuthorized) updateSyncStatus('synced'); else if(!navigator.onLine) updateSyncStatus('offline'); },5000);
 };
 
 console.log('☕ Cup And Go POS Pro v13.0 - Full Sync Edition');
@@ -4163,16 +4294,13 @@ function chooseCustomerCancelReason(){
     overlay.querySelector('#cancel-reason-close').onclick=()=>{overlay.remove();if(typeof cngRestoreOrderAlertAfterChild==='function')cngRestoreOrderAlertAfterChild();resolve(null);};
   });
 }
-async function notifyCustomerOrderCancelled(o, reason){
-  const phone=String(o?.customerPhone||'').trim();
-  const deviceId=String(o?.customerDeviceId||'').trim();
-  if(!phone&&!deviceId) return;
-  const orderId=String(o?.id||'');
+async function notifyCustomerOrderCancelled(o,reason){
+  const orderId=o?.id; const uid=String(o?.ownerUid||'').trim();
+  if(!uid) return;
   const en=String(reason?.en||reason||'Order cancelled');
   const ar=String(reason?.ar||reason?.en||reason||'تم إلغاء الطلب');
-  const target=deviceId?{targetDeviceId:deviceId}:{targetPhone:phone,contactExpiresAt:Date.now()+(24*60*60*1000)};
-  await db.ref('/customerNotifications').push({
-    id:Date.now(), type:'order_cancelled', ...target, orderId,
+  await db.ref('/customerPrivateNotifications/'+uid).push({
+    id:Date.now(), type:'order_cancelled', orderId,
     cancelReasonEn:en, cancelReasonAr:ar,
     title:'Order Cancelled', message:`Order #${orderId} cancelled — ${en}`,
     timestamp:Date.now(), time:new Date().toLocaleTimeString(), active:true
@@ -4234,13 +4362,13 @@ function renderCustomerControlIfOpen(){ const m=document.getElementById('custome
 const _openCustomerControl=openCustomerControl; openCustomerControl=function(mode){openCCMode=mode;_openCustomerControl(mode);};
 async function sendCustomerNotification(){
   const title=document.getElementById('cc-notif-title')?.value.trim()||'Cup And Go'; const message=document.getElementById('cc-notif-message')?.value.trim(); const image=document.getElementById('cc-notif-image')?.value.trim()||''; if(!message)return showToast('❌ Message required');
-  try{await db.ref('/customerNotifications').push({id:Date.now(),title,message,image,time:new Date().toLocaleTimeString(),timestamp:Date.now(),active:true});showToast('🚀 Notification sent to customers');document.getElementById('cc-notif-message').value='';}catch(e){showToast('❌ Notification failed');}
+  try{await db.ref('/publicNotifications').push({id:Date.now(),title,message,image,time:new Date().toLocaleTimeString(),timestamp:Date.now(),active:true});showToast('🚀 Notification sent to customers');document.getElementById('cc-notif-message').value='';}catch(e){showToast('❌ Notification failed');}
 }
 async function saveCustomerAppControls(){
   const wait=Math.min(Math.max(parseInt(document.getElementById('cc-wait-time')?.value||15),1),180); const location=document.getElementById('cc-location')?.value.trim()||'';
   appSettings.waitTime=wait; appSettings.location=location; const sw=document.getElementById('set-wait-time'); if(sw)sw.value=wait;
   localStorage.setItem('cng_settings',JSON.stringify(appSettings));
-  try{await db.ref('/settings').update({waitTime:wait,location});applySettingsToUI();showToast('✅ Customer settings updated');}catch(e){showToast('❌ Could not save customer settings');}
+  try{await Promise.all([db.ref('/settings').update({waitTime:wait,location}),db.ref('/publicSettings').update({waitTime:wait,location})]);applySettingsToUI();showToast('✅ Customer settings updated');}catch(e){showToast('❌ Could not save customer settings');}
 }
 
 
@@ -4289,7 +4417,7 @@ async function handlePromoBannerFiles(event){
     }
     appSettings.promoBanners=out.slice(0,3);
     localStorage.setItem('cng_settings',JSON.stringify(appSettings));
-    await db.ref('/settings').update({promoBanners:appSettings.promoBanners,offerPosterImage:null});
+    await Promise.all([db.ref('/settings').update({promoBanners:appSettings.promoBanners,offerPosterImage:null}),db.ref('/publicSettings').update({promoBanners:appSettings.promoBanners,offerPosterImage:null})]);
     renderPromoBannerPreview();showToast('✅ Customer banners updated in real time');
   }catch(e){console.error(e);showToast('❌ Could not upload banner');}
   event.target.value='';
@@ -4297,7 +4425,7 @@ async function handlePromoBannerFiles(event){
 async function removePromoBanner(index){
   const arr=Array.isArray(appSettings.promoBanners)?appSettings.promoBanners.slice():[];arr.splice(index,1);appSettings.promoBanners=arr;
   localStorage.setItem('cng_settings',JSON.stringify(appSettings));
-  try{await db.ref('/settings').update({promoBanners:arr});renderPromoBannerPreview();showToast('✅ Banner removed');}catch(e){showToast('❌ Could not remove banner');}
+  try{await Promise.all([db.ref('/settings').update({promoBanners:arr}),db.ref('/publicSettings').update({promoBanners:arr})]);renderPromoBannerPreview();showToast('✅ Banner removed');}catch(e){showToast('❌ Could not remove banner');}
 }
 async function renderIntroPreview(){
   const el=document.getElementById('cc-intro-preview');if(!el)return;
@@ -4451,9 +4579,7 @@ async function enforceCustomerPrivacyRetention(){
       const safe={...o,customerPhoneMasked:o.customerPhoneMasked||maskCustomerPhone(o.customerPhone),contactExpired:true,privacyStatus:'contact_expired'};
       delete safe.customerPhone;delete safe.carNumber;delete safe.cashier;return safe;
     }));
-    const ns=await db.ref('/customerNotifications').once('value');const patches={};
-    ns.forEach(child=>{const n=child.val()||{};if(n.targetPhone&&((n.targetDeviceId)||(Number(n.contactExpiresAt||0)&&Number(n.contactExpiresAt)<=now))){patches[child.key+'/targetPhone']=null;patches[child.key+'/contactExpiresAt']=null;}});
-    if(Object.keys(patches).length)await db.ref('/customerNotifications').update(patches);
+    // UID-private notifications contain no publicly queryable phone number.
     localStorage.setItem('cng_privacy_cleanup_at',String(now));
   }catch(e){console.warn('Privacy retention will retry later',e);}
 }
