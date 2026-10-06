@@ -1,6 +1,6 @@
 {
   "rules": {
-    ".read": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))",
+    ".read": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))",
     ".write": false,
     "_security": {
       "admins": {
@@ -11,26 +11,26 @@
       }
     },
     "$branch": {
-      ".write": "$branch !== '_security' && (auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true)))"
+      ".write": "$branch !== '_security' && (auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password')))"
     },
     "publicSettings": {
       ".read": true,
-      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))"
+      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))"
     },
     "products": {
       ".read": true,
-      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))"
+      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))"
     },
     "ledMatrix": {
       ".read": true,
-      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))"
+      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))"
     },
     "customerIntroAd": {
       ".read": true,
-      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))"
+      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))"
     },
     "website": {
-      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))",
+      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))",
       "config": {
         ".read": true
       }
@@ -40,7 +40,7 @@
       "$product": {
         "votes": {
           "$uid": {
-            ".write": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || (auth != null && auth.uid === $uid && !data.exists() && newData.exists())",
+            ".write": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (auth != null && auth.uid === $uid && !data.exists() && newData.exists())",
             ".validate": "newData.hasChildren(['stars', 'updatedAt'])",
             "stars": {
               ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 5 && newData.val() % 1 === 0"
@@ -54,51 +54,51 @@
           }
         }
       },
-      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))"
+      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))"
     },
     "publicNotifications": {
       ".read": true,
-      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))"
+      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))"
     },
     "customerPrivateNotifications": {
-      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))",
+      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))",
       "$uid": {
         ".read": "(auth != null && auth.token.firebase.sign_in_provider === 'password') && auth.uid === $uid"
       }
     },
     "customerOrders": {
-      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))",
+      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))",
       ".read": "(auth != null && auth.token.firebase.sign_in_provider === 'password') && query.orderByChild === 'ownerUid' && query.equalTo === auth.uid",
       ".indexOn": [
         "ownerUid"
       ],
       "$key": {
         ".read": "(auth != null && auth.token.firebase.sign_in_provider === 'password') && data.child('ownerUid').val() === auth.uid",
-        ".write": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || ((auth != null && auth.token.firebase.sign_in_provider === 'password') && ((!data.exists() && newData.child('ownerUid').val() === auth.uid && newData.child('status').val() === 'new') || (data.child('ownerUid').val() === auth.uid && data.child('status').val() === 'new' && now < data.child('timestamp').val() + 60000 && !newData.exists())))",
-        ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || (newData.hasChildren(['ownerUid','id','items','total','timestamp','status','customerName','paymentMethod','orderSource']) && newData.child('id').isNumber() && newData.child('id').val() > 0 && newData.child('id').val() % 1 === 0 && $key === auth.uid + '_' + newData.child('id').val() && newData.child('timestamp').isNumber() && newData.child('timestamp').val() <= now + 10000 && newData.child('timestamp').val() >= now - 60000 && newData.child('total').isNumber() && newData.child('total').val() >= 0 && newData.child('total').val() <= 1000000 && newData.child('items').hasChildren() && newData.child('orderSource').val() === 'customer' && (newData.child('paymentMethod').val() === 'Cash' || newData.child('paymentMethod').val() === 'Card') && newData.child('customerName').isString() && newData.child('customerName').val().length <= 200)",
+        ".write": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || ((auth != null && auth.token.firebase.sign_in_provider === 'password') && ((!data.exists() && newData.child('ownerUid').val() === auth.uid && newData.child('status').val() === 'new') || (data.child('ownerUid').val() === auth.uid && data.child('status').val() === 'new' && now < data.child('timestamp').val() + 60000 && !newData.exists())))",
+        ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.hasChildren(['ownerUid','id','items','total','timestamp','status','customerName','paymentMethod','orderSource']) && newData.child('id').isNumber() && newData.child('id').val() > 0 && newData.child('id').val() % 1 === 0 && $key === auth.uid + '_' + newData.child('id').val() && newData.child('timestamp').isNumber() && newData.child('timestamp').val() <= now + 10000 && newData.child('timestamp').val() >= now - 60000 && newData.child('total').isNumber() && newData.child('total').val() >= 0 && newData.child('total').val() <= 1000000 && newData.child('items').hasChildren() && newData.child('orderSource').val() === 'customer' && (newData.child('paymentMethod').val() === 'Cash' || newData.child('paymentMethod').val() === 'Card') && newData.child('customerName').isString() && newData.child('customerName').val().length <= 200)",
         "customerName": {
-          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || (newData.isString() && newData.val().length <= 100)"
+          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.isString() && newData.val().length <= 100)"
         },
         "customerPhone": {
-          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || (newData.isString() && newData.val().length <= 30)"
+          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.isString() && newData.val().length <= 30)"
         },
         "customerPhoneMasked": {
-          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || (newData.isString() && newData.val().length <= 40)"
+          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.isString() && newData.val().length <= 40)"
         },
         "customerDeviceId": {
-          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || (newData.isString() && newData.val().length <= 100)"
+          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.isString() && newData.val().length <= 100)"
         },
         "carNumber": {
-          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || (newData.isString() && newData.val().length <= 40)"
+          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.isString() && newData.val().length <= 40)"
         },
         "customerNote": {
-          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || (newData.isString() && newData.val().length <= 2000)"
+          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.isString() && newData.val().length <= 2000)"
         },
         "cashier": {
-          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || (newData.isString() && newData.val().length <= 300)"
+          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.isString() && newData.val().length <= 300)"
         },
         "time": {
-          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || (newData.isString() && newData.val().length <= 50)"
+          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.isString() && newData.val().length <= 50)"
         },
         "ownerUid": {},
         "id": {},
@@ -110,88 +110,88 @@
         "orderSource": {},
         "paymentMethod": {},
         "$other": {
-          ".validate": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))"
+          ".validate": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))"
         },
         "items": {
-          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || newData.hasChildren()",
+          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || newData.hasChildren()",
           "$item": {
-            ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || (newData.hasChildren(['id','productKey','name','price','qty']) && newData.child('productKey').isString() && root.child('products').child(newData.child('productKey').val()).exists() && root.child('products').child(newData.child('productKey').val()).child('id').val() === newData.child('id').val() && root.child('products').child(newData.child('productKey').val()).child('name').val() === newData.child('name').val() && root.child('products').child(newData.child('productKey').val()).child('customerUnavailable').val() !== true && root.child('products').child(newData.child('productKey').val()).child('soldOut').val() !== true && newData.child('price').isNumber() && newData.child('price').val() >= 0 && newData.child('price').val() === root.child('products').child(newData.child('productKey').val()).child('price').val() && newData.child('qty').isNumber() && newData.child('qty').val() >= 1 && newData.child('qty').val() <= 99 && newData.child('qty').val() % 1 === 0)",
+            ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.hasChildren(['id','productKey','name','price','qty']) && newData.child('productKey').isString() && root.child('products').child(newData.child('productKey').val()).exists() && root.child('products').child(newData.child('productKey').val()).child('id').val() === newData.child('id').val() && root.child('products').child(newData.child('productKey').val()).child('name').val() === newData.child('name').val() && root.child('products').child(newData.child('productKey').val()).child('customerUnavailable').val() !== true && root.child('products').child(newData.child('productKey').val()).child('soldOut').val() !== true && newData.child('price').isNumber() && newData.child('price').val() >= 0 && newData.child('price').val() === root.child('products').child(newData.child('productKey').val()).child('price').val() && newData.child('qty').isNumber() && newData.child('qty').val() >= 1 && newData.child('qty').val() <= 99 && newData.child('qty').val() % 1 === 0)",
             "id": {},
             "productKey": {},
             "name": {
-              ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || (newData.isString() && newData.val().length > 0 && newData.val().length <= 200)"
+              ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.isString() && newData.val().length > 0 && newData.val().length <= 200)"
             },
             "price": {},
             "qty": {},
             "note": {
-              ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || (newData.isString() && newData.val().length <= 2000)"
+              ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.isString() && newData.val().length <= 2000)"
             },
             "$other": {
-              ".validate": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))"
+              ".validate": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))"
             }
           }
         }
       }
     },
     "customerOrderHistory": {
-      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))",
+      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))",
       ".read": "(auth != null && auth.token.firebase.sign_in_provider === 'password') && query.orderByChild === 'ownerUid' && query.equalTo === auth.uid",
       ".indexOn": [
         "ownerUid"
       ],
       "$key": {
         ".read": "(auth != null && auth.token.firebase.sign_in_provider === 'password') && data.child('ownerUid').val() === auth.uid",
-        ".write": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || ((auth != null && auth.token.firebase.sign_in_provider === 'password') && newData.child('ownerUid').val() === auth.uid && !data.exists() && newData.child('status').val() === 'cancelled' && root.child('customerOrders').child($key).child('ownerUid').val() === auth.uid && root.child('customerOrders').child($key).child('status').val() === 'new' && now < root.child('customerOrders').child($key).child('timestamp').val() + 60000 && newData.child('id').val() === root.child('customerOrders').child($key).child('id').val() && newData.child('total').val() === root.child('customerOrders').child($key).child('total').val())"
+        ".write": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || ((auth != null && auth.token.firebase.sign_in_provider === 'password') && newData.child('ownerUid').val() === auth.uid && !data.exists() && newData.child('status').val() === 'cancelled' && root.child('customerOrders').child($key).child('ownerUid').val() === auth.uid && root.child('customerOrders').child($key).child('status').val() === 'new' && now < root.child('customerOrders').child($key).child('timestamp').val() + 60000 && newData.child('id').val() === root.child('customerOrders').child($key).child('id').val() && newData.child('total').val() === root.child('customerOrders').child($key).child('total').val())"
       }
     },
     "customerChats": {
-      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))",
+      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))",
       "$uid": {
         ".read": "(auth != null && auth.token.firebase.sign_in_provider === 'password') && auth.uid === $uid",
         "customerName": {
           ".write": "(auth != null && auth.token.firebase.sign_in_provider === 'password') && auth.uid === $uid",
-          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || (newData.isString() && newData.val().length <= 100)"
+          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.isString() && newData.val().length <= 100)"
         },
         "customerPhone": {
           ".write": "(auth != null && auth.token.firebase.sign_in_provider === 'password') && auth.uid === $uid",
-          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || (newData.isString() && newData.val().length <= 30)"
+          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.isString() && newData.val().length <= 30)"
         },
         "updatedAt": {
           ".write": "(auth != null && auth.token.firebase.sign_in_provider === 'password') && auth.uid === $uid",
-          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || (newData.isNumber() && newData.val() <= now + 10000 && newData.val() >= now - 60000)"
+          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.isNumber() && newData.val() <= now + 10000 && newData.val() >= now - 60000)"
         },
         "lastMessage": {
           ".write": "(auth != null && auth.token.firebase.sign_in_provider === 'password') && auth.uid === $uid",
-          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || (newData.isString() && newData.val().length <= 2000)"
+          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.isString() && newData.val().length <= 2000)"
         },
         "lastSender": {
           ".write": "(auth != null && auth.token.firebase.sign_in_provider === 'password') && auth.uid === $uid",
-          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || newData.val() === 'customer' || newData.val() === data.val()"
+          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || newData.val() === 'customer' || newData.val() === data.val()"
         },
         "unreadAdmin": {
           ".write": "(auth != null && auth.token.firebase.sign_in_provider === 'password') && auth.uid === $uid",
-          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || (newData.isNumber() && ((!data.exists() && newData.val() === 1) || newData.val() === data.val() + 1))"
+          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.isNumber() && ((!data.exists() && newData.val() === 1) || newData.val() === data.val() + 1))"
         },
         "unreadCustomer": {
           ".write": "(auth != null && auth.token.firebase.sign_in_provider === 'password') && auth.uid === $uid",
-          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || newData.val() === 0"
+          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || newData.val() === 0"
         },
         "messages": {
           "$message": {
-            ".write": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || ((auth != null && auth.token.firebase.sign_in_provider === 'password') && auth.uid === $uid && !data.exists() && newData.exists() && newData.child('sender').val() === 'customer')",
-            ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))) || (newData.hasChildren(['sender','text','timestamp']) && newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('text').val().length <= 2000 && newData.child('timestamp').isNumber() && newData.child('timestamp').val() <= now + 10000 && newData.child('timestamp').val() >= now - 60000)",
+            ".write": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || ((auth != null && auth.token.firebase.sign_in_provider === 'password') && auth.uid === $uid && !data.exists() && newData.exists() && newData.child('sender').val() === 'customer')",
+            ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.hasChildren(['sender','text','timestamp']) && newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('text').val().length <= 2000 && newData.child('timestamp').isNumber() && newData.child('timestamp').val() <= now + 10000 && newData.child('timestamp').val() >= now - 60000)",
             "sender": {},
             "text": {},
             "timestamp": {},
             "$other": {
-              ".validate": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))"
+              ".validate": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))"
             }
           }
         }
       }
     },
     "customerProfiles": {
-      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.firebase.sign_in_provider === 'anonymous' && root.child('_security').child('admins').child(auth.uid).child('active').val() === true))",
+      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))",
       "$uid": {
         ".read": "auth != null && auth.token.firebase.sign_in_provider === 'password' && auth.uid === $uid",
         ".write": "auth != null && auth.token.firebase.sign_in_provider === 'password' && auth.uid === $uid",
