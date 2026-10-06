@@ -75,7 +75,7 @@
       "$key": {
         ".read": "(auth != null && auth.token.firebase.sign_in_provider === 'password') && data.child('ownerUid').val() === auth.uid",
         ".write": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || ((auth != null && auth.token.firebase.sign_in_provider === 'password') && ((!data.exists() && newData.child('ownerUid').val() === auth.uid && newData.child('status').val() === 'new') || (data.child('ownerUid').val() === auth.uid && data.child('status').val() === 'new' && now < data.child('timestamp').val() + 60000 && !newData.exists())))",
-        ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.hasChildren(['ownerUid','id','items','total','timestamp','status','customerName','paymentMethod','orderSource']) && newData.child('id').isNumber() && newData.child('id').val() > 0 && newData.child('id').val() % 1 === 0 && $key === auth.uid + '_' + newData.child('id').val() && newData.child('timestamp').isNumber() && newData.child('timestamp').val() <= now + 10000 && newData.child('timestamp').val() >= now - 60000 && newData.child('total').isNumber() && newData.child('total').val() >= 0 && newData.child('total').val() <= 1000000 && newData.child('items').hasChildren() && newData.child('orderSource').val() === 'customer' && (newData.child('paymentMethod').val() === 'Cash' || newData.child('paymentMethod').val() === 'Card') && newData.child('customerName').isString() && newData.child('customerName').val().length <= 200)",
+        ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.hasChildren(['ownerUid','id','items','total','timestamp','status','customerName','paymentMethod','orderSource']) && newData.child('id').isNumber() && newData.child('id').val() > 0 && newData.child('id').val() % 1 === 0 && $key === auth.uid + '_' + newData.child('id').val() && newData.child('timestamp').isNumber() && newData.child('timestamp').val() <= now + 10000 && newData.child('timestamp').val() >= now - 60000 && newData.child('total').isNumber() && newData.child('total').val() >= 0 && newData.child('total').val() <= 1000000 && newData.child('items').hasChildren() && newData.child('orderSource').val() === 'customer' && (newData.child('paymentMethod').val() === 'Cash' || newData.child('paymentMethod').val() === 'Card') && newData.child('customerName').isString() && newData.child('customerName').val().length <= 200) && (newData.child('fulfillment').val() !== 'delivery' || newData.child('deliveryLocation').hasChildren(['lat','lng']) || (newData.child('deliveryAddress').isString() && newData.child('deliveryAddress').val().length > 0))",
         "customerName": {
           ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.isString() && newData.val().length <= 100)"
         },
@@ -129,6 +129,24 @@
             "$other": {
               ".validate": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))"
             }
+          }
+        },
+        "fulfillment": {
+          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.isString() && (newData.val() === 'pickup' || newData.val() === 'delivery'))"
+        },
+        "deliveryAddress": {
+          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || (newData.isString() && newData.val().length <= 500)"
+        },
+        "deliveryLocation": {
+          ".validate": "(auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))) || newData.hasChildren(['lat','lng'])",
+          "lat": {
+            ".validate": "newData.isNumber() && newData.val() >= -90 && newData.val() <= 90"
+          },
+          "lng": {
+            ".validate": "newData.isNumber() && newData.val() >= -180 && newData.val() <= 180"
+          },
+          "$other": {
+            ".validate": false
           }
         }
       }

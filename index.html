@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
+<link rel="manifest" href="./cng-admin.webmanifest">
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js" defer></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,7 +17,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@700&family=Great+Vibes&family=Dancing+Script:wght@700&family=Righteous&family=Russo+One&family=Orbitron:wght@700&family=Press+Start+2P&family=VT323&family=Pacifico&family=Lobster&family=Monoton&family=Fredoka+One&family=Abril+Fatface&family=Playfair+Display:ital,wght@1,700&family=Rampart+One&family=Staatliches&family=Tourney:wght@900&family=Zen+Dots&family=Black+Ops+One&family=Six+Caps&family=Monofett&display=swap" rel="stylesheet">
 
@@ -825,28 +827,6 @@ input,select,textarea{max-width:100%;}
         <div class="customer-control-card" onclick="openCustomerControl('history')"><div class="cc-icon">📜</div><div class="cc-title">History</div><div class="cc-count" id="cc-history-count">0 orders</div></div>
       </div>
 
-      <!-- QR CODE -->
-      <div class="card home-qr-card" style="text-align:center; padding:14px; background:var(--glass-bg); border-radius:20px;">
-        <h4 style="font-size:12px;font-weight:800;color:var(--orange);margin-bottom:10px;" data-i18n="scan_menu">📱 Scan Menu (QR Code)</h4>
-        <div style="display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap;">
-          <div style="background:#fff;padding:9px;border-radius:16px;box-shadow:0 5px 20px rgba(0,0,0,0.3); position:relative;">
-            <div id="qr-container" style="width:132px;height:132px;"></div>
-            <div style="position:absolute; bottom:4px; right:8px; background:rgba(0,0,0,0.7); padding:2px 8px; border-radius:10px; font-size:7px; color:#fff; font-weight:700;">v2.0</div>
-          </div>
-          <div style="text-align:left; flex:1; min-width:120px; max-width:180px;">
-            <div style="font-size:11px; font-weight:800; color:var(--orange); margin-bottom:4px;">☕ Scan to View</div>
-            <div style="font-size:9px; color:var(--muted); line-height:1.55;">
-              <span style="display:block;">📋 Full Menu</span>
-              <span style="display:block;">🛒 Order Online</span>
-              <span style="display:block;">⭐ Exclusive Offers</span>
-            </div>
-            <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">
-              <span style="background:rgba(229,193,88,0.15); padding:2px 10px; border-radius:12px; font-size:8px; color:var(--orange);">#CupAndGo</span>
-              <span style="background:rgba(0,230,118,0.1); padding:2px 10px; border-radius:12px; font-size:8px; color:var(--green);">● Live</span>
-            </div>
-          </div>
-        </div>
-      </div>
     </section>
 
     <section id="page-sales" class="page" style="padding-bottom: 90px;">
@@ -1341,7 +1321,7 @@ function cngGuardReference(ref){
 const db = { ref:path=>cngGuardReference(cngRawDb.ref(path)) };
 
 function cngBuildPublicSettings(){
-  const keys=['shopName','shopLogo','ownerPhone','categories','waitTime','promoBanners','offerPosterImage','location','currency'];
+  const keys=['shopName','shopLogo','ownerPhone','categories','waitTime','promoBanners','offerPosterImage','location','currency','pushEndpoint','shopWhatsApp'];
   const out={};
   keys.forEach(k=>{ if(appSettings && appSettings[k]!==undefined && appSettings[k]!==null) out[k]=appSettings[k]; });
   return out;
@@ -1608,20 +1588,7 @@ function syncAllDataToFirebase() {
   updateSyncStatus('syncing');
   // IMPORTANT: use update(), not set(), so customer-only realtime branches
   // (/customerNotifications and /customerOrderHistory) are never deleted by an admin sync.
-  db.ref('/').update({
-    settings: appSettings,
-    publicSettings: cngBuildPublicSettings(),
-    products: products,
-    orders: orders,
-    history: history30Days,
-    dueKhata: dueKhata,
-    heldOrders: heldOrders,
-    stockItemHeaders: stockItemHeaders,
-    stockRecords: stockRecords,
-    freeItems: freeItems,
-    ownerReports: ownerReports,
-    ledMatrix: ledMatrixSettings,
-    lastUpdated: Date.now()
+  db.ref('/').update({settings:appSettings, publicSettings:cngBuildPublicSettings(), products:products, ledMatrix:ledMatrixSettings, lastUpdated:Date.now()
   }).then(() => { updateSyncStatus('synced'); if(!isFirstLoad) showToast('✅ Data Synced to Cloud!'); })
   .catch((err) => { updateSyncStatus('offline'); console.log('Sync error:', err); });
 }
@@ -1633,108 +1600,26 @@ function parseFirebaseArray(item) {
   return Object.values(item);
 }
 
-db.ref('/').on('value', (snapshot) => {
-  let data = snapshot.val();
-  if(data) {
-    if(data.settings) { 
-      appSettings = {...appSettings, ...data.settings}; 
-      localStorage.setItem('cng_settings', JSON.stringify(appSettings)); 
-    }
-    if(data.products) { 
-      products = parseFirebaseArray(data.products); 
-      try { localStorage.setItem('cng_products', JSON.stringify(products)); } catch(e) { console.warn('Product cache is full; cloud data remains active.'); }
-    }
-    
-    orders = parseFirebaseArray(data.orders);
-    localStorage.setItem('cng_orders', JSON.stringify(orders));
-    
-    history30Days = parseFirebaseArray(data.history);
-    localStorage.setItem('cng_history', JSON.stringify(history30Days));
-    
-    dueKhata = parseFirebaseArray(data.dueKhata);
-    localStorage.setItem('cng_due', JSON.stringify(dueKhata));
-    
-    heldOrders = parseFirebaseArray(data.heldOrders);
-    localStorage.setItem('cng_held', JSON.stringify(heldOrders));
-    
-    if(data.stockItemHeaders) { 
-      stockItemHeaders = parseFirebaseArray(data.stockItemHeaders); 
-      localStorage.setItem('cng_stock_items', JSON.stringify(stockItemHeaders)); 
-    }
-    
-    stockRecords = data.stockRecords || {};
-    localStorage.setItem('cng_stock_records', JSON.stringify(stockRecords));
-    
-    freeItems = parseFirebaseArray(data.freeItems);
-    localStorage.setItem('cng_free_items', JSON.stringify(freeItems));
-    
-    if(data.ownerReports) {
-      ownerReports = parseFirebaseArray(data.ownerReports).filter(Boolean);
-      localStorage.setItem('cng_owner_reports', JSON.stringify(ownerReports));
-    }
-    
-    if(data.ledMatrix) { 
-      ledMatrixSettings = data.ledMatrix; 
-      localStorage.setItem('cng_led_matrix', JSON.stringify(ledMatrixSettings)); 
-    }
-    
-    applySettingsToUI();
-    initUI();
-    updateCart();
-    updateMonthlyDash();
-    updateAnalytics();
-    renderOrders();
-    updateHistory();
-    renderDueKhata();
-    updateLedMatrix();
-    
-    updateSyncStatus('synced');
-    isFirstLoad = false;
-  }
-  firebaseInitialSnapshotLoaded = true;
-  if(pendingCloudSync) {
-    pendingCloudSync = false;
-    syncAllDataToFirebase();
-  }
-}, (error) => { updateSyncStatus('offline'); console.log('Firebase read error:', error); });
-
+// Subscribe only to editable shop data. Orders have their own listeners.
+const cngInitialBranches=new Set();
+function cngBranchLoaded(branch){
+  cngInitialBranches.add(branch);
+  if(cngInitialBranches.size===3){firebaseInitialSnapshotLoaded=true;isFirstLoad=false;updateSyncStatus('synced');if(pendingCloudSync){pendingCloudSync=false;syncAllDataToFirebase();}}
+}
+db.ref('/settings').on('value',s=>{if(s.val()){appSettings={...appSettings,...s.val()};try{localStorage.setItem('cng_settings',JSON.stringify(appSettings));}catch(e){}applySettingsToUI();}cngBranchLoaded('settings');},()=>updateSyncStatus('offline'));
+db.ref('/products').on('value',s=>{products=parseFirebaseArray(s.val());try{localStorage.setItem('cng_products',JSON.stringify(products));}catch(e){}initUI();updateCart();cngBranchLoaded('products');},()=>updateSyncStatus('offline'));
+db.ref('/ledMatrix').on('value',s=>{if(s.val())ledMatrixSettings=s.val();updateLedMatrix();cngBranchLoaded('ledMatrix');},()=>updateSyncStatus('offline'));
 
 // ===== OWNER REPORT PERMANENT DAILY ARCHIVE =====
 // Canonical cloud path: /ownerReportsByDate/YYYY-MM-DD
 // This avoids losing old days when another device saves/syncs.
-db.ref('/ownerReportsByDate').on('value', snap => {
-  const raw = snap.val() || {};
-  const byDate = Array.isArray(raw)
-    ? raw.filter(Boolean).reduce((acc,r)=>{ if(r&&r.date) acc[r.date]=r; return acc; },{})
-    : raw;
-
-  const merged = {};
-  (ownerReports || []).forEach(r => { if(r && r.date) merged[r.date] = r; });
-  Object.keys(byDate).forEach(k => {
-    const r = byDate[k];
-    if(r) merged[r.date || k] = {...r, date:(r.date || k)};
-  });
-
-  ownerReports = Object.values(merged).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
-  localStorage.setItem('cng_owner_reports', JSON.stringify(ownerReports));
-
-  const monthEl=document.getElementById('owner-month-filter');
-  const monthlyModal=document.getElementById('modal-owner-monthly');
-  if(monthEl && monthlyModal && monthlyModal.classList.contains('show')) {
-    renderMonthlyOwnerReport();
-  }
-}, err => console.log('Owner archive read error:', err));
-
-
 // Online/Offline
 window.addEventListener('online', function() {
   isOnline = true;
   updateStatusUI();
   showToast('🔄 Online - Syncing data...');
   syncAllDataToFirebase();
-  (ownerReports||[]).forEach(r=>{
-    if(r&&r.date) db.ref('/ownerReportsByDate/'+r.date).update(r).catch(()=>{});
-  });
+
 });
 window.addEventListener('offline', function() {
   isOnline = false;
@@ -1744,21 +1629,7 @@ window.addEventListener('offline', function() {
 });
 
 // ======= QR CODE GENERATOR =======
-function generateQRCode() {
-  const container = document.getElementById('qr-container');
-  if (!container) return;
-  const menuUrl = 'https://cupandgoksa.com/menu/';
-  container.innerHTML = '';
-  new QRCode(container, {
-    text: menuUrl, width: 130, height: 130,
-    colorDark: '#000000', colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.H
-  });
-  container.onclick = function() {
-    try { window.open(menuUrl, '_blank'); } catch(e) { location.href = menuUrl; }
-  };
-  container.style.cursor = 'pointer';
-}
+function generateQRCode() {}
 
 // ======= LED MATRIX FUNCTIONS =======
 function updateLedMatrix() {
@@ -4172,7 +4043,7 @@ function startCustomerOrderMonitor(){
     if(!lateOrderTimer) lateOrderTimer=setInterval(checkLateCustomerOrders,30000);
     customerOrderInitialLoaded=true;
   });
-  db.ref('/customerOrderHistory').on('value', snap=>{
+  db.ref('/customerOrderHistory').limitToLast(150).on('value', snap=>{
     customerOrderHistoryCache=customerOrdersArray(snap.val());
     updateCustomerControlCounts();
     renderCustomerControlIfOpen();
@@ -5566,6 +5437,99 @@ function removeWebsiteOwnerImage(){
 }
 
 </script>
+<style id="cng-online-order-layout">
+.top-stats,.home-qr-card,.monthly-dashboard,.customer-control-grid,#page-home>.led-matrix-container,#page-sales,#page-cart,#page-orders{display:none!important}
+#page-home{padding-top:8px}.bottom-nav{justify-content:space-evenly!important}.bottom-nav>button{flex:1!important;position:static!important;width:auto!important;height:52px!important;border-radius:15px!important}.bottom-nav .nav-scan,.bottom-nav>button[onclick="showPage('cart')"]{display:none!important}
+#page-admin .quick-grid>.quick-card{display:none!important}#page-admin .quick-grid>#admin-card-items,#page-admin .quick-grid>#admin-card-settings,#page-admin .quick-grid>#admin-card-customer-notifications,#page-admin .quick-grid>#admin-card-website,#page-admin .quick-grid>#admin-card-about,#page-admin .quick-grid>#admin-card-delivery{display:block!important}
+#cngOnline{max-width:1000px;margin:auto;color:var(--text)}.co-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.co-head h2{font-size:24px;letter-spacing:-.6px;margin:0 0 5px}.co-sub{font-size:11px;color:var(--muted);line-height:1.5}.co-connection{display:flex;align-items:center;gap:6px;font-size:10px;color:#6ed7a3}.co-connection:before{content:'';width:7px;height:7px;background:currentColor;border-radius:50%}.co-filters{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}.co-filter{border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--muted);padding:13px 6px;border-radius:16px;cursor:pointer;font-family:inherit}.co-filter.active{color:var(--orange);background:rgba(229,193,88,.12);border-color:var(--orange)}.co-filter b{display:block;font-size:24px;margin:0 0 5px}.co-filter span{font-size:10px;font-weight:800}.co-tools{display:flex;gap:8px;margin-bottom:18px}.co-tools input{min-width:0;flex:1;border:1px solid var(--glass-border);border-radius:13px;background:var(--glass-bg);color:var(--text);padding:12px;font-size:13px}.co-tools button,.co-action{border:1px solid var(--glass-border);border-radius:12px;padding:11px;background:var(--glass-bg);color:var(--text);font-family:inherit;font-weight:800;cursor:pointer}.co-list{display:grid;gap:12px}.co-order{padding:18px;border:1px solid var(--glass-border);background:var(--glass-bg);border-radius:20px}.co-order-top{display:flex;justify-content:space-between;gap:8px;margin-bottom:13px}.co-order-top b{font-size:15px}.co-order-top small{display:block;color:var(--muted);font-size:10px;margin-top:5px}.co-pill{align-self:flex-start;padding:6px 9px;border-radius:9px;font-size:9px;background:rgba(229,193,88,.12);color:var(--orange);white-space:nowrap}.co-contact{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin-bottom:13px}.co-contact a{color:var(--text);text-decoration:none}.co-items{border-block:1px dashed var(--glass-border);padding:9px 0}.co-item{display:grid;grid-template-columns:1fr auto;gap:8px;padding:5px 0;font-size:12px}.co-item small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.co-note{padding:10px;border-radius:10px;background:rgba(229,193,88,.06);font-size:11px;margin:10px 0;white-space:pre-wrap}.co-total{display:flex;justify-content:space-between;align-items:center;margin:13px 0;font-size:12px}.co-total b{font-size:19px;color:var(--orange)}.co-payment{font-size:10px;color:var(--muted);margin-bottom:12px}.co-actions{display:flex;gap:8px}.co-action{flex:1;min-height:44px;font-size:11px}.co-action.primary{background:var(--orange);color:#16120c;border:0}.co-action.danger{color:#ff8f8f}.co-action:disabled{opacity:.45;cursor:wait}.co-empty{text-align:center;border:1px dashed var(--glass-border);border-radius:22px;padding:42px 16px;color:var(--muted);font-size:12px;line-height:1.8}.co-empty strong{display:block;font-size:30px;margin-bottom:12px}.co-notification-card{border:1px solid var(--glass-border);padding:16px;border-radius:16px;font-size:12px;line-height:1.7}.co-notification-card input{width:100%;box-sizing:border-box;background:var(--glass-bg);border:1px solid var(--glass-border);padding:11px;color:var(--text);border-radius:10px;margin:8px 0}.co-notification-card button{margin:6px 4px 6px 0}#cngNotifyStatus{color:var(--muted);font-size:11px}#cngOnline[dir=rtl] .co-contact{direction:rtl}
+@media(min-width:760px){.co-list{grid-template-columns:repeat(2,minmax(0,1fr))}.co-filters{gap:12px}.co-filter b{font-size:28px}}@media(prefers-reduced-motion:reduce){#cngOnline *{animation:none!important;transition:none!important}}
+</style>
+<script id="cng-online-order-app">
+(function(){
+ 'use strict';
+ const host=document.createElement('div');host.id='cngOnline';document.getElementById('page-home').appendChild(host);
+ let mode='new',search='',signature='',historyAll=false;const busy=new Set();
+ const tr=(en,ar)=>localPrefs.lang==='ar'?ar:en;
+ const esc=v=>escCC(v);const orderKey=o=>o.ownerUid?o.ownerUid+'_'+String(o.id):'legacy_'+String(o.id);
+ const nav=document.querySelector('.bottom-nav');nav.innerHTML='<span id="dock-cart-badge" hidden></span><button class="nav-item active" onclick="showPage(\'home\')"><i>🧾</i><span>Orders</span></button><button class="nav-item" onclick="cngOpenAdminInbox()"><i>💬</i><span>Inbox</span></button><button class="nav-item" id="nav-btn-admin" onclick="showPage(\'admin\')"><i>⚙️</i><span>Settings</span></button>';
+ const originalShowPage=showPage;showPage=function(id){if(['sales','cart','orders'].includes(id))id='home';originalShowPage(id);if(id==='home')render();};
+ function live(){return customerOrdersCache.filter(isCustomerOrder)}
+ function lists(){const all=live(),hist=customerOrderHistoryCache;return{new:all.filter(o=>customerOrderStatus(o)==='pending'),active:all.filter(o=>['active','ready','processing','accepted','finishing'].includes(customerOrderStatus(o))),completed:hist.filter(o=>customerOrderStatus(o)==='completed'),history:hist};}
+ function action(key,type,label,primary=false){return '<button class="co-action '+(primary?'primary':'')+'" '+(busy.has(key)?'disabled':'')+' data-order-key="'+esc(key)+'" data-action="'+type+'">'+label+'</button>'}
+ function card(o){const key=orderKey(o),status=customerOrderStatus(o),done=['completed','cancelled'].includes(status),phone=customerPhoneLabel(o,done),paid=o.paymentStatus==='paid';let buttons='';
+  if(status==='pending')buttons=action(key,'cancel',tr('Cancel','إلغاء'))+action(key,'accept',tr('Accept order','قبول الطلب'),true);
+  else if(!done&&status!=='finishing'){if(!paid)buttons+=action(key,'paid',tr('Mark paid','تم الدفع'));buttons+=status==='ready'?action(key,'complete',tr('Delivered','تم التسليم'),true):action(key,'ready',tr('Ready','جاهز'),true);buttons+=action(key,'cancel',tr('Cancel','إلغاء'));}
+  const labels={pending:tr('NEW','جديد'),active:tr('PREPARING','قيد التحضير'),ready:tr('READY','جاهز'),completed:tr('DELIVERED','تم التسليم'),cancelled:tr('CANCELLED','ملغي'),finishing:tr('Saving…','جاري الحفظ…')};
+  const items=Array.isArray(o.items)?o.items:Object.values(o.items||{});
+  return '<article class="co-order"><div class="co-order-top"><div><b>'+esc(o.customerName||tr('Customer','عميل'))+'</b><small>#'+esc(o.id)+' · '+esc(new Date(Number(o.timestamp)||Number(o.id)).toLocaleString(localPrefs.lang==='ar'?'ar-SA':'en-GB',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}))+'</small></div><span class="co-pill">'+esc(labels[status]||status)+'</span></div><div class="co-contact">'+(!done&&o.customerPhone?'<a href="tel:'+esc(String(o.customerPhone).replace(/[^+\d]/g,''))+'">📞 '+esc(phone)+'</a>':'<span>📞 '+esc(phone)+'</span>')+'<span>🚗 '+esc(o.carNumber||tr('Counter pickup','استلام من الكاونتر'))+'</span></div><div class="co-items">'+items.map(i=>'<div class="co-item"><div><b>'+esc(i.qty)+' × '+esc(i.name)+'</b>'+(i.note?'<small>'+esc(i.note)+'</small>':'')+'</div><span>'+((Number(i.qty)||0)*(Number(i.price)||0)).toFixed(2)+' ﷼</span></div>').join('')+'</div>'+(window.cngDeliveryAdminMarkup?.(o,done)||'')+(o.customerNote?'<div class="co-note">📝 '+esc(o.customerNote)+'</div>':'')+(status==='cancelled'?'<div class="co-note">'+esc(localPrefs.lang==='ar'?(o.cancelReasonAr||o.cancelReason):(o.cancelReasonEn||o.cancelReason))+'</div>':'')+'<div class="co-total"><span>'+tr('TOTAL','الإجمالي')+'</span><b>'+Number(o.total||0).toFixed(2)+' ﷼</b></div><div class="co-payment">'+(customerPaymentMethod(o)==='Card'?'💳 '+tr('Card at counter','بطاقة عند الاستلام'):'💵 '+tr('Cash at counter','نقداً عند الاستلام'))+' · '+(paid?'✓ '+tr('Paid','مدفوع'):tr('Payment not collected','لم يتم تحصيل المبلغ'))+'</div>'+(buttons?'<div class="co-actions">'+buttons+'</div>':'')+'</article>';
+ }
+ function render(){if(!host)return;const l=lists(),filtered=l[mode].filter(o=>!search||[o.id,o.customerName,o.customerPhone,o.customerPhoneMasked].some(v=>String(v||'').toLowerCase().includes(search.toLowerCase()))).sort((a,b)=>Number(b.timestamp||b.id)-Number(a.timestamp||a.id));
+  const sig=JSON.stringify([localPrefs.lang,mode,search,navigator.onLine,cngCloudAuthorized,customerOrderInitialLoaded,l,Array.from(busy)]);if(sig===signature)return;signature=sig;
+  const focus=document.activeElement?.id==='coSearch',selection=document.activeElement?.selectionStart;
+  host.dir=localPrefs.lang==='ar'?'rtl':'ltr';host.innerHTML='<div class="co-head"><div><h2>'+tr('Online orders','الطلبات الإلكترونية')+'</h2><div class="co-sub">'+tr('Accept. Prepare. Hand over.','قبول الطلب · التحضير · التسليم')+'</div></div><div class="co-connection" style="color:'+(navigator.onLine&&cngCloudAuthorized?'#6ed7a3':'#e7b45d')+'">'+(navigator.onLine&&cngCloudAuthorized?tr('Connected','متصل'):tr('Connecting / offline','جاري الاتصال / غير متصل'))+'</div></div><div class="co-filters">'+[['new','New','جديد'],['active','In progress','قيد التحضير'],['completed','Delivered','تم التسليم'],['history','History','السجل']].map(([k,en,ar])=>'<button type="button" class="co-filter '+(mode===k?'active':'')+'" data-filter="'+k+'"><b>'+l[k].length+'</b><span>'+tr(en,ar)+'</span></button>').join('')+'</div><div class="co-tools"><input id="coSearch" type="search" value="'+esc(search)+'" placeholder="'+tr('Order number, name or mobile','رقم الطلب أو الاسم أو الجوال')+'" aria-label="'+tr('Search orders','بحث الطلبات')+'"><button type="button" data-notifications>🔔</button><button type="button" data-inbox>💬</button></div>'+(mode==='history'?'<div class="co-sub" style="margin-bottom:12px">'+tr(historyAll?'All order history loaded':'Latest 150 orders. Search older orders by loading all history.',historyAll?'تم تحميل سجل الطلبات بالكامل':'آخر ١٥٠ طلباً. حمّل السجل الكامل للبحث في الطلبات القديمة.')+(!historyAll?' <button class="co-action" data-load-history>'+tr('Load older orders','تحميل الطلبات القديمة')+'</button>':'')+'</div>':'')+'<div class="co-list">'+(filtered.length?filtered.map(card).join(''):'<div class="co-empty"><strong>☕</strong>'+tr(customerOrderInitialLoaded?'No orders here yet':'Connecting to your orders…',customerOrderInitialLoaded?'لا توجد طلبات هنا حالياً':'جاري الاتصال بالطلبات…')+'</div>')+'</div>';
+  if(focus){const input=document.getElementById('coSearch');input.focus();try{input.setSelectionRange(selection,selection)}catch(e){}}
+ }
+ host.addEventListener('input',e=>{if(e.target.id==='coSearch'){search=e.target.value;render();}});
+ host.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.filter){mode=b.dataset.filter;search='';render();}else if(b.hasAttribute('data-notifications'))window.cngOpenOrderNotifications();else if(b.hasAttribute('data-inbox'))cngOpenAdminInbox();else if(b.hasAttribute('data-load-history')){b.disabled=true;try{customerOrderHistoryCache=customerOrdersArray((await db.ref('/customerOrderHistory').once('value')).val());historyAll=true;signature='';render();}catch(err){showToast(tr('Could not load history','تعذر تحميل السجل'));b.disabled=false;}}else if(b.dataset.action)await perform(b.dataset.orderKey,b.dataset.action);});
+ async function perform(key,type){if(busy.has(key)||!cngCloudAuthorized)return;const o=live().find(x=>orderKey(x)===key);if(!o)return;let reason=null;
+  if(type==='cancel'){reason=await chooseCustomerCancelReason();if(!reason)return;}
+  if(type==='complete'&&o.paymentStatus!=='paid'){showToast(tr('Confirm payment first','أكد استلام المبلغ أولاً'));return;}
+  if(type==='paid'&&!confirm(tr('Have you received the full payment?','هل استلمت المبلغ كاملاً؟')))return;
+  busy.add(key);signature='';render();let claimed=null,prior=null;const ref=db.ref('/customerOrders/'+key);
+  try{const result=await ref.transaction(current=>{if(!current||current.ownerUid!==o.ownerUid)return;const s=customerOrderStatus(current);if(s==='finishing')return;
+    if(type==='accept'&&s!=='pending'||type==='ready'&&s!=='active'||type==='complete'&&(s!=='ready'||current.paymentStatus!=='paid'))return;
+    if(!['pending','active','ready'].includes(s))return;
+    const now=Date.now(),who=sessionStorage.getItem('cng_active_cashier')||'Admin';
+    if(type==='accept')return{...current,status:'active',acceptedAt:now,acceptedBy:who};if(type==='ready')return{...current,status:'ready',readyAt:now,readyBy:who};if(type==='paid')return{...current,paymentStatus:'paid',paidAt:now,paidBy:who};
+    prior=current;claimed={...current,status:'finishing'};return claimed;
+  });if(!result.committed)throw new Error('Order changed');
+   if(type==='cancel'||type==='complete'){const finished=privacySafeFinishedOrder(prior,type==='cancel'?'cancelled':'completed',type==='cancel'?{cancelReason:reason.en,cancelReasonEn:reason.en,cancelReasonAr:reason.ar,cancelledAt:Date.now()}:{});await db.ref('/').update({['customerOrderHistory/'+key]:finished,['customerOrders/'+key]:null});if(type==='cancel')await notifyCustomerOrderCancelled(prior,reason).catch(()=>{});}
+   showToast(tr('Order updated','تم تحديث الطلب'));return true;
+  }catch(err){if(claimed&&prior){try{await ref.transaction(cur=>cur?.status==='finishing'?prior:undefined)}catch(e){}}showToast(tr('Could not update. Check connection and retry.','تعذر التحديث. تحقق من الاتصال وحاول مجدداً.'));}finally{busy.delete(key);signature='';render();}
+ }
+ acceptCustomerOrderFromAlert=async function(){const o=activeNewCustomerOrder;if(o&&await perform(orderKey(o),'accept'))dismissNewCustomerOrder();};
+ cancelCustomerOrderFromAlert=async function(){const o=activeNewCustomerOrder;if(o&&await perform(orderKey(o),'cancel'))dismissNewCustomerOrder();};
+ const oldCount=updateCustomerControlCounts;updateCustomerControlCounts=function(){oldCount();if(historyAll){historyAll=false;}render();};
+ const oldQueue=queueNewCustomerOrder;queueNewCustomerOrder=function(o){oldQueue(o);window.cngShowOrderNotification?.(o);};
+ // Avoid scanning and rewriting unrelated POS history on every launch.
+ enforceCustomerPrivacyRetention=async function(){if(!cngCloudAuthorized)return;const updates={};live().forEach(o=>{if(o.customerPhone&&Number(o.contactExpiresAt)>0&&Number(o.contactExpiresAt)<Date.now()){const k=orderKey(o);updates['customerOrders/'+k+'/customerPhone']=null;updates['customerOrders/'+k+'/carNumber']=null;updates['customerOrders/'+k+'/contactExpired']=true;}});if(Object.keys(updates).length)await db.ref('/').update(updates);};
+ const notify=document.createElement('div');notify.className='modal';notify.id='cng-order-notifications';notify.innerHTML='<div class="modal-box"><div class="modal-header"><h3>🔔 Order notifications</h3><button class="btn" onclick="closeModal(\'cng-order-notifications\')">✕</button></div><div class="modal-body"><div class="co-notification-card"><button class="co-action primary" id="coEnableNotify">Enable on this phone</button><button class="co-action" id="coTestNotify">Test notification</button><p id="cngNotifyStatus" role="status"></p><label><input type="checkbox" id="coKeepAwake" style="width:auto"> Keep screen awake while orders are open</label><details><summary>Background notification setup</summary><p>Lock-screen delivery needs the separate push server. Until configured, this page sends alerts only while its connection is running.</p><label>Push server URL<input id="coPushEndpoint" type="url" placeholder="https://your-worker.workers.dev"></label><label>Firebase Web Push public key<input id="coVapidKey" placeholder="Public VAPID key"></label><button class="co-action" id="coSavePush">Save setup</button></details></div></div></div>';document.body.appendChild(notify);
+ window.cngOpenOrderNotifications=function(){document.getElementById('coPushEndpoint').value=appSettings.pushEndpoint||'';document.getElementById('coVapidKey').value=appSettings.pushVapidKey||'';notifyStatus();openModal(notify.id);};
+ let sw=null,wake=null;const status=document.getElementById('cngNotifyStatus');
+ function notifyStatus(){status.textContent=!( 'Notification' in window)?'Notifications are unavailable in this browser.':Notification.permission==='granted'?(appSettings.pushEndpoint&&appSettings.pushVapidKey?'Permission enabled. Register this phone for background delivery.':'Page alerts enabled. Lock-screen push server is not configured.'):'Enable notifications to receive order alerts.';}
+ async function serviceWorker(){if(!('serviceWorker'in navigator)||!window.isSecureContext)throw new Error('Open the hosted HTTPS admin page');if(!sw)sw=await navigator.serviceWorker.register('./cng-order-sw.js');await navigator.serviceWorker.ready;return sw;}
+ document.getElementById('coEnableNotify').onclick=async()=>{try{if(!cngCloudAuthorized)throw new Error('Sign in as Admin first');if(!('Notification'in window))throw new Error('Browser does not support notifications');const permission=await Notification.requestPermission();if(permission!=='granted'){notifyStatus();return;}await serviceWorker();if(appSettings.pushEndpoint&&appSettings.pushVapidKey){const moduleApp=firebase.app();if(typeof moduleApp.messaging!=='function')throw new Error('Firebase Messaging not loaded');const token=await moduleApp.messaging().getToken({vapidKey:appSettings.pushVapidKey,serviceWorkerRegistration:sw});let device=localStorage.getItem('cng_push_device');if(!device){device=crypto.randomUUID();localStorage.setItem('cng_push_device',device);}await db.ref('/adminPushTokens/'+cngAuth.currentUser.uid+'/'+device).set({token,updatedAt:Date.now()});status.textContent='This phone is registered. Use Test to verify background delivery.';}else notifyStatus();}catch(e){status.textContent=e.message||'Could not enable notifications';}};
+ document.getElementById('coSavePush').onclick=async()=>{try{if(currentLoginRole!=='admin')throw new Error('Owner Admin access required');const value=document.getElementById('coPushEndpoint').value.trim();if(value){const url=new URL(value);if(url.protocol!=='https:'||url.username||url.password||url.search||url.hash)throw new Error('Enter an HTTPS push server address');}appSettings.pushEndpoint=value.replace(/\/$/,'');appSettings.pushVapidKey=document.getElementById('coVapidKey').value.trim();await db.ref('/').update({'settings/pushEndpoint':appSettings.pushEndpoint,'settings/pushVapidKey':appSettings.pushVapidKey,'publicSettings/pushEndpoint':appSettings.pushEndpoint});notifyStatus();showToast('Notification setup saved');}catch(e){status.textContent=e.message;}};
+ document.getElementById('coTestNotify').onclick=async()=>{try{if(appSettings.pushEndpoint&&appSettings.pushVapidKey){const token=await cngAuth.currentUser.getIdToken();const r=await fetch(appSettings.pushEndpoint+'/test',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:'{}'});if(!r.ok)throw new Error('Push server test failed');const result=await r.json();if(!result.delivered&&!result.skipped)throw new Error('No registered phones. Enable on this phone first.');status.textContent='Test sent. Confirm it appears on this phone.';}else{const reg=await serviceWorker();if(Notification.permission!=='granted')throw new Error('Enable notifications first');await reg.showNotification('Cup And Go · Test',{body:'Page notification works. Background server is not configured.',tag:'cng-test'});}}catch(e){status.textContent=e.message;}};
+ const seen=new Set();window.cngShowOrderNotification=async o=>{const key=orderKey(o);if(seen.has(key))return;seen.add(key);if(!('Notification'in window)||Notification.permission!=='granted')return;try{const reg=await serviceWorker();await reg.showNotification(tr('New Cup And Go order','طلب جديد — كوب آند جو'),{body:'#'+o.id+' · '+Number(o.total||0).toFixed(2)+' ﷼',tag:'cng-'+key,data:{orderKey:key},renotify:true});}catch(e){}};
+ document.getElementById('coKeepAwake').onchange=async e=>{try{if(e.target.checked){if(!navigator.wakeLock)throw new Error('Not supported');wake=await navigator.wakeLock.request('screen');}else if(wake){await wake.release();wake=null;}}catch(err){e.target.checked=false;status.textContent='Keep-screen-awake is unavailable on this device.';}};
+ document.addEventListener('visibilitychange',async()=>{if(!document.hidden&&document.getElementById('coKeepAwake').checked){try{wake=await navigator.wakeLock.request('screen')}catch(e){}}});
+ window.addEventListener('online',()=>{signature='';render();});window.addEventListener('offline',()=>{signature='';render();});
+ const oldApply=applySettingsToUI;applySettingsToUI=function(){oldApply();signature='';render();};
+ window.cngOpenOnlineOrder=function(key){mode='new';search=String(key||'').split('_').pop();showPage('home');signature='';render();};
+ navigator.serviceWorker?.addEventListener('message',e=>{if(e.data?.type==='OPEN_ORDER')window.cngOpenOnlineOrder(e.data.orderKey)});
+ const deep=new URLSearchParams(location.search).get('order');if(deep)search=deep.split('_').pop();render();
+})();
+</script>
+<script id="cng-admin-delivery-settings">
+(function(){
+ const tr=(en,ar)=>localPrefs.lang==='ar'?ar:en;
+ function phone(raw){const value=String(raw||'').replace(/[٠-٩]/g,x=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(x))).replace(/[\s()+-]/g,'');return /^05\d{8}$/.test(value)?'966'+value.slice(1):/^9665\d{8}$/.test(value)?value:'';}
+ function locationURL(p){return p&&typeof p.lat==='number'&&Math.abs(p.lat)<=90&&typeof p.lng==='number'&&Math.abs(p.lng)<=180?'https://www.google.com/maps?q='+p.lat.toFixed(6)+','+p.lng.toFixed(6):'';}
+ window.cngDeliveryAdminMarkup=function(o,done){if(o.fulfillment!=='delivery')return '<div class="co-payment">'+tr('🏪 Shop pickup','🏪 استلام من المتجر')+'</div>';let markup='<div class="co-note"><b>'+tr('🚗 Delivery','🚗 توصيل')+'</b>'+(o.deliveryAddress&&!done?'<p>'+escCC(o.deliveryAddress)+'</p>':'');const location=!done?locationURL(o.deliveryLocation):'';if(location)markup+='<a href="'+escCC(location)+'" target="_blank" rel="noopener noreferrer" style="color:var(--orange)">'+tr('📍 Open customer location','📍 فتح موقع العميل')+'</a>';markup+='</div>';if(done)return markup;
+ const msg=tr('Cup And Go delivery order','طلب توصيل كوب آند جو')+'\n#'+o.id+'\n'+(o.items||[]).map(i=>i.qty+' × '+i.name).join('\n')+'\n'+tr('Total: ','الإجمالي: ')+Number(o.total||0).toFixed(2)+' ﷼\n'+tr('Name: ','الاسم: ')+(o.customerName||'')+'\n'+tr('Mobile: ','الجوال: ')+(o.customerPhone||'')+'\n'+(o.deliveryAddress||'')+'\n'+location;
+ const driver=phone(appSettings.driverWhatsApp),shop=phone(appSettings.shopWhatsApp||appSettings.ownerPhone);markup+='<div class="co-actions" style="margin-bottom:12px">';if(driver)markup+='<a class="co-action" style="text-align:center;text-decoration:none;color:#70db9e" href="https://wa.me/'+driver+'?text='+encodeURIComponent(msg)+'" target="_blank" rel="noopener noreferrer">'+tr('WhatsApp driver','واتساب السائق')+'</a>';if(shop)markup+='<a class="co-action" style="text-align:center;text-decoration:none;color:#70db9e" href="https://wa.me/'+shop+'?text='+encodeURIComponent(msg)+'" target="_blank" rel="noopener noreferrer">'+tr('WhatsApp shop','واتساب المتجر')+'</a>';return markup+'</div>';
+ };
+ const button=document.createElement('div');button.className='quick-card';button.id='admin-card-delivery';button.innerHTML='<div class="quick-icon">🚗</div><span style="font-size:12px;font-weight:700">Delivery / التوصيل</span>';button.onclick=()=>{document.getElementById('coDriverNumber').value=appSettings.driverWhatsApp||'';document.getElementById('coShopNumber').value=appSettings.shopWhatsApp||appSettings.ownerPhone||'';openModal('coDeliverySettings')};document.querySelector('#page-admin .quick-grid').appendChild(button);
+ const modal=document.createElement('div');modal.id='coDeliverySettings';modal.className='modal';modal.innerHTML='<div class="modal-box"><div class="modal-header"><h3>🚗 Delivery / التوصيل</h3><button class="btn" onclick="closeModal(\'coDeliverySettings\')">✕</button></div><div class="modal-body"><div class="field"><label>Driver WhatsApp / واتساب السائق</label><input id="coDriverNumber" type="tel" placeholder="9665xxxxxxxx" autocomplete="tel"><small>Private to Admin. / يظهر للأدمن فقط.</small></div><div class="field"><label>Shop WhatsApp / واتساب المتجر</label><input id="coShopNumber" type="tel" placeholder="9665xxxxxxxx" autocomplete="tel"><small>Shown to customers. / يظهر للعملاء.</small></div><p style="font-size:11px;color:var(--muted);line-height:1.7">Order and location links prepare a WhatsApp message. Tap Send in WhatsApp to deliver it. / رابط الطلب والموقع يجهز رسالة واتساب؛ اضغط إرسال داخل واتساب.</p><p id="coDeliverySaveStatus" role="status" style="font-size:12px"></p></div><div class="modal-footer"><button class="btn btn-primary" id="coSaveDelivery">Save / حفظ</button></div></div>';document.body.appendChild(modal);
+ document.getElementById('coSaveDelivery').onclick=async()=>{const button=document.getElementById('coSaveDelivery'),status=document.getElementById('coDeliverySaveStatus');try{if(currentLoginRole!=='admin'||!cngCloudAuthorized)throw Error(tr('Admin sign-in required','يلزم دخول الأدمن'));const driverRaw=document.getElementById('coDriverNumber').value.trim(),shopRaw=document.getElementById('coShopNumber').value.trim(),driver=phone(driverRaw),shop=phone(shopRaw);if(driverRaw&&!driver||shopRaw&&!shop)throw Error(tr('Enter a valid Saudi WhatsApp number','أدخل رقم واتساب سعودي صحيح'));button.disabled=true;await db.ref('/').update({'settings/driverWhatsApp':driver,'settings/shopWhatsApp':shop,'publicSettings/shopWhatsApp':shop});appSettings.driverWhatsApp=driver;appSettings.shopWhatsApp=shop;localStorage.setItem('cng_settings',JSON.stringify(appSettings));status.textContent=tr('Saved','تم الحفظ');showToast(status.textContent);closeModal(modal.id);}catch(e){status.textContent=e.message;}finally{button.disabled=false;}};
+ // Drop exact delivery addresses and coordinates once an order leaves the live queue.
+ const previousPrivacy=privacySafeFinishedOrder;privacySafeFinishedOrder=function(...args){const finished=previousPrivacy(...args);delete finished.deliveryLocation;delete finished.deliveryAddress;return finished;};
+ const previousRetention=enforceCustomerPrivacyRetention;enforceCustomerPrivacyRetention=async function(){await previousRetention();const updates={};customerOrdersCache.forEach(o=>{if(Number(o.contactExpiresAt)>0&&Number(o.contactExpiresAt)<Date.now()){const key=(o.ownerUid||'legacy')+'_'+o.id;updates['customerOrders/'+key+'/deliveryLocation']=null;updates['customerOrders/'+key+'/deliveryAddress']=null;}});if(Object.keys(updates).length)await db.ref('/').update(updates);};
+})();
+</script>
+
 </body>
 </html>
+
 
