@@ -5529,6 +5529,30 @@ function removeWebsiteOwnerImage(){
 })();
 </script>
 
+
+<style id="cng-owner-report-visibility-fix-v1">
+/* Restore Owner Report while respecting Admin/Cashier permissions */
+#page-admin .quick-grid>#admin-card-owner.cng-perm-visible{display:block!important}
+</style>
+
+<script id="cng-owner-report-permission-fix-v1">
+(function(){
+  const original=window.applyPermissionsUI||applyPermissionsUI;
+  window.applyPermissionsUI=function(role,cashierName){
+    original(role,cashierName);
+    const cData=role==='admin'?null:(appSettings.cashiers||[]).find(x=>x.name===cashierName);
+    const perms=cData&&cData.permissions?cData.permissions:{};
+    (permList||[]).forEach(p=>{
+      const el=document.getElementById('admin-card-'+p.id);
+      if(!el)return;
+      const allowed=role==='admin'||!!perms[p.id];
+      el.classList.toggle('cng-perm-visible',allowed);
+    });
+    const owner=document.getElementById('admin-card-owner');
+    if(owner && role==='admin') owner.classList.add('cng-perm-visible');
+  };
+})();
+</script>
 </body>
 </html>
 
