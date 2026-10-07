@@ -1762,9 +1762,9 @@ function ownerPDFLibrary(){
   if(window.jspdf?.jsPDF)return Promise.resolve(window.jspdf.jsPDF);
   if(!ownerPDFLibraryTask)ownerPDFLibraryTask=new Promise((resolve,reject)=>{
     const script=document.createElement('script');
-    script.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js';
+    script.src=new URL('./vendor/jspdf.umd.min.js',location.href).href;
     script.onload=()=>window.jspdf?.jsPDF?resolve(window.jspdf.jsPDF):reject(Error('PDF library unavailable'));
-    script.onerror=()=>reject(Error('PDF library could not load'));
+    script.onerror=()=>{script.remove();reject(Error('PDF library could not load'));};
     document.head.appendChild(script);
   }).catch(e=>{ownerPDFLibraryTask=null;throw e;});
   return ownerPDFLibraryTask;
@@ -1876,6 +1876,7 @@ async function printOwnerMonthlyDocument(){
     const jsPDF=await ownerPDFLibrary();
     const pdf=buildOwnerMonthlyPDF(jsPDF,snapshot.rows,snapshot.month,appSettings.shopName);
     if(target){
+      pdf.autoPrint();
       const url=URL.createObjectURL(pdf.output('blob'));
       target.location.href=url;
       setTimeout(()=>URL.revokeObjectURL(url),120000);
