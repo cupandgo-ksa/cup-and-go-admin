@@ -1255,6 +1255,8 @@ const cngRawDb = firebase.database();
 const cngAuth = firebase.auth();
 const CNG_ADMIN_AUTH_EMAIL = 'pos-admin@cupandgoksa.com';
 let cngCloudAuthorized = false;
+let cngCloudLinkConnected = false;
+let cngLastSyncState = 'syncing';
 let cngAuthStateResolved = false;
 let cngResolveAuthState;
 const cngAdminAuthStateReady = new Promise(resolve => { cngResolveAuthState = resolve; });
@@ -1328,6 +1330,7 @@ function cngBuildPublicSettings(){
 cngAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
 cngAuth.onAuthStateChanged(user=>{
   cngCloudAuthorized=cngIsAdminAuthUser(user);
+  updateSyncStatus('syncing');
   if(cngCloudAuthorized) cngResolveCloudWaiters();
   if(!cngAuthStateResolved){ cngAuthStateResolved=true; cngResolveAuthState(cngCloudAuthorized); }
 });
@@ -1546,32 +1549,20 @@ function changeThemeLive(theme) {
 function saveLocalPrefs() { localStorage.setItem('cng_local_prefs', JSON.stringify(localPrefs)); }
 
 // ======= SYNC STATUS =======
-function updateSyncStatus(status) {
-  let el = document.getElementById('cloud-sync-status');
-  if(!el) {
-    let parent = document.getElementById('network-status')?.parentNode;
-    if(parent) {
-      let newEl = document.createElement('span');
-      newEl.id = 'cloud-sync-status';
-      newEl.style.color = 'var(--muted)';
-      newEl.style.fontSize = '10px';
-      newEl.style.fontWeight = '800';
-      newEl.style.marginLeft = '8px';
-      parent.appendChild(newEl);
-      el = newEl;
-    } else { return; }
-  }
-  try {
-    if(status === 'synced') { el.innerHTML = '☁️ Synced'; el.style.color = '#00E676'; }
-    else if(status === 'syncing') { el.innerHTML = '🔄 Syncing...'; el.style.color = '#FF9F0A'; }
-    else if(status === 'offline') { el.innerHTML = '📴 Offline'; el.style.color = '#FF3B30'; }
-  } catch(e) {}
-  let spinner = document.getElementById('loading-spinner');
-  let syncText = document.getElementById('sync-text');
-  if(spinner) { try { if(status === 'synced' || status === 'offline') { spinner.style.display = 'none'; } else { spinner.style.display = 'inline-block'; } } catch(e) {} }
-  if(syncText) { try { if(status === 'synced') syncText.innerHTML = '✅ Connected to Cloud'; else if(status === 'syncing') syncText.innerHTML = '🔄 Syncing...'; else if(status === 'offline') syncText.innerHTML = '📴 Offline Mode'; } catch(e) {} }
-  let cloudStatus = document.getElementById('cloud-status');
-  if(cloudStatus) { try { if(status === 'synced') cloudStatus.innerHTML = '☁️ Cloud Connected'; else if(status === 'syncing') cloudStatus.innerHTML = '🔄 Syncing...'; else if(status === 'offline') cloudStatus.innerHTML = '📴 Offline Mode'; } catch(e) {} }
+function updateSyncStatus(status,error) {
+  if(!navigator.onLine)status='offline';
+  else if(status==='offline')status='error';
+  if(status==='synced' && (!cngCloudAuthorized || !cngCloudLinkConnected || !firebaseInitialSnapshotLoaded))status='syncing';
+  cngLastSyncState=status;
+  const denied=/permission|denied/i.test(String(error?.code||error?.message||''));
+  const label=status==='offline'?'📴 No internet':status==='error'?(denied?'⚠️ Cloud access denied':'⚠️ Cloud sync error'):!cngCloudAuthorized?'🔐 Sign in to sync':!cngCloudLinkConnected?'🔄 Connecting to cloud':status==='synced'?'☁️ Synced':'🔄 Syncing…';
+  const color=status==='synced'?'#00E676':status==='offline'||status==='error'?'#FF3B30':'#FF9F0A';
+  let el=document.getElementById('cloud-sync-status');
+  if(!el){const parent=document.getElementById('network-status')?.parentNode;if(parent){el=document.createElement('span');el.id='cloud-sync-status';el.style.cssText='font-size:10px;font-weight:800;margin-left:8px';parent.appendChild(el);}}
+  if(el){el.textContent=label;el.style.color=color;}
+  for(const id of ['cloud-status','sync-text']){const node=document.getElementById(id);if(node)node.textContent=label;}
+  const spinner=document.getElementById('loading-spinner');if(spinner)spinner.style.display=status==='syncing'?'inline-block':'none';
+  if(error)console.warn('Cloud sync failed',error.code||error.message);
 }
 
 // ======= FIREBASE REAL-TIME SYNC =======
@@ -1589,7 +1580,7 @@ function syncAllDataToFirebase() {
   // (/customerNotifications and /customerOrderHistory) are never deleted by an admin sync.
   db.ref('/').update({settings:appSettings, publicSettings:cngBuildPublicSettings(), products:products, ledMatrix:ledMatrixSettings, lastUpdated:Date.now()
   }).then(() => { updateSyncStatus('synced'); if(!isFirstLoad) showToast('✅ Data Synced to Cloud!'); })
-  .catch((err) => { updateSyncStatus('offline'); console.log('Sync error:', err); });
+  .catch((err) => { updateSyncStatus('error',err); console.log('Sync error:', err); });
 }
 
 /// ======= FIREBASE REAL-TIME LISTENER (FIXED) =======
@@ -1605,9 +1596,15 @@ function cngBranchLoaded(branch){
   cngInitialBranches.add(branch);
   if(cngInitialBranches.size===3){firebaseInitialSnapshotLoaded=true;isFirstLoad=false;updateSyncStatus('synced');if(pendingCloudSync){pendingCloudSync=false;syncAllDataToFirebase();}}
 }
-db.ref('/settings').on('value',s=>{if(s.val()){appSettings={...appSettings,...s.val()};try{localStorage.setItem('cng_settings',JSON.stringify(appSettings));}catch(e){}applySettingsToUI();}cngBranchLoaded('settings');},()=>updateSyncStatus('offline'));
-db.ref('/products').on('value',s=>{products=parseFirebaseArray(s.val());try{localStorage.setItem('cng_products',JSON.stringify(products));}catch(e){}initUI();updateCart();cngBranchLoaded('products');},()=>updateSyncStatus('offline'));
-db.ref('/ledMatrix').on('value',s=>{if(s.val())ledMatrixSettings=s.val();updateLedMatrix();cngBranchLoaded('ledMatrix');},()=>updateSyncStatus('offline'));
+db.ref('/settings').on('value',s=>{if(s.val()){appSettings={...appSettings,...s.val()};try{localStorage.setItem('cng_settings',JSON.stringify(appSettings));}catch(e){}applySettingsToUI();}cngBranchLoaded('settings');},error=>updateSyncStatus('error',error));
+db.ref('/products').on('value',s=>{products=parseFirebaseArray(s.val());try{localStorage.setItem('cng_products',JSON.stringify(products));}catch(e){}initUI();updateCart();cngBranchLoaded('products');},error=>updateSyncStatus('error',error));
+db.ref('/ledMatrix').on('value',s=>{if(s.val())ledMatrixSettings=s.val();updateLedMatrix();cngBranchLoaded('ledMatrix');},error=>updateSyncStatus('error',error));
+
+cngRawDb.ref('/.info/connected').on('value',snapshot=>{
+  cngCloudLinkConnected=snapshot.val()===true;
+  if(!navigator.onLine)updateSyncStatus('offline');
+  else if(cngLastSyncState!=='error')updateSyncStatus(cngCloudLinkConnected && firebaseInitialSnapshotLoaded?'synced':'syncing');
+},error=>updateSyncStatus('error',error));
 
 // Persistent per-date archive; no retention cutoff or array overwrite.
 const ownerValidDate=d=>/^\d{4}-\d{2}-\d{2}$/.test(String(d||''));
@@ -2058,11 +2055,11 @@ function executeSystemReset() {
 }
 
 // ======= UPDATE STATUS =======
-function updateStatusUI() { 
-  let el = document.getElementById('network-status'); 
-  if(!el) return;
-  if(isOnline) { el.innerHTML = "🟢 Online"; el.style.color = "var(--green)"; updateSyncStatus('synced'); }
-  else { el.innerHTML = "🔴 Offline"; el.style.color = "var(--red)"; updateSyncStatus('offline'); }
+function updateStatusUI() {
+  isOnline=navigator.onLine;
+  const el=document.getElementById('network-status');
+  if(el){el.textContent=isOnline?'🟢 Online':'🔴 Offline';el.style.color=isOnline?'var(--green)':'var(--red)';}
+  updateSyncStatus(isOnline?(cngLastSyncState==='offline'?'syncing':cngLastSyncState):'offline');
 }
 
 // ======= PRINT & SHARE =======
@@ -4063,8 +4060,7 @@ function openLockScreen() {
   if(lock){ lock.classList.add('show'); }
   let cloudStatus = document.getElementById('cloud-status');
   if(cloudStatus) {
-    if(navigator.onLine) cloudStatus.innerHTML = '☁️ Cloud Connected';
-    else cloudStatus.innerHTML = '📴 Offline Mode';
+    updateStatusUI();
   }
 }
 // ===== REMEMBER THIS DEVICE (30 DAYS) =====
@@ -4210,7 +4206,7 @@ window.onload = function() {
   }).catch(()=>setTimeout(()=>openLockScreen(),1200));
 
   setTimeout(generateQRCode,600);
-  setTimeout(()=>{ if(navigator.onLine && cngCloudAuthorized) updateSyncStatus('synced'); else if(!navigator.onLine) updateSyncStatus('offline'); },5000);
+  setTimeout(updateStatusUI,5000);
 };
 
 console.log('☕ Cup And Go POS Pro v13.0 - Full Sync Edition');
@@ -5828,6 +5824,7 @@ function removeWebsiteOwnerImage(){
 </style>
 </body>
 </html>
+
 
 
 
