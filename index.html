@@ -1739,16 +1739,21 @@ const ownerMoney=n=>Number(n||0).toFixed(2);
 function ownerCompactDayTableHTML(rows){
   return `<h3>Daily statement</h3><p class="note">Swipe the table sideways to see all columns.</p><div style="overflow-x:auto;width:100%;-webkit-overflow-scrolling:touch"><table style="min-width:540px"><thead><tr>${['Date','Sale','ATM','Expenses','Additions','Final Cash'].map(name=>`<th>${name}</th>`).join('')}</tr></thead><tbody>${rows.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(r=>{const d=ownerStepData(r);return `<tr><td>${ownerEscape(r.date)}</td>${[Number(r.sale||0),Number(r.atm||0),d.expenses,d.additions,d.final].map(v=>`<td>${ownerMoney(v)}</td>`).join('')}</tr>`;}).join('')}</tbody></table></div>`;
 }
+function ownerReportRange(rows){
+  const dates=rows.map(r=>String(r.date||'')).filter(ownerValidDate).sort();
+  const format=d=>new Intl.DateTimeFormat('en-GB',{day:'2-digit',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(d+'T12:00:00Z'));
+  return dates.length?format(dates[0])+' - '+format(dates[dates.length-1]):'';
+}
 function buildOwnerDocument(rows,period,monthly){
   const sum=k=>rows.reduce((n,r)=>n+Number(r[k]||0),0);
   const detail=[['Water','water'],['Lemon','lemon'],['Nana','nana'],['Extra sales','more'],['Plastic cups','plastic'],['Small cups','cupSmall'],['Big cups','cupBig']];
   const css=`.owner-document{font-family:Arial,sans-serif;color:#24313d;background:#fff;line-height:1.45;font-size:12px;padding:16px;box-sizing:border-box;text-align:left;direction:ltr}.owner-document *{box-sizing:border-box}.owner-document h1{font-size:27px;margin:0;color:#512635}.owner-document h2{font-size:14px;letter-spacing:1px;margin:5px 0 0}.owner-document h3{font-size:13px;margin:20px 0 8px}.owner-document .head{border-bottom:3px solid #512635;padding-bottom:15px;display:flex;justify-content:space-between;gap:12px}.owner-document .meta{font-size:11px;color:#65727c;margin-top:12px}.owner-document table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}.owner-document th{background:#f0e9ec;color:#512635}.owner-document th,.owner-document td{padding:7px 5px;border-bottom:1px solid #dfe3e6;text-align:right;overflow-wrap:anywhere}.owner-document th:first-child,.owner-document td:first-child{text-align:left}.owner-document tr{break-inside:avoid;page-break-inside:avoid}.owner-document thead{display:table-header-group}.owner-document .total{padding:13px;background:#f0e9ec;margin-top:14px;border-left:4px solid #512635;display:flex;justify-content:space-between;font-size:16px;font-weight:bold;break-inside:avoid}.owner-document .note{font-size:10px;color:#65727c;margin:10px 0}.owner-document .signatures{display:flex;justify-content:space-between;gap:24px;margin-top:32px;break-inside:avoid}.owner-document .signature{width:44%;border-top:1px solid #87909a;padding-top:8px;font-size:11px}.owner-document footer{margin-top:22px;border-top:1px solid #dfe3e6;padding-top:8px;font-size:9px;color:#65727c}`;
-  const header=`<div class="head"><div><h1>${ownerEscape(appSettings.shopName)}</h1><h2>${monthly?'MONTHLY':'DAILY'} OWNER REPORT</h2></div><div style="text-align:right;font-size:11px"><b>${monthly?'Month':'Date'}</b><br>${ownerEscape(period)}<br>Currency: SAR</div></div><div class="meta">Report ID: OWN-${ownerEscape(period)} · ${monthly?rows.length+' saved days':'Daily statement · Form figures'} </div>`;
+  const header=`<div class="head"><div><h1>${ownerEscape(appSettings.shopName)}</h1><h2>${monthly?'MONTHLY':'DAILY'} OWNER REPORT</h2></div><div style="text-align:right;font-size:11px"><b>${monthly?'Month':'Date'}</b><br>${ownerEscape(period)}<br>Currency: SAR</div></div><div class="meta">Report ID: OWN-${ownerEscape(period)} · ${monthly?rows.length+' saved days · '+ownerEscape(ownerReportRange(rows)):'Daily statement · Form figures'} </div>`;
   return `<div class="owner-document"><style>${css}.owner-document td,.owner-document p,.owner-document span{color:#24313d!important}.owner-document th{color:#512635!important}.owner-document{color-scheme:only light;max-width:100%}.owner-document .head{flex-wrap:wrap}.owner-document th:last-child,.owner-document td:last-child{white-space:nowrap}.owner-document .head>div:last-child{font-size:10px!important}</style>${header}${ownerCompactDayTableHTML(rows)}${ownerMonthClosingHTML(rows)}</div>`;
 
 }
 function showOwnerDocument(rows,period,monthly){
-  if(monthly)ownerPDFSnapshot={month:period,rows:JSON.parse(JSON.stringify(rows))};
+  if(monthly){ownerPDFSnapshot={month:period,rows:JSON.parse(JSON.stringify(rows))};prepareOwnerSharePDF(ownerPDFSnapshot);}
   document.getElementById('pdf-report-content').innerHTML=buildOwnerDocument(rows,period,monthly);
   document.querySelector('#pdf-report-content .owner-document').style.minWidth='0';
   document.getElementById('pdf-report-content').style.overflow=monthly?'auto':'';
@@ -1786,7 +1791,7 @@ function ownerMonthClosingHTML(rows){
   const c=ownerMonthClosing(rows);
   const itemRows=items=>items.map(item=>`<tr><td>${item.name}</td><td>${item.days}</td><td>${ownerMoney(item.total)}</td></tr>`).join('');
   const itemHead='<thead><tr><th>Item</th><th>Entry days</th><th>Amount (SAR)</th></tr></thead>';
-  return `<section style="margin-top:20px"><h3>Monthly expenses</h3><table>${itemHead}<tbody>${itemRows(c.expenseItems)}</tbody></table><h3>Additional income</h3><table>${itemHead}<tbody>${itemRows(c.additionItems)}</tbody></table><h3>Monthly totals</h3><table><thead><tr><th>Description</th><th>Amount (SAR)</th></tr></thead><tbody>${c.totals.map(([name,amount])=>`<tr><td>${name}</td><td><b>${ownerMoney(amount)}</b></td></tr>`).join('')}<tr><td>Total shop sales</td><td><b>${ownerMoney(c.totalSales)}</b></td></tr></tbody></table><div class="total" style="background:#f0e9ec;color:#24313d;padding:12px;margin-top:12px;display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap"><b>TOTAL AFTER EXPENSES</b><b>${ownerMoney(c.netTotal)} SAR</b></div><p class="note">Final total = ATM + cash in hand. Entry days are saved daily entries, not individual purchases or cup quantities.</p></section>`;
+  return `<section style="margin-top:20px"><h3>Monthly expenses</h3><table>${itemHead}<tbody>${itemRows(c.expenseItems)}</tbody></table><h3>Additional income</h3><table>${itemHead}<tbody>${itemRows(c.additionItems)}</tbody></table><h3>Monthly totals</h3><table><thead><tr><th>Description</th><th>Amount (SAR)</th></tr></thead><tbody>${c.totals.map(([name,amount])=>`<tr><td>${name}</td><td><b>${ownerMoney(amount)}</b></td></tr>`).join('')}<tr><td>Total shop sales</td><td><b>${ownerMoney(c.totalSales)}</b></td></tr></tbody></table><div class="total" style="background:#f0e9ec;color:#24313d;padding:12px;margin-top:12px;display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap"><b>TOTAL AFTER EXPENSES</b><b>${ownerMoney(c.netTotal)} SAR</b></div></section>`;
 }
 function ownerStepData(r){
   const n=k=>Number(r[k]||0);
@@ -1814,9 +1819,10 @@ function buildOwnerMonthlyPDF(jsPDF,rows,month,shopName){
   }
   function header(section){
     pdf.setFillColor(255,255,255);pdf.rect(0,0,210,297,'F');
-    text(pdf.splitTextToSize(label,135)[0],14,20,20,true);
-    text('MONTHLY OWNER REPORT',14,28,10,true);text(month,196,21,12,true,'right');
-    pdf.setDrawColor(...brand);pdf.setLineWidth(.7);pdf.line(14,33,196,33);
+    text(pdf.splitTextToSize(label,135)[0],14,20,20,true);pdf.setTextColor(...brand);pdf.text(pdf.splitTextToSize(label,135)[0],14,20);
+    text('MONTHLY OWNER REPORT',14,27,10,true);text(month,196,21,12,true,'right');
+    text(ownerReportRange(rows),14,32,8);
+    pdf.setDrawColor(...brand);pdf.setLineWidth(.7);pdf.line(14,36,196,36);
     text(section,14,42,11,true);text('All amounts in SAR',196,42,8,false,'right');
   }
   function newPage(section){pdf.addPage();header(section);}
@@ -1854,8 +1860,7 @@ function buildOwnerMonthlyPDF(jsPDF,rows,month,shopName){
   });
   summaryY+=3;pdf.setFillColor(240,233,236);pdf.rect(14,summaryY-6,182,11,'F');
   text('TOTAL AFTER EXPENSES',18,summaryY,11,true);text(money(closing.netTotal)+' SAR',192,summaryY,11,true,'right');summaryY+=13;
-  text('Final total = ATM + cash in hand.',14,summaryY,8);summaryY+=5;
-  text('Entry days count saved daily entries, not purchase or cup quantities.',14,summaryY,8);
+
   const pages=pdf.internal.getNumberOfPages();
   for(let i=1;i<=pages;i++){
     pdf.setPage(i);pdf.setFont('helvetica','normal');pdf.setFontSize(8);pdf.setTextColor(...muted);
@@ -2121,7 +2126,33 @@ function printContent(elementId) {
 }
 
 function shareTextReceipt() { if(!activeOrderForShare) return; let txt = `*${appSettings.shopName}*\nInv: #${activeOrderForShare.id}\nDate: ${activeOrderForShare.time}\nCashier: ${activeOrderForShare.cashier}\n\n`; activeOrderForShare.items.forEach(i => { txt += `${i.name} x${i.qty} = ${(i.price*i.qty).toFixed(2)}\n`; }); txt += `\nTotal: ${activeOrderForShare.total}\nPaid: ${activeOrderForShare.paidAmount || activeOrderForShare.total}\nReturn: ${activeOrderForShare.returnAmount || '0.00'}\nMethod: ${activeOrderForShare.method}\n\nThank you! ☕`; if(navigator.share) { navigator.share({text:txt}).catch(e=>{}); } else { navigator.clipboard.writeText(txt); showToast("✅ Bill Copied!"); } }
-function shareTextReport() { if(navigator.share) { navigator.share({text:reportTextForShare}).catch(e=>{}); } else { navigator.clipboard.writeText(reportTextForShare); showToast("✅ Report Copied!"); } }
+function prepareOwnerSharePDF(snapshot){
+  if(snapshot.shareTask)return snapshot.shareTask;
+  snapshot.shareTask=ownerPDFLibrary().then(jsPDF=>{
+    const pdf=buildOwnerMonthlyPDF(jsPDF,snapshot.rows,snapshot.month,appSettings.shopName);
+    snapshot.shareFile=new File([pdf.output('blob')],`Owner-Monthly-${snapshot.month}.pdf`,{type:'application/pdf'});
+    return snapshot.shareFile;
+  }).catch(e=>{snapshot.shareTask=null;console.error(e);return null;});
+  return snapshot.shareTask;
+}
+async function shareOwnerMonthlyPDF(){
+  const snapshot=ownerPDFSnapshot;
+  if(!snapshot?.rows?.length)return showToast('Open the monthly report first');
+  if(!snapshot.shareFile){
+    showToast('Preparing PDF…');
+    const file=await prepareOwnerSharePDF(snapshot);
+    return showToast(file?'PDF ready. Tap Share to choose an app.':'PDF could not load. Please retry.');
+  }
+  const file=snapshot.shareFile;
+  if(navigator.share && navigator.canShare?.({files:[file]})){
+    try{await navigator.share({files:[file],title:`Owner Monthly Report ${snapshot.month}`});}
+    catch(e){if(e.name!=='AbortError')showToast('Could not share PDF. Please try again.');}
+  }else{
+    await downloadOwnerDocument();
+    showToast('PDF downloaded. Share it from your Files app.');
+  }
+}
+function shareTextReport() { if(document.querySelector('#pdf-report-content .owner-document'))return shareOwnerMonthlyPDF(); if(navigator.share) { navigator.share({text:reportTextForShare}).catch(e=>{}); } else { navigator.clipboard.writeText(reportTextForShare); showToast("✅ Report Copied!"); } }
 window.downloadReceiptPDF = function() { 
   let el = document.getElementById('receipt-content'); 
   let opt = {
@@ -5798,6 +5829,7 @@ function removeWebsiteOwnerImage(){
 </style>
 </body>
 </html>
+
 
 
 
