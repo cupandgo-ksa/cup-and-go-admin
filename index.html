@@ -1778,14 +1778,15 @@ function ownerMonthClosing(rows){
   const cashAfterExpenses=cashSales-expenses;
   const savedCash=rows.reduce((a,r)=>a+ownerStepData(r).final,0);
   const expenseItems=[['Water','water'],['Lemon','lemon'],['Nana','nana']].map(([name,key])=>({name,total:sum(key),days:rows.filter(r=>Number(r[key]||0)!==0).length}));
-  const additionItems=[['More Today','more'],['Cup Small','cupSmall'],['Cup Big','cupBig'],['Cup Plastic','plastic']].map(([name,key])=>({name,total:sum(key)}));
-  const totals=[['Sale Today (includes ATM)',base],['Additional sales / cups',additions],['TOTAL SHOP SALES',totalSales],['ATM / card sales',atm],['Cash sales before expenses',cashSales],['TOTAL RECORDED EXPENSES',expenses],['CASH LEFT AFTER EXPENSES',cashAfterExpenses],['Cash left + ATM',cashAfterExpenses+atm]];
-  if(Math.abs(savedCash-cashAfterExpenses)>.01)totals.push(['Saved daily cash total',savedCash],['Cash reconciliation difference',savedCash-cashAfterExpenses]);
-  return {totals,expenseItems,additionItems,totalSales,atm,cashSales,expenses,cashAfterExpenses};
+  const additionItems=[['More Today','more'],['Cup Small','cupSmall'],['Cup Big','cupBig'],['Cup Plastic','plastic']].map(([name,key])=>({name,total:sum(key),days:rows.filter(r=>Number(r[key]||0)!==0).length}));
+  const totals=[['Total expenses',expenses],['Total additional income',additions],['ATM / Card',atm],['CASH IN HAND',cashAfterExpenses]];
+  return {totals,expenseItems,additionItems,totalSales,atm,cashSales,expenses,cashAfterExpenses,netTotal:cashAfterExpenses+atm};
 }
 function ownerMonthClosingHTML(rows){
   const c=ownerMonthClosing(rows);
-  return `<section style="margin-top:20px"><h3>Monthly shop summary</h3><table><thead><tr><th>Sales and cash</th><th>Amount (SAR)</th></tr></thead><tbody>${c.totals.map(([name,amount])=>`<tr><td>${ownerEscape(name)}</td><td><b>${ownerMoney(amount)}</b></td></tr>`).join('')}</tbody></table><h3>Expenses by item</h3><table><thead><tr><th>Item</th><th>Recorded days</th><th>Total (SAR)</th></tr></thead><tbody>${c.expenseItems.map(item=>`<tr><td>${item.name}</td><td>${item.days}</td><td>${ownerMoney(item.total)}</td></tr>`).join('')}</tbody></table><h3>Additional sales / cups</h3><table><tbody>${c.additionItems.map(item=>`<tr><td>${item.name}</td><td>${ownerMoney(item.total)} SAR</td></tr>`).join('')}</tbody></table><p class="note">Total shop sales = Sale Today + More Today + Cup Small + Cup Big + Cup Plastic. ATM is already included in sales; it is not added twice. Recorded days count saved daily entries, not individual purchases. Expenses include only amounts entered in Owner Report.</p></section>`;
+  const itemRows=items=>items.map(item=>`<tr><td>${item.name}</td><td>${item.days}</td><td>${ownerMoney(item.total)}</td></tr>`).join('');
+  const itemHead='<thead><tr><th>Item</th><th>Entry days</th><th>Amount (SAR)</th></tr></thead>';
+  return `<section style="margin-top:20px"><h3>Monthly expenses</h3><table>${itemHead}<tbody>${itemRows(c.expenseItems)}</tbody></table><h3>Additional income</h3><table>${itemHead}<tbody>${itemRows(c.additionItems)}</tbody></table><h3>Monthly totals</h3><table><thead><tr><th>Description</th><th>Amount (SAR)</th></tr></thead><tbody>${c.totals.map(([name,amount])=>`<tr><td>${name}</td><td><b>${ownerMoney(amount)}</b></td></tr>`).join('')}<tr><td>Total shop sales</td><td><b>${ownerMoney(c.totalSales)}</b></td></tr></tbody></table><div class="total" style="background:#f0e9ec;color:#24313d;padding:12px;margin-top:12px;display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap"><b>TOTAL AFTER EXPENSES</b><b>${ownerMoney(c.netTotal)} SAR</b></div><p class="note">Final total = ATM + cash in hand. Entry days are saved daily entries, not individual purchases or cup quantities.</p></section>`;
 }
 function ownerStepData(r){
   const n=k=>Number(r[k]||0);
@@ -1833,32 +1834,28 @@ function buildOwnerMonthlyPDF(jsPDF,rows,month,shopName){
     values.forEach((value,i)=>text(i?money(value):value,i?columns[i+1]-2:16,tableY,8,false,i?'right':'left'));
     pdf.setDrawColor(224,227,229);pdf.line(14,tableY+3,196,tableY+3);tableY+=6.5;
   });
-  newPage('Monthly shop summary');
+  let summaryY;
+  if(tableY>110){newPage('Monthly summary');summaryY=53;}
+  else {summaryY=tableY+9;text('Monthly summary',14,summaryY,11,true);summaryY+=7;}
   const closing=ownerMonthClosing(rows);
-  text(`${rows.length} saved days | Period: ${month}`,14,50,9);
-  let endY=60;
-  closing.totals.forEach(([name,amount])=>{
-    const highlight=/^[A-Z ]+$/.test(name);
-    if(highlight){pdf.setFillColor(240,233,236);pdf.rect(14,endY-6,182,9,'F');}
-    text(name,18,endY,10,highlight);text(money(amount),192,endY,10,highlight,'right');
-    pdf.setDrawColor(225,228,230);pdf.line(14,endY+3,196,endY+3);endY+=9;
+  function items(title,items){
+    text(title,14,summaryY,11,true);summaryY+=7;
+    pdf.setFillColor(240,233,236);pdf.rect(14,summaryY-5,182,8,'F');
+    text('Item',18,summaryY,9,true);text('Entry days',126,summaryY,9,true,'right');text('Amount (SAR)',192,summaryY,9,true,'right');summaryY+=7;
+    items.forEach(item=>{text(item.name,18,summaryY,10);text(item.days,126,summaryY,10,false,'right');text(money(item.total),192,summaryY,10,false,'right');summaryY+=6;});
+    summaryY+=4;
+  }
+  items('Expenses for the month',closing.expenseItems);
+  items('Additional income for the month',closing.additionItems);
+  text('Monthly totals',14,summaryY,11,true);summaryY+=8;
+  [...closing.totals,['Total shop sales',closing.totalSales]].forEach(([name,amount])=>{
+    text(name,18,summaryY,10,name==='CASH IN HAND');text(money(amount),192,summaryY,10,name==='CASH IN HAND','right');
+    pdf.setDrawColor(225,228,230);pdf.line(14,summaryY+3,196,summaryY+3);summaryY+=7;
   });
-  endY+=8;text('Expenses by item',14,endY,11,true);endY+=8;
-  pdf.setFillColor(240,233,236);pdf.rect(14,endY-5,182,8,'F');
-  text('Item',18,endY,9,true);text('Recorded days',125,endY,9,true,'right');text('Amount (SAR)',192,endY,9,true,'right');endY+=8;
-  closing.expenseItems.forEach(item=>{
-    text(item.name,18,endY,10);text(item.days,125,endY,10,false,'right');text(money(item.total),192,endY,10,false,'right');pdf.setDrawColor(225,228,230);pdf.line(14,endY+3,196,endY+3);endY+=8;
-  });
-  endY+=6;text('Additional sales / cups',14,endY,11,true);endY+=9;
-  closing.additionItems.forEach(item=>{text(item.name,18,endY,10);text(money(item.total),192,endY,10,false,'right');pdf.setDrawColor(225,228,230);pdf.line(14,endY+3,196,endY+3);endY+=8;});
-  endY+=6;
-  const notes=[
-    'Total shop sales = Sale Today + More Today + all cup amounts.',
-    'ATM is included in sales. It is not added twice.',
-    'Recorded days count daily entries, not individual purchases.',
-    'Only expenses entered in Owner Report are included.'
-  ];
-  notes.forEach(note=>{text(note,14,endY,8);endY+=5;});
+  summaryY+=3;pdf.setFillColor(240,233,236);pdf.rect(14,summaryY-6,182,11,'F');
+  text('TOTAL AFTER EXPENSES',18,summaryY,11,true);text(money(closing.netTotal)+' SAR',192,summaryY,11,true,'right');summaryY+=13;
+  text('Final total = ATM + cash in hand.',14,summaryY,8);summaryY+=5;
+  text('Entry days count saved daily entries, not purchase or cup quantities.',14,summaryY,8);
   const pages=pdf.internal.getNumberOfPages();
   for(let i=1;i<=pages;i++){
     pdf.setPage(i);pdf.setFont('helvetica','normal');pdf.setFontSize(8);pdf.setTextColor(...muted);
