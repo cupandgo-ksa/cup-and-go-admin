@@ -1007,13 +1007,7 @@ input,select,textarea{max-width:100%;}
             <div id="owner-archive-status" style="font-size:12px;margin-bottom:12px;color:var(--muted);" role="status"></div><div id="owner-monthly-result" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; font-size:13px; line-height:1.8;">
          Select a month to view totals.
       </div>
-      <div class="cng-owner-archive-head">
-        <h4>📅 Daily Reports</h4>
-        <span id="owner-monthly-days-count" style="font-size:9px;color:var(--muted);">0 saved</span>
-      </div>
-      <div id="owner-monthly-days" class="cng-owner-days">
-        <div id="owner-monthly-days-empty">No daily reports saved for this month.</div>
-      </div>
+
     </div>
     <div class="modal-footer">
       <button class="btn btn-success" style="flex:1;font-size:12px;padding:12px;" onclick="sendMonthlyOwnerWhatsApp()">📲 WhatsApp</button>
@@ -1747,10 +1741,8 @@ function buildOwnerDocument(rows,period,monthly){
   const detail=[['Water','water'],['Lemon','lemon'],['Nana','nana'],['Extra sales','more'],['Plastic cups','plastic'],['Small cups','cupSmall'],['Big cups','cupBig']];
   const css=`.owner-document{font-family:Arial,sans-serif;color:#24313d;background:#fff;line-height:1.45;font-size:12px;padding:24px;box-sizing:border-box;text-align:left;direction:ltr}.owner-document *{box-sizing:border-box}.owner-document h1{font-size:27px;margin:0;color:#512635}.owner-document h2{font-size:14px;letter-spacing:1px;margin:5px 0 0}.owner-document h3{font-size:13px;margin:20px 0 8px}.owner-document .head{border-bottom:3px solid #512635;padding-bottom:15px;display:flex;justify-content:space-between;gap:12px}.owner-document .meta{font-size:11px;color:#65727c;margin-top:12px}.owner-document table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}.owner-document th{background:#f0e9ec;color:#512635}.owner-document th,.owner-document td{padding:7px 5px;border-bottom:1px solid #dfe3e6;text-align:right;overflow-wrap:anywhere}.owner-document th:first-child,.owner-document td:first-child{text-align:left}.owner-document tr{break-inside:avoid;page-break-inside:avoid}.owner-document thead{display:table-header-group}.owner-document .total{padding:13px;background:#f0e9ec;margin-top:14px;border-left:4px solid #512635;display:flex;justify-content:space-between;font-size:16px;font-weight:bold;break-inside:avoid}.owner-document .note{font-size:10px;color:#65727c;margin:10px 0}.owner-document .signatures{display:flex;justify-content:space-between;gap:24px;margin-top:32px;break-inside:avoid}.owner-document .signature{width:44%;border-top:1px solid #87909a;padding-top:8px;font-size:11px}.owner-document footer{margin-top:22px;border-top:1px solid #dfe3e6;padding-top:8px;font-size:9px;color:#65727c}`;
   const header=`<div class="head"><div><h1>${ownerEscape(appSettings.shopName)}</h1><h2>${monthly?'MONTHLY':'DAILY'} OWNER REPORT</h2></div><div style="text-align:right;font-size:11px"><b>${monthly?'Month':'Date'}</b><br>${ownerEscape(period)}<br>Currency: SAR</div></div><div class="meta">Report ID: OWN-${ownerEscape(period)} · ${monthly?rows.length+' saved days':'Daily statement · Form figures'} </div>`;
-  const completeDaily=monthly?`<h3>Complete daily calculations</h3>${rows.map(r=>`<section style="margin-bottom:18px;break-inside:avoid"><h3>${ownerEscape(r.date)}</h3><table><tbody>${ownerStepData(r).steps.map(([name,value])=>`<tr><td>${ownerEscape(name)}</td><td>${ownerMoney(value)} SAR</td></tr>`).join('')}</tbody></table></section>`).join('')}`:'';
-  const dailyTable=monthly?`<h3>Daily statement</h3><table><thead><tr>${['Date','Sale','ATM','Expenses','Additions','Final cash'].map(t=>`<th>${t}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr><td>${ownerEscape(r.date)}</td>${['sale','atm','totalExp'].map(k=>`<td>${ownerMoney(r[k])}</td>`).join('')}<td>${ownerMoney(Number(r.more||0)+Number(r.plastic||0)+Number(r.cupSmall||0)+Number(r.cupBig||0))}</td><td><b>${ownerMoney(r.totalCash)}</b></td></tr>`).join('')}<tr style="font-weight:bold;background:#f7f8f9"><td>Total</td><td>${ownerMoney(sum('sale'))}</td><td>${ownerMoney(sum('atm'))}</td><td>${ownerMoney(sum('totalExp'))}</td><td>${ownerMoney(sum('more')+sum('plastic')+sum('cupSmall')+sum('cupBig'))}</td><td>${ownerMoney(sum('totalCash'))}</td></tr></tbody></table>`:'';
-  const summary=[['Gross sales',sum('sale')],['ATM / card payments',sum('atm')],['Total expenses',sum('totalExp')],['Cash after expenses',sum('sale')-sum('atm')-sum('totalExp')],['Total additions',sum('more')+sum('plastic')+sum('cupSmall')+sum('cupBig')]];
-  return `<div class="owner-document"><style>${css}.owner-document td,.owner-document p,.owner-document span{color:#24313d!important}.owner-document th{color:#512635!important}.owner-document{color-scheme:only light}</style>${header}${dailyTable}<h3>Financial summary</h3><table><thead><tr><th>Description</th><th>Amount (SAR)</th></tr></thead><tbody>${summary.map(([t,n])=>`<tr><td>${t}</td><td>${ownerMoney(n)}</td></tr>`).join('')}</tbody></table><h3>Expense and addition breakdown</h3><table><tbody>${detail.map(([t,k])=>`<tr><td>${t}</td><td>${ownerMoney(sum(k))}</td></tr>`).join('')}</tbody></table><div class="total"><span>FINAL CASH IN HAND</span><span>${ownerMoney(sum('totalCash'))} SAR</span></div><p class="note">Final cash = Sales − ATM − Expenses + Extra sales + Plastic cups + Small cups + Big cups.</p>${completeDaily}${monthly?ownerMonthClosingHTML(rows):''}<div class="signatures"><div class="signature">Prepared by / Signature</div><div class="signature">Owner approval / Signature</div></div><footer>${ownerEscape(appSettings.shopName)} · Owner financial statement · ${monthly?'Includes saved daily reports only. Missing days are not treated as zero.':'Verify and save daily figures to archive this report.'}</footer></div>`;
+  return `<div class="owner-document"><style>${css}.owner-document td,.owner-document p,.owner-document span{color:#24313d!important}.owner-document th{color:#512635!important}.owner-document{color-scheme:only light}</style>${header}${ownerMonthClosingHTML(rows)}</div>`;
+
 }
 function showOwnerDocument(rows,period,monthly){
   if(monthly)ownerPDFSnapshot={month:period,rows:JSON.parse(JSON.stringify(rows))};
@@ -1790,7 +1782,7 @@ function ownerMonthClosing(rows){
 }
 function ownerMonthClosingHTML(rows){
   const c=ownerMonthClosing(rows);
-  return `<section style="break-before:page;margin-top:24px"><h3>4. Month-end shop summary</h3><table><thead><tr><th>Sales and cash</th><th>Amount (SAR)</th></tr></thead><tbody>${c.totals.map(([name,amount])=>`<tr><td>${ownerEscape(name)}</td><td><b>${ownerMoney(amount)}</b></td></tr>`).join('')}</tbody></table><h3>Expenses by item</h3><table><thead><tr><th>Item</th><th>Recorded days</th><th>Total (SAR)</th></tr></thead><tbody>${c.expenseItems.map(item=>`<tr><td>${item.name}</td><td>${item.days}</td><td>${ownerMoney(item.total)}</td></tr>`).join('')}</tbody></table><h3>Additional sales / cups</h3><table><tbody>${c.additionItems.map(item=>`<tr><td>${item.name}</td><td>${ownerMoney(item.total)} SAR</td></tr>`).join('')}</tbody></table><p class="note">Total shop sales = Sale Today + More Today + Cup Small + Cup Big + Cup Plastic. ATM is already included in sales; it is not added twice. Recorded days count saved daily entries, not individual purchases. Expenses include only amounts entered in Owner Report.</p></section>`;
+  return `<section style="margin-top:20px"><h3>Monthly shop summary</h3><table><thead><tr><th>Sales and cash</th><th>Amount (SAR)</th></tr></thead><tbody>${c.totals.map(([name,amount])=>`<tr><td>${ownerEscape(name)}</td><td><b>${ownerMoney(amount)}</b></td></tr>`).join('')}</tbody></table><h3>Expenses by item</h3><table><thead><tr><th>Item</th><th>Recorded days</th><th>Total (SAR)</th></tr></thead><tbody>${c.expenseItems.map(item=>`<tr><td>${item.name}</td><td>${item.days}</td><td>${ownerMoney(item.total)}</td></tr>`).join('')}</tbody></table><h3>Additional sales / cups</h3><table><tbody>${c.additionItems.map(item=>`<tr><td>${item.name}</td><td>${ownerMoney(item.total)} SAR</td></tr>`).join('')}</tbody></table><p class="note">Total shop sales = Sale Today + More Today + Cup Small + Cup Big + Cup Plastic. ATM is already included in sales; it is not added twice. Recorded days count saved daily entries, not individual purchases. Expenses include only amounts entered in Owner Report.</p></section>`;
 }
 function ownerStepData(r){
   const n=k=>Number(r[k]||0);
@@ -1824,56 +1816,7 @@ function buildOwnerMonthlyPDF(jsPDF,rows,month,shopName){
     text(section,14,42,11,true);text('All amounts in SAR',196,42,8,false,'right');
   }
   function newPage(section){pdf.addPage();header(section);}
-  const sum={sale:0,atm:0,water:0,lemon:0,nana:0,more:0,cupSmall:0,cupBig:0,plastic:0,totalExp:0,intermediateCash:0,totalCash:0};
-  rows.forEach(r=>{
-    Object.keys(sum).forEach(k=>{if(!['totalExp','intermediateCash','totalCash'].includes(k))sum[k]+=Number(r[k]||0);});
-    const d=ownerStepData(r);sum.totalExp+=d.expenses;sum.intermediateCash+=d.cash;sum.totalCash+=d.final;
-  });
-  header('1. Monthly totals - step by step');
-  text(`${rows.length} saved daily reports | Period: ${month}`,14,50,9);
-  const steps=ownerStepData(sum).steps;
-  steps.forEach(([name,value],i)=>{
-    const y=61+i*10;
-    if(i===steps.length-1){pdf.setFillColor(240,233,236);pdf.rect(14,y-6.5,182,10,'F');}
-    text(`${i+1}. ${name}`,18,y,11,i===6||i===12);text(money(value),192,y,11,i===6||i===12,'right');
-    pdf.setDrawColor(222,225,227);pdf.setLineWidth(.15);pdf.line(14,y+3,196,y+3);
-  });
-  text('Cash = Sale Today - ATM - Total Expenses',14,202,9);
-  text('Total Cash = Cash + More Today + Cup Small + Cup Big + Cup Plastic',14,210,9);
-  text('Only saved days are included. Missing days are not counted as zero.',14,224,8);
-  pdf.setDrawColor(125,130,135);pdf.line(14,253,91,253);pdf.line(119,253,196,253);
-  text('Prepared by / Signature',14,260,9);text('Owner approval / Signature',119,260,9);
-
-  newPage('2. Daily statement');
-  const columns=[14,46,78,106,136,166,196];
-  const names=['Date','Sale','ATM','Expenses','Additions','Final Cash'];
-  function tableHead(y){
-    pdf.setFillColor(240,233,236);pdf.rect(14,y-5,182,8,'F');
-    names.forEach((name,i)=>text(name,i?columns[i+1]-2:16,y,8,true,i?'right':'left'));
-  }
-  let y=54;tableHead(y);y+=9;
-  const statement=[...rows.map(r=>{const d=ownerStepData(r);return [r.date,Number(r.sale||0),Number(r.atm||0),d.expenses,d.additions,d.final];}),['TOTAL',sum.sale,sum.atm,sum.totalExp,ownerStepData(sum).additions,sum.totalCash]];
-  statement.forEach((values,index)=>{
-    if(y>270){newPage('2. Daily statement - continued');y=54;tableHead(y);y+=9;}
-    const total=index===statement.length-1;
-    if(total){pdf.setFillColor(245,246,247);pdf.rect(14,y-5,182,8,'F');}
-    values.forEach((value,i)=>text(i?money(value):value,i?columns[i+1]-2:16,y,8,total,i?'right':'left'));
-    pdf.setDrawColor(224,227,229);pdf.line(14,y+3,196,y+3);y+=8;
-  });
-
-  // Every input field is included for every saved day, in the app's order.
-  rows.forEach((r,i)=>{
-    if(i%4===0)newPage('3. Complete daily calculations');
-    const slot=i%4,x=slot%2===0?14:108,top=51+Math.floor(slot/2)*112,w=88;
-    pdf.setDrawColor(210,214,217);pdf.setLineWidth(.25);pdf.rect(x,top,w,105);
-    pdf.setFillColor(240,233,236);pdf.rect(x,top,w,10,'F');text(r.date,x+4,top+7,10,true);
-    ownerStepData(r).steps.forEach(([name,value],j)=>{
-      const line=top+17+j*6.2;
-      if(j===12){pdf.setFillColor(240,233,236);pdf.rect(x+2,line-4.5,w-4,6.3,'F');}
-      text(name,x+4,line,8,j===6||j===12);text(money(value),x+w-4,line,8,j===6||j===12,'right');
-    });
-  });
-  newPage('4. Month-end shop summary');
+  header('Monthly shop summary');
   const closing=ownerMonthClosing(rows);
   text(`${rows.length} saved days | Period: ${month}`,14,50,9);
   let endY=60;
@@ -2659,55 +2602,21 @@ function viewMonthlyOwnerReport() {
 }
 
 function renderMonthlyOwnerReport() {
-  const month = document.getElementById('owner-month-filter').value;
-  if(!month) return;
-
-  const filtered = ownerReports
-    .filter(r => r && r.date && r.date.startsWith(month))
-    .sort((a,b)=>String(b.date).localeCompare(String(a.date)));
-
-  const resDiv = document.getElementById('owner-monthly-result');
-  const daysDiv = document.getElementById('owner-monthly-days');
-  const countEl = document.getElementById('owner-monthly-days-count');
-
-  if(countEl) countEl.textContent = `${filtered.length} saved`;
-
-  if(filtered.length === 0) {
-    if(resDiv) resDiv.innerHTML = `<div style="text-align:center;color:var(--muted);">No reports saved for ${month}</div>`;
-    if(daysDiv) daysDiv.innerHTML = `<div id="owner-monthly-days-empty">No daily reports saved for this month.</div>`;
-    return;
-  }
-
-  let tSale=0,tAtm=0,tExp=0,tCash=0,tMore=0,tPlastic=0,tCupBig=0,tCupSmall=0;
-  filtered.forEach(r=>{
-    tSale += Number(r.sale||0);
-    tAtm += Number(r.atm||0);
-    tExp += Number(r.totalExp||0);
-    tCash += Number(r.totalCash||0);
-    tMore += Number(r.more||0);
-    tPlastic += Number(r.plastic||0);
-    tCupBig += Number(r.cupBig||0);
-    tCupSmall += Number(r.cupSmall||0);
-  });
-
-  if(resDiv) resDiv.innerHTML = `
-    <div style="display:flex;justify-content:space-between;border-bottom:1px dashed rgba(255,255,255,.1);padding-bottom:6px;margin-bottom:6px;"><span>Gross Sale:</span><b>${tSale.toFixed(2)} SR</b></div>
-    <div style="display:flex;justify-content:space-between;border-bottom:1px dashed rgba(255,255,255,.1);padding-bottom:6px;margin-bottom:6px;"><span>Total ATM (Card):</span><b style="color:var(--blue);">${tAtm.toFixed(2)} SR</b></div>
-    <div style="display:flex;justify-content:space-between;border-bottom:1px dashed rgba(255,255,255,.1);padding-bottom:6px;margin-bottom:6px;"><span>Total Expenses:</span><b style="color:var(--red);">${tExp.toFixed(2)} SR</b></div>
-    <div style="display:flex;justify-content:space-between;border-bottom:1px dashed rgba(255,255,255,.1);padding-bottom:6px;margin-bottom:6px;"><span>More:</span><b style="color:var(--orange);">${tMore.toFixed(2)} SR</b></div>
-    <div style="display:flex;justify-content:space-between;padding-top:6px;font-size:16px;"><span>Final Cash In Hand:</span><b style="color:var(--green);">${tCash.toFixed(2)} SR</b></div>
-    <div style="text-align:center;font-size:10px;color:var(--muted);margin-top:12px;">${filtered.length} daily reports saved in ${month}</div>`;
-
-  if(daysDiv) {
-    daysDiv.innerHTML = filtered.map(r => `
-      <button class="cng-owner-day" onclick="openSavedOwnerReport('${r.date}')">
-        <div>
-          <div class="cng-owner-day-date">📅 ${r.date}</div>
-          <div class="cng-owner-day-meta">Sale ${Number(r.sale||0).toFixed(2)} SR · ATM ${Number(r.atm||0).toFixed(2)} SR · Expense ${Number(r.totalExp||0).toFixed(2)} SR</div>
-        </div>
-        <div class="cng-owner-day-cash">${Number(r.totalCash||0).toFixed(2)} SR</div>
-      </button>`).join('');
-  }
+  const month=document.getElementById('owner-month-filter').value;
+  if(!month)return;
+  const rows=ownerReports.filter(r=>r&&r.date&&r.date.startsWith(month));
+  const el=document.getElementById('owner-monthly-result');
+  if(!el)return;
+  if(!rows.length){el.textContent=`No saved reports for ${month}`;return;}
+  el.innerHTML=`<style>
+    .owner-month-summary{color:var(--text);font-size:12px;line-height:1.6}
+    .owner-month-summary h3{margin:18px 0 8px;color:var(--orange);font-size:14px}
+    .owner-month-summary table{width:100%;border-collapse:collapse;background:transparent!important;table-layout:fixed}
+    .owner-month-summary th,.owner-month-summary td{padding:9px 5px;border-bottom:1px solid var(--glass-border);background:transparent!important;color:var(--text)!important;text-align:right;overflow-wrap:anywhere}
+    .owner-month-summary th:first-child,.owner-month-summary td:first-child{text-align:left}
+    .owner-month-summary th{font-size:10px;color:var(--muted)!important}
+    .owner-month-summary .note{font-size:10px;color:var(--muted)}
+  </style><div class="owner-month-summary" dir="ltr">${ownerMonthClosingHTML(rows)}</div>`;
 }
 
 function getMonthlyOwnerData() {
@@ -5858,6 +5767,7 @@ function removeWebsiteOwnerImage(){
 </style>
 </body>
 </html>
+
 
 
 
