@@ -1,5 +1,5 @@
-Warning: truncated output (original token count: 100822)
-Total output lines: 5824
+Warning: truncated output (original token count: 100648)
+Total output lines: 5810
 
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
@@ -13,7 +13,10 @@ Total output lines: 5824
 <meta name="apple-mobile-web-app-title" content="Cup And Go">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
 <title>Cup And Go POS Pro - Enterprise Edition</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js">
 
+
+</script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
@@ -1778,15 +1781,14 @@ function ownerMonthClosing(rows){
   const cashAfterExpenses=cashSales-expenses;
   const savedCash=rows.reduce((a,r)=>a+ownerStepData(r).final,0);
   const expenseItems=[['Water','water'],['Lemon','lemon'],['Nana','nana']].map(([name,key])=>({name,total:sum(key),days:rows.filter(r=>Number(r[key]||0)!==0).length}));
-  const additionItems=[['More Today','more'],['Cup Small','cupSmall'],['Cup Big','cupBig'],['Cup Plastic','plastic']].map(([name,key])=>({name,total:sum(key),days:rows.filter(r=>Number(r[key]||0)!==0).length}));
-  const totals=[['Total expenses',expenses],['Total additional income',additions],['ATM / Card',atm],['CASH IN HAND',cashAfterExpenses]];
-  return {totals,expenseItems,additionItems,totalSales,atm,cashSales,expenses,cashAfterExpenses,netTotal:cashAfterExpenses+atm};
+  const additionItems=[['More Today','more'],['Cup Small','cupSmall'],['Cup Big','cupBig'],['Cup Plastic','plastic']].map(([name,key])=>({name,total:sum(key)}));
+  const totals=[['Sale Today (includes ATM)',base],['Additional sales / cups',additions],['TOTAL SHOP SALES',totalSales],['ATM / card sales',atm],['Cash sales before expenses',cashSales],['TOTAL RECORDED EXPENSES',expenses],['CASH LEFT AFTER EXPENSES',cashAfterExpenses],['Cash left + ATM',cashAfterExpenses+atm]];
+  if(Math.abs(savedCash-cashAfterExpenses)>.01)totals.push(['Saved daily cash total',savedCash],['Cash reconciliation difference',savedCash-cashAfterExpenses]);
+  return {totals,expenseItems,additionItems,totalSales,atm,cashSales,expenses,cashAfterExpenses};
 }
 function ownerMonthClosingHTML(rows){
   const c=ownerMonthClosing(rows);
-  const itemRows=items=>items.map(item=>`<tr><td>${item.name}</td><td>${item.days}</td><td>${ownerMoney(item.total)}</td></tr>`).join('');
-  const itemHead='<thead><tr><th>Item</th><th>Entry days</th><th>Amount (SAR)</th></tr></thead>';
-  return `<section style="margin-top:20px"><h3>Monthly expenses</h3><table>${itemHead}<tbody>${itemRows(c.expenseItems)}</tbody></table><h3>Additional income</h3><table>${itemHead}<tbody>${itemRows(c.additionItems)}</tbody></table><h3>Monthly totals</h3><table><thead><tr><th>Description</th><th>Amount (SAR)</th></tr></thead><tbody>${c.totals.map(([name,amount])=>`<tr><td>${name}</td><td><b>${ownerMoney(amount)}</b></td></tr>`).join('')}<tr><td>Total shop sales</td><td><b>${ownerMoney(c.totalSales)}</b></td></tr></tbody></table><div class="total" style="background:#f0e9ec;color:#24313d;padding:12px;margin-top:12px;display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap"><b>TOTAL AFTER EXPENSES</b><b>${ownerMoney(c.netTotal)} SAR</b></div><p class="note">Final total = ATM + cash in hand. Entry days are saved daily entries, not individual purchases or cup quantities.</p></section>`;
+  return `<section style="margin-top:20px"><h3>Monthly shop summary</h3><table><thead><tr><th>Sales and cash</th><th>Amount (SAR)</th></tr></thead><tbody>${c.totals.map(([name,amount])=>`<tr><td>${ownerEscape(name)}</td><td><b>${ownerMoney(amount)}</b></td></tr>`).join('')}</tbody></table><h3>Expenses by item</h3><table><thead><tr><th>Item</th><th>Recorded days</th><th>Total (SAR)</th></tr></thead><tbody>${c.expenseItems.map(item=>`<tr><td>${item.name}</td><td>${item.days}</td><td>${ownerMoney(item.total)}</td></tr>`).join('')}</tbody></table><h3>Additional sales / cups</h3><table><tbody>${c.additionItems.map(item=>`<tr><td>${item.name}</td><td>${ownerMoney(item.total)} SAR</td></tr>`).join('')}</tbody></table><p class="note">Total shop sales = Sale Today + More Today + Cup Small + Cup Big + Cup Plastic. ATM is already included in sales; it is not added twice. Recorded days count saved daily entries, not individual purchases. Expenses include only amounts entered in Owner Report.</p></section>`;
 }
 function ownerStepData(r){
   const n=k=>Number(r[k]||0);
@@ -1834,28 +1836,32 @@ function buildOwnerMonthlyPDF(jsPDF,rows,month,shopName){
     values.forEach((value,i)=>text(i?money(value):value,i?columns[i+1]-2:16,tableY,8,false,i?'right':'left'));
     pdf.setDrawColor(224,227,229);pdf.line(14,tableY+3,196,tableY+3);tableY+=6.5;
   });
-  let summaryY;
-  if(tableY>110){newPage('Monthly summary');summaryY=53;}
-  else {summaryY=tableY+9;text('Monthly summary',14,summaryY,11,true);summaryY+=7;}
+  newPage('Monthly shop summary');
   const closing=ownerMonthClosing(rows);
-  function items(title,items){
-    text(title,14,summaryY,11,true);summaryY+=7;
-    pdf.setFillColor(240,233,236);pdf.rect(14,summaryY-5,182,8,'F');
-    text('Item',18,summaryY,9,true);text('Entry days',126,summaryY,9,true,'right');text('Amount (SAR)',192,summaryY,9,true,'right');summaryY+=7;
-    items.forEach(item=>{text(item.name,18,summaryY,10);text(item.days,126,summaryY,10,false,'right');text(money(item.total),192,summaryY,10,false,'right');summaryY+=6;});
-    summaryY+=4;
-  }
-  items('Expenses for the month',closing.expenseItems);
-  items('Additional income for the month',closing.additionItems);
-  text('Monthly totals',14,summaryY,11,true);summaryY+=8;
-  [...closing.totals,['Total shop sales',closing.totalSales]].forEach(([name,amount])=>{
-    text(name,18,summaryY,10,name==='CASH IN HAND');text(money(amount),192,summaryY,10,name==='CASH IN HAND','right');
-    pdf.setDrawColor(225,228,230);pdf.line(14,summaryY+3,196,summaryY+3);summaryY+=7;
+  text(`${rows.length} saved days | Period: ${month}`,14,50,9);
+  let endY=60;
+  closing.totals.forEach(([name,amount])=>{
+    const highlight=/^[A-Z ]+$/.test(name);
+    if(highlight){pdf.setFillColor(240,233,236);pdf.rect(14,endY-6,182,9,'F');}
+    text(name,18,endY,10,highlight);text(money(amount),192,endY,10,highlight,'right');
+    pdf.setDrawColor(225,228,230);pdf.line(14,endY+3,196,endY+3);endY+=9;
   });
-  summaryY+=3;pdf.setFillColor(240,233,236);pdf.rect(14,summaryY-6,182,11,'F');
-  text('TOTAL AFTER EXPENSES',18,summaryY,11,true);text(money(closing.netTotal)+' SAR',192,summaryY,11,true,'right');summaryY+=13;
-  text('Final total = ATM + cash in hand.',14,summaryY,8);summaryY+=5;
-  text('Entry days count saved daily entries, not purchase or cup quantities.',14,summaryY,8);
+  endY+=8;text('Expenses by item',14,endY,11,true);endY+=8;
+  pdf.setFillColor(240,233,236);pdf.rect(14,endY-5,182,8,'F');
+  text('Item',18,endY,9,true);text('Recorded days',125,endY,9,true,'right');text('Amount (SAR)',192,endY,9,true,'right');endY+=8;
+  closing.expenseItems.forEach(item=>{
+    text(item.name,18,endY,10);text(item.days,125,endY,10,false,'right');text(money(item.total),192,endY,10,false,'right');pdf.setDrawColor(225,228,230);pdf.line(14,endY+3,196,endY+3);endY+=8;
+  });
+  endY+=6;text('Additional sales / cups',14,endY,11,true);endY+=9;
+  closing.additionItems.forEach(item=>{text(item.name,18,endY,10);text(money(item.total),192,endY,10,false,'right');pdf.setDrawColor(225,228,230);pdf.line(14,endY+3,196,endY+3);endY+=8;});
+  endY+=6;
+  const notes=[
+    'Total shop sales = Sale Today + More Today + all cup amounts.',
+    'ATM is included in sales. It is not added twice.',
+    'Recorded days count daily entries, not individual purchases.',
+    'Only expenses entered in Owner Report are included.'
+  ];
+  notes.forEach(note=>{text(note,14,endY,8);endY+=5;});
   const pages=pdf.internal.getNumberOfPages();
   for(let i=1;i<=pages;i++){
     pdf.setPage(i);pdf.setFont('helvetica','normal');pdf.setFontSize(8);pdf.setTextColor(...muted);
@@ -2121,23 +2127,7 @@ function printContent(elementId) {
 
 function shareTextReceipt() { if(!activeOrderForShare) return; let txt = `*${appSettings.shopName}*\nInv: #${activeOrderForShare.id}\nDate: ${activeOrderForShare.time}\nCashier: ${activeOrderForShare.cashier}\n\n`; activeOrderForShare.items.forEach(i => { txt += `${i.name} x${i.qty} = ${(i.price*i.qty).toFixed(2)}\n`; }); txt += `\nTotal: ${activeOrderForShare.total}\nPaid: ${activeOrderForShare.paidAmount || activeOrderForShare.total}\nReturn: ${activeOrderForShare.returnAmount || '0.00'}\nMethod: ${activeOrderForShare.method}\n\nThank you! ☕`; if(navigator.share) { navigator.share({text:txt}).catch(e=>{}); } else { navigator.clipboard.writeText(txt); showToast("✅ Bill Copied!"); } }
 function shareTextReport() { if(navigator.share) { navigator.share({text:reportTextForShare}).catch(e=>{}); } else { navigator.clipboard.writeText(reportTextForShare); showToast("✅ Report Copied!"); } }
-let cngLegacyPDFPromise;
-function cngLoadLegacyPDF(){
-  if(typeof window.html2pdf==='function')return Promise.resolve();
-  if(!cngLegacyPDFPromise)cngLegacyPDFPromise=new Promise((resolve,reject)=>{
-    const script=document.createElement('script');
-    script.src='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-    script.onload=()=>{if(typeof window.html2pdf==='function')resolve();else{cngLegacyPDFPromise=null;script.remove();reject(new Error('PDF unavailable'));}};
-    script.onerror=()=>{cngLegacyPDFPromise=null;script.remove();reject(new Error('PDF unavailable'));};
-    document.head.appendChild(script);
-  });
-  return cngLegacyPDFPromise;
-}
-async function cngPrepareLegacyPDF(){
-  try{await cngLoadLegacyPDF();return true;}catch(e){showToast('❌ PDF could not load. Please try again.');return false;}
-}
-window.downloadReceiptPDF = async function() {
-  if(!await cngPrepareLegacyPDF())return; 
+window.downloadReceiptPDF = function() { 
   let el = document.getElementById('receipt-content'); 
   let opt = {
     margin: 0.2,
@@ -2150,9 +2140,8 @@ window.downloadReceiptPDF = async function() {
   html2pdf().set(opt).from(el).save(); 
 }
 
-window.executeReportDownload = async function() {
-  if(document.querySelector('#pdf-report-content .owner-document')) return downloadOwnerDocument();
-  if(!await cngPrepareLegacyPDF())return; 
+window.executeReportDownload = function() {
+  if(document.querySelector('#pdf-report-content .owner-document')) return downloadOwnerDocument(); 
   let el = document.getElementById('pdf-report-content'); 
   let opt = {
     margin: 0.2,
@@ -2998,8 +2987,7 @@ function renderStockMonthlyTable() {
   document.getElementById('stock-sheet-table-ui').innerHTML = tableHtml;
 }
 
-async function downloadStockPDF() {
-  if(!await cngPrepareLegacyPDF())return;
+function downloadStockPDF() {
   let content = document.getElementById('stock-sheet-table-ui');
   if(!content) return showToast("No data!");
 
@@ -3170,7 +3158,17 @@ function confirmDuePayment() { let pay=parseFloat(document.getElementById('due-p
 function openCategoryManager() { closeModal('modal-items'); renderCategoryListUI(); setTimeout(()=>openModal('modal-cats'),200); }
 function renderCategoryListUI() { let list=document.getElementById('cat-list-ui'); list.innerHTML=''; appSettings.categories.forEach((cat,idx)=>{ list.innerHTML+=`<div style="display:flex;justify-content:space-between;padding:10px;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);border-radius:10px;margin-bottom:8px;"><span>${cat}</span><button class="btn btn-delete" style="padding:4px 8px;font-size:10px;" onclick="deleteCategoryUI(${idx})">🗑️</button></div>`; }); }
 function addCategoryUI() { let val=document.getElementById('new-cat-name').value.trim(); if(val) { appSettings.categories.push(val); document.getElementById('new-cat-name').value=''; renderCategoryListUI(); saveData(); renderCatBar(); } }
-function deleteCategoryUI(idx) { if(appSettings.categories.length<=1) return showToast("Need 1 category!"); appSettings.categories.splice(idx,1); renderCategoryListUI(); sav…822 tokens truncated…" style="padding:4px 8px;font-size:11px;margin-right:5px;" onclick="openCashierPerms(${idx})">⚙️ Perms</button><button class="btn btn-delete" style="padding:4px 8px;font-size:11px;" onclick="removeCashierUI(${idx})">🗑️</button></div></div><div style="display:flex;flex-direction:column;gap:8px;"><input type="text" id="cname-${idx}" value="${c.name}" placeholder="Name" style="width:100%;"><input type="number" id="cpin-${idx}" value="${c.pin || ''}" placeholder="PIN" style="width:100%;"></div></div>`; }); }
+function deleteCategoryUI(idx) { if(appSettings.categories.length<=1) return showToast("Need 1 category!"); appSettings.categories.splice(idx,1); renderCategoryListUI(); saveData(); renderCatBar(); }
+function productCategory(p) { return String((p && p.category) || 'Other').trim() || 'Other'; }
+function getAllProductCategories() {
+  return [...new Set([...(appSettings.categories || []), ...products.map(productCategory)].filter(Boolean))];
+}
+function renderCatBar() { let bar=document.getElementById('cat-bar'); bar.innerHTML=`<button class="cat-btn ${currentCategory==='All'?'active':''}" onclick="filterCategory('All')">All</button>`; getAllProductCategories().forEach(c=>{ bar.innerHTML+=`<button class="cat-btn ${currentCategory===c?'active':''}" onclick="filterCategory('${c}')">${c}</button>`; }); }
+
+// ======= PERMISSIONS =======
+const permList = [
+  {id:'stock',label:'Stock Receive'},
+  {id…648 tokens truncated…ze:11px;margin-right:5px;" onclick="openCashierPerms(${idx})">⚙️ Perms</button><button class="btn btn-delete" style="padding:4px 8px;font-size:11px;" onclick="removeCashierUI(${idx})">🗑️</button></div></div><div style="display:flex;flex-direction:column;gap:8px;"><input type="text" id="cname-${idx}" value="${c.name}" placeholder="Name" style="width:100%;"><input type="number" id="cpin-${idx}" value="${c.pin || ''}" placeholder="PIN" style="width:100%;"></div></div>`; }); }
 window.addCashierUI = function() { appSettings.cashiers.push({name:'',pin:'',permissions:{}}); renderCashiersUI(); }
 window.removeCashierUI = function(idx) { if(appSettings.cashiers.length<=1) return showToast("❌ 1 cashier required!"); appSettings.cashiers.splice(idx,1); renderCashiersUI(); }
 
@@ -4140,7 +4138,7 @@ if (document.readyState === 'loading') {
 }
 
 // ======= ONLOAD =======
-document.addEventListener('DOMContentLoaded', function cngStartAdmin() {
+window.onload = function() {
   applySettingsToUI();
   initUI();
   updateHistory();
@@ -4162,22 +4160,20 @@ document.addEventListener('DOMContentLoaded', function cngStartAdmin() {
       if(lock) lock.classList.remove('show');
       if(intro){
         intro.style.display='flex'; intro.classList.remove('splash-exit');
-        loginAs(currentLoginRole,true);
-        intro.classList.add('splash-exit');
-        setTimeout(()=>{ intro.style.display='none'; },350);
+        setTimeout(()=>{ intro.classList.add('splash-exit'); setTimeout(()=>{ intro.style.display='none'; loginAs(currentLoginRole,true); },980); },2500);
       }else loginAs(currentLoginRole,true);
     }else{
       currentLoginRole=null;
       sessionStorage.removeItem('cng_role');
       sessionStorage.removeItem('cng_active_cashier');
       clearRememberedLogin();
-      openLockScreen();
+      setTimeout(()=>openLockScreen(),1200);
     }
-  }).catch(()=>openLockScreen());
+  }).catch(()=>setTimeout(()=>openLockScreen(),1200));
 
   setTimeout(generateQRCode,600);
   setTimeout(()=>{ if(navigator.onLine && cngCloudAuthorized) updateSyncStatus('synced'); else if(!navigator.onLine) updateSyncStatus('offline'); },5000);
-}, {once:true});
+};
 
 console.log('☕ Cup And Go POS Pro v13.0 - Full Sync Edition');
 console.log('✅ LED Font Fixed! 20+ Stylish Fonts Added!');
@@ -4977,11 +4973,11 @@ setTimeout(()=>{const last=Number(localStorage.getItem('cng_privacy_cleanup_at')
     openModal('customer-history-detail-modal');
   };
 
-  window.downloadCustomerHistoryPDF = async function(){
+  window.downloadCustomerHistoryPDF = function(){
     const el=document.getElementById('customer-history-receipt');
     const o=window.cngCustomerHistorySelected;
     if(!el||!o) return showToast('❌ Open an order first');
-    if(!await cngPrepareLegacyPDF())return;
+    if(typeof html2pdf!=='function') return showToast('❌ PDF service not available');
     const filename='Online_Order_'+String(o.id||Date.now()).replace(/[^\w-]/g,'_')+'.pdf';
     html2pdf().set({
       margin:0.22,
