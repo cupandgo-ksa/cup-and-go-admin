@@ -1749,7 +1749,7 @@ function buildOwnerDocument(rows,period,monthly){
   const detail=[['Water','water'],['Lemon','lemon'],['Nana','nana'],['Extra sales','more'],['Plastic cups','plastic'],['Small cups','cupSmall'],['Big cups','cupBig']];
   const css=`.owner-document{font-family:Arial,sans-serif;color:#24313d;background:#fff;line-height:1.45;font-size:12px;padding:16px;box-sizing:border-box;text-align:left;direction:ltr}.owner-document *{box-sizing:border-box}.owner-document h1{font-size:27px;margin:0;color:#512635}.owner-document h2{font-size:14px;letter-spacing:1px;margin:5px 0 0}.owner-document h3{font-size:13px;margin:20px 0 8px}.owner-document .head{border-bottom:3px solid #512635;padding-bottom:15px;display:flex;justify-content:space-between;gap:12px}.owner-document .meta{font-size:11px;color:#65727c;margin-top:12px}.owner-document table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}.owner-document th{background:#f0e9ec;color:#512635}.owner-document th,.owner-document td{padding:7px 5px;border-bottom:1px solid #dfe3e6;text-align:right;overflow-wrap:anywhere}.owner-document th:first-child,.owner-document td:first-child{text-align:left}.owner-document tr{break-inside:avoid;page-break-inside:avoid}.owner-document thead{display:table-header-group}.owner-document .total{padding:13px;background:#f0e9ec;margin-top:14px;border-left:4px solid #512635;display:flex;justify-content:space-between;font-size:16px;font-weight:bold;break-inside:avoid}.owner-document .note{font-size:10px;color:#65727c;margin:10px 0}.owner-document .signatures{display:flex;justify-content:space-between;gap:24px;margin-top:32px;break-inside:avoid}.owner-document .signature{width:44%;border-top:1px solid #87909a;padding-top:8px;font-size:11px}.owner-document footer{margin-top:22px;border-top:1px solid #dfe3e6;padding-top:8px;font-size:9px;color:#65727c}`;
   const header=`<div class="head"><div><h1>${ownerEscape(appSettings.shopName)}</h1><h2>${monthly?'MONTHLY':'DAILY'} OWNER REPORT</h2></div><div style="text-align:right;font-size:11px"><b>${monthly?'Month':'Date'}</b><br>${ownerEscape(period)}<br>Currency: SAR</div></div><div class="meta">Report ID: OWN-${ownerEscape(period)} · ${monthly?rows.length+' saved days · '+ownerEscape(ownerReportRange(rows)):'Daily statement · Form figures'} </div>`;
-  return `<div class="owner-document"><style>${css}.owner-document td,.owner-document p,.owner-document span{color:#24313d!important}.owner-document th{color:#512635!important}.owner-document{color-scheme:only light;max-width:100%}.owner-document .head{flex-wrap:wrap}.owner-document th:last-child,.owner-document td:last-child{white-space:nowrap}.owner-document .head>div:last-child{font-size:10px!important}</style>${header}${ownerCompactDayTableHTML(rows)}${ownerMonthClosingHTML(rows)}</div>`;
+  return `<div class="owner-document"><style>${css}.owner-document td,.owner-document p,.owner-document span{color:#111!important}.owner-document th{color:#512635!important}.owner-document{color-scheme:only light;max-width:100%}.owner-document .head{flex-wrap:wrap}.owner-document th:last-child,.owner-document td:last-child{white-space:nowrap}.owner-document .head>div:last-child{font-size:10px!important}</style>${header}${ownerCompactDayTableHTML(rows)}${ownerMonthClosingHTML(rows)}</div>`;
 
 }
 function showOwnerDocument(rows,period,monthly){
@@ -1810,7 +1810,7 @@ function buildOwnerMonthlyPDF(jsPDF,rows,month,shopName){
   if(!rows.length)throw Error('No saved reports for this month');
   rows=rows.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));
   const pdf=new jsPDF({unit:'mm',format:'a4',orientation:'portrait',compress:true});
-  const brand=[81,38,53],ink=[25,30,35],muted=[92,98,103];
+  const brand=[81,38,53],ink=[0,0,0],muted=[65,65,65];
   const label=/^[\x20-\x7e]+$/.test(shopName)?shopName:'Cup And Go';
   const money=n=>Number(n||0).toFixed(2);
   function text(t,x,y,size=10,bold=false,align='left'){
@@ -1837,8 +1837,8 @@ function buildOwnerMonthlyPDF(jsPDF,rows,month,shopName){
   rows.forEach(r=>{
     if(tableY>270){newPage('Daily statement - continued');tableY=54;tableHead(tableY);tableY+=9;}
     const d=ownerStepData(r),values=[r.date,Number(r.sale||0),Number(r.atm||0),d.expenses,d.additions,d.final];
-    values.forEach((value,i)=>text(i?money(value):value,i?columns[i+1]-2:16,tableY,8,false,i?'right':'left'));
-    pdf.setDrawColor(224,227,229);pdf.line(14,tableY+3,196,tableY+3);tableY+=6.5;
+    values.forEach((value,i)=>text(i?money(value):value,i?columns[i+1]-2:16,tableY,9,false,i?'right':'left'));
+    pdf.setDrawColor(170,170,170);pdf.line(14,tableY+3,196,tableY+3);tableY+=6.5;
   });
   let summaryY;
   if(tableY>110){newPage('Monthly summary');summaryY=53;}
@@ -1856,7 +1856,7 @@ function buildOwnerMonthlyPDF(jsPDF,rows,month,shopName){
   text('Monthly totals',14,summaryY,11,true);summaryY+=8;
   [...closing.totals,['Total shop sales',closing.totalSales]].forEach(([name,amount])=>{
     text(name,18,summaryY,10,name==='CASH IN HAND');text(money(amount),192,summaryY,10,name==='CASH IN HAND','right');
-    pdf.setDrawColor(225,228,230);pdf.line(14,summaryY+3,196,summaryY+3);summaryY+=7;
+    pdf.setDrawColor(170,170,170);pdf.line(14,summaryY+3,196,summaryY+3);summaryY+=7;
   });
   summaryY+=3;pdf.setFillColor(240,233,236);pdf.rect(14,summaryY-6,182,11,'F');
   text('TOTAL AFTER EXPENSES',18,summaryY,11,true);text(money(closing.netTotal)+' SAR',192,summaryY,11,true,'right');summaryY+=13;
@@ -2144,12 +2144,11 @@ async function shareOwnerMonthlyPDF(){
     return showToast(file?'PDF ready. Tap Share to choose an app.':'PDF could not load. Please retry.');
   }
   const file=snapshot.shareFile;
-  if(navigator.share && navigator.canShare?.({files:[file]})){
+  if(typeof navigator.share==='function'){
     try{await navigator.share({files:[file],title:`Owner Monthly Report ${snapshot.month}`});}
-    catch(e){if(e.name!=='AbortError')showToast('Could not share PDF. Please try again.');}
+    catch(e){if(e.name!=='AbortError')showToast('This browser could not share PDF files. Open this page in Chrome and try Share again.');}
   }else{
-    await downloadOwnerDocument();
-    showToast('PDF downloaded. Share it from your Files app.');
+    showToast('This browser has no file sharing. Open this page in Chrome to share the PDF.');
   }
 }
 function shareTextReport() { if(document.querySelector('#pdf-report-content .owner-document'))return shareOwnerMonthlyPDF(); if(navigator.share) { navigator.share({text:reportTextForShare}).catch(e=>{}); } else { navigator.clipboard.writeText(reportTextForShare); showToast("✅ Report Copied!"); } }
@@ -5829,6 +5828,7 @@ function removeWebsiteOwnerImage(){
 </style>
 </body>
 </html>
+
 
 
 
