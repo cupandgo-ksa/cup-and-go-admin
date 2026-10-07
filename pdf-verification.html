@@ -1,0 +1,139 @@
+<!doctype html><meta charset="UTF-8"><title>PDF verification</title><h1>Monthly PDF verification with sample data</h1><p id="toast"></p><button onclick="downloadOwnerDocument()">Download sample PDF</button><button onclick="printOwnerMonthlyDocument()">Print sample PDF</button><script>const appSettings={shopName:"Cup And Go"};function showToast(t){document.getElementById("toast").textContent=t;}
+let ownerPDFLibraryTask=null;
+function ownerPDFLibrary(){
+  if(window.jspdf?.jsPDF)return Promise.resolve(window.jspdf.jsPDF);
+  if(!ownerPDFLibraryTask)ownerPDFLibraryTask=new Promise((resolve,reject)=>{
+    const script=document.createElement('script');
+    script.src=new URL('./vendor/jspdf.umd.min.js',location.href).href;
+    script.onload=()=>window.jspdf?.jsPDF?resolve(window.jspdf.jsPDF):reject(Error('PDF library unavailable'));
+    script.onerror=()=>{script.remove();reject(Error('PDF library could not load'));};
+    document.head.appendChild(script);
+  }).catch(e=>{ownerPDFLibraryTask=null;throw e;});
+  return ownerPDFLibraryTask;
+}
+function ownerMonthClosing(rows){
+  const sum=k=>rows.reduce((a,r)=>a+Number(r[k]||0),0);
+  const base=sum('sale'),atm=sum('atm');
+  const additions=sum('more')+sum('cupSmall')+sum('cupBig')+sum('plastic');
+  const expenses=rows.reduce((a,r)=>a+ownerStepData(r).expenses,0);
+  const totalSales=base+additions,cashSales=totalSales-atm;
+  const cashAfterExpenses=cashSales-expenses;
+  const savedCash=rows.reduce((a,r)=>a+ownerStepData(r).final,0);
+  const expenseItems=[['Water','water'],['Lemon','lemon'],['Nana','nana']].map(([name,key])=>({name,total:sum(key),days:rows.filter(r=>Number(r[key]||0)!==0).length}));
+  const additionItems=[['More Today','more'],['Cup Small','cupSmall'],['Cup Big','cupBig'],['Cup Plastic','plastic']].map(([name,key])=>({name,total:sum(key)}));
+  const totals=[['Sale Today (includes ATM)',base],['Additional sales / cups',additions],['TOTAL SHOP SALES',totalSales],['ATM / card sales',atm],['Cash sales before expenses',cashSales],['TOTAL RECORDED EXPENSES',expenses],['CASH LEFT AFTER EXPENSES',cashAfterExpenses],['Cash left + ATM',cashAfterExpenses+atm]];
+  if(Math.abs(savedCash-cashAfterExpenses)>.01)totals.push(['Saved daily cash total',savedCash],['Cash reconciliation difference',savedCash-cashAfterExpenses]);
+  return {totals,expenseItems,additionItems,totalSales,atm,cashSales,expenses,cashAfterExpenses};
+}
+function ownerMonthClosingHTML(rows){
+  const c=ownerMonthClosing(rows);
+  return `<section style="margin-top:20px"><h3>Monthly shop summary</h3><table><thead><tr><th>Sales and cash</th><th>Amount (SAR)</th></tr></thead><tbody>${c.totals.map(([name,amount])=>`<tr><td>${ownerEscape(name)}</td><td><b>${ownerMoney(amount)}</b></td></tr>`).join('')}</tbody></table><h3>Expenses by item</h3><table><thead><tr><th>Item</th><th>Recorded days</th><th>Total (SAR)</th></tr></thead><tbody>${c.expenseItems.map(item=>`<tr><td>${item.name}</td><td>${item.days}</td><td>${ownerMoney(item.total)}</td></tr>`).join('')}</tbody></table><h3>Additional sales / cups</h3><table><tbody>${c.additionItems.map(item=>`<tr><td>${item.name}</td><td>${ownerMoney(item.total)} SAR</td></tr>`).join('')}</tbody></table><p class="note">Total shop sales = Sale Today + More Today + Cup Small + Cup Big + Cup Plastic. ATM is already included in sales; it is not added twice. Recorded days count saved daily entries, not individual purchases. Expenses include only amounts entered in Owner Report.</p></section>`;
+}
+function ownerStepData(r){
+  const n=k=>Number(r[k]||0);
+  const expenses=r.totalExp==null?n('water')+n('lemon')+n('nana'):n('totalExp');
+  const cash=r.intermediateCash==null?n('sale')-n('atm')-expenses:n('intermediateCash');
+  const additions=n('more')+n('cupSmall')+n('cupBig')+n('plastic');
+  const final=r.totalCash==null?cash+additions:n('totalCash');
+  return {expenses,cash,additions,final,steps:[
+    ['Sale Today',n('sale')],['ATM / Card',n('atm')],['Water',n('water')],
+    ['Lemon',n('lemon')],['Nana',n('nana')],['Total Expenses',expenses],
+    ['Cash after expenses',cash],['More Today',n('more')],['Cup Small',n('cupSmall')],
+    ['Cup Big',n('cupBig')],['Cup Plastic',n('plastic')],['Total Additions',additions],['Total Cash',final]
+  ]};
+}
+function buildOwnerMonthlyPDF(jsPDF,rows,month,shopName){
+  if(!rows.length)throw Error('No saved reports for this month');
+  rows=rows.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  const pdf=new jsPDF({unit:'mm',format:'a4',orientation:'portrait',compress:true});
+  const brand=[81,38,53],ink=[25,30,35],muted=[92,98,103];
+  const label=/^[\x20-\x7e]+$/.test(shopName)?shopName:'Cup And Go';
+  const money=n=>Number(n||0).toFixed(2);
+  function text(t,x,y,size=10,bold=false,align='left'){
+    pdf.setFont('helvetica',bold?'bold':'normal');pdf.setFontSize(size);pdf.setTextColor(...ink);
+    pdf.text(String(t),x,y,{align});
+  }
+  function header(section){
+    pdf.setFillColor(255,255,255);pdf.rect(0,0,210,297,'F');
+    text(pdf.splitTextToSize(label,135)[0],14,20,20,true);
+    text('MONTHLY OWNER REPORT',14,28,10,true);text(month,196,21,12,true,'right');
+    pdf.setDrawColor(...brand);pdf.setLineWidth(.7);pdf.line(14,33,196,33);
+    text(section,14,42,11,true);text('All amounts in SAR',196,42,8,false,'right');
+  }
+  function newPage(section){pdf.addPage();header(section);}
+  header('Daily statement - one line per date');
+  const columns=[14,46,78,106,136,166,196];
+  const names=['Date','Sale','ATM','Expenses','Additions','Final Cash'];
+  function tableHead(y){
+    pdf.setFillColor(240,233,236);pdf.rect(14,y-5,182,8,'F');
+    names.forEach((name,i)=>text(name,i?columns[i+1]-2:16,y,8,true,i?'right':'left'));
+  }
+  let tableY=54;tableHead(tableY);tableY+=9;
+  rows.forEach(r=>{
+    if(tableY>270){newPage('Daily statement - continued');tableY=54;tableHead(tableY);tableY+=9;}
+    const d=ownerStepData(r),values=[r.date,Number(r.sale||0),Number(r.atm||0),d.expenses,d.additions,d.final];
+    values.forEach((value,i)=>text(i?money(value):value,i?columns[i+1]-2:16,tableY,8,false,i?'right':'left'));
+    pdf.setDrawColor(224,227,229);pdf.line(14,tableY+3,196,tableY+3);tableY+=6.5;
+  });
+  newPage('Monthly shop summary');
+  const closing=ownerMonthClosing(rows);
+  text(`${rows.length} saved days | Period: ${month}`,14,50,9);
+  let endY=60;
+  closing.totals.forEach(([name,amount])=>{
+    const highlight=/^[A-Z ]+$/.test(name);
+    if(highlight){pdf.setFillColor(240,233,236);pdf.rect(14,endY-6,182,9,'F');}
+    text(name,18,endY,10,highlight);text(money(amount),192,endY,10,highlight,'right');
+    pdf.setDrawColor(225,228,230);pdf.line(14,endY+3,196,endY+3);endY+=9;
+  });
+  endY+=8;text('Expenses by item',14,endY,11,true);endY+=8;
+  pdf.setFillColor(240,233,236);pdf.rect(14,endY-5,182,8,'F');
+  text('Item',18,endY,9,true);text('Recorded days',125,endY,9,true,'right');text('Amount (SAR)',192,endY,9,true,'right');endY+=8;
+  closing.expenseItems.forEach(item=>{
+    text(item.name,18,endY,10);text(item.days,125,endY,10,false,'right');text(money(item.total),192,endY,10,false,'right');pdf.setDrawColor(225,228,230);pdf.line(14,endY+3,196,endY+3);endY+=8;
+  });
+  endY+=6;text('Additional sales / cups',14,endY,11,true);endY+=9;
+  closing.additionItems.forEach(item=>{text(item.name,18,endY,10);text(money(item.total),192,endY,10,false,'right');pdf.setDrawColor(225,228,230);pdf.line(14,endY+3,196,endY+3);endY+=8;});
+  endY+=6;
+  const notes=[
+    'Total shop sales = Sale Today + More Today + all cup amounts.',
+    'ATM is included in sales. It is not added twice.',
+    'Recorded days count daily entries, not individual purchases.',
+    'Only expenses entered in Owner Report are included.'
+  ];
+  notes.forEach(note=>{text(note,14,endY,8);endY+=5;});
+  const pages=pdf.internal.getNumberOfPages();
+  for(let i=1;i<=pages;i++){
+    pdf.setPage(i);pdf.setFont('helvetica','normal');pdf.setFontSize(8);pdf.setTextColor(...muted);
+    pdf.text(`Owner Report | ${month}`,14,286);pdf.text(`Page ${i} of ${pages}`,196,286,{align:'right'});
+  }
+  pdf.setProperties({title:`Owner Monthly Report ${month}`,subject:'Full monthly totals and all daily calculations',creator:'Cup And Go Admin'});
+  return pdf;
+}
+let ownerPDFSnapshot=null;
+async function printOwnerMonthlyDocument(){
+  if(!ownerPDFSnapshot?.rows?.length)return showToast('Open the monthly report first');
+  const target=window.open('','_blank');
+  const snapshot=ownerPDFSnapshot;
+  try{
+    const jsPDF=await ownerPDFLibrary();
+    const pdf=buildOwnerMonthlyPDF(jsPDF,snapshot.rows,snapshot.month,appSettings.shopName);
+    if(target){
+      pdf.autoPrint();
+      const url=URL.createObjectURL(pdf.output('blob'));
+      target.location.href=url;
+      setTimeout(()=>URL.revokeObjectURL(url),120000);
+    }else pdf.save(`Owner-Monthly-${snapshot.month}.pdf`);
+  }catch(e){if(target)target.close();showToast('PDF could not load. Please retry.');}
+}
+async function downloadOwnerDocument(){
+  if(!ownerPDFSnapshot?.rows?.length)return showToast('Open the monthly report again before downloading.');
+  const snapshot=ownerPDFSnapshot;
+  try{
+    const jsPDF=await ownerPDFLibrary();
+    const pdf=buildOwnerMonthlyPDF(jsPDF,snapshot.rows,snapshot.month,appSettings.shopName);
+    pdf.save(`Owner-Monthly-${snapshot.month}.pdf`);
+  }catch(e){console.error(e);showToast('PDF could not be created. Check your connection and retry.');}
+}
+
+
+ownerPDFSnapshot={month:"2026-10",rows:Array.from({length:31},(_,i)=>({date:"2026-10-"+String(i+1).padStart(2,"0"),sale:1000,atm:700,water:10,lemon:5,nana:0,more:20,cupSmall:5,cupBig:5,plastic:0,totalExp:15,totalCash:315}))};</script>
