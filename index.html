@@ -1736,18 +1736,21 @@ cngAuth.onAuthStateChanged(user=>{if(cngIsAdminAuthUser(user))setTimeout(()=>flu
 
 const ownerEscape=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ownerMoney=n=>Number(n||0).toFixed(2);
+function ownerCompactDayTableHTML(rows){
+  return `<h3>Daily statement</h3><p class="note">Swipe the table sideways to see all columns.</p><div style="overflow-x:auto;width:100%;-webkit-overflow-scrolling:touch"><table style="min-width:540px"><thead><tr>${['Date','Sale','ATM','Expenses','Additions','Final Cash'].map(name=>`<th>${name}</th>`).join('')}</tr></thead><tbody>${rows.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(r=>{const d=ownerStepData(r);return `<tr><td>${ownerEscape(r.date)}</td>${[Number(r.sale||0),Number(r.atm||0),d.expenses,d.additions,d.final].map(v=>`<td>${ownerMoney(v)}</td>`).join('')}</tr>`;}).join('')}</tbody></table></div>`;
+}
 function buildOwnerDocument(rows,period,monthly){
   const sum=k=>rows.reduce((n,r)=>n+Number(r[k]||0),0);
   const detail=[['Water','water'],['Lemon','lemon'],['Nana','nana'],['Extra sales','more'],['Plastic cups','plastic'],['Small cups','cupSmall'],['Big cups','cupBig']];
-  const css=`.owner-document{font-family:Arial,sans-serif;color:#24313d;background:#fff;line-height:1.45;font-size:12px;padding:24px;box-sizing:border-box;text-align:left;direction:ltr}.owner-document *{box-sizing:border-box}.owner-document h1{font-size:27px;margin:0;color:#512635}.owner-document h2{font-size:14px;letter-spacing:1px;margin:5px 0 0}.owner-document h3{font-size:13px;margin:20px 0 8px}.owner-document .head{border-bottom:3px solid #512635;padding-bottom:15px;display:flex;justify-content:space-between;gap:12px}.owner-document .meta{font-size:11px;color:#65727c;margin-top:12px}.owner-document table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}.owner-document th{background:#f0e9ec;color:#512635}.owner-document th,.owner-document td{padding:7px 5px;border-bottom:1px solid #dfe3e6;text-align:right;overflow-wrap:anywhere}.owner-document th:first-child,.owner-document td:first-child{text-align:left}.owner-document tr{break-inside:avoid;page-break-inside:avoid}.owner-document thead{display:table-header-group}.owner-document .total{padding:13px;background:#f0e9ec;margin-top:14px;border-left:4px solid #512635;display:flex;justify-content:space-between;font-size:16px;font-weight:bold;break-inside:avoid}.owner-document .note{font-size:10px;color:#65727c;margin:10px 0}.owner-document .signatures{display:flex;justify-content:space-between;gap:24px;margin-top:32px;break-inside:avoid}.owner-document .signature{width:44%;border-top:1px solid #87909a;padding-top:8px;font-size:11px}.owner-document footer{margin-top:22px;border-top:1px solid #dfe3e6;padding-top:8px;font-size:9px;color:#65727c}`;
+  const css=`.owner-document{font-family:Arial,sans-serif;color:#24313d;background:#fff;line-height:1.45;font-size:12px;padding:16px;box-sizing:border-box;text-align:left;direction:ltr}.owner-document *{box-sizing:border-box}.owner-document h1{font-size:27px;margin:0;color:#512635}.owner-document h2{font-size:14px;letter-spacing:1px;margin:5px 0 0}.owner-document h3{font-size:13px;margin:20px 0 8px}.owner-document .head{border-bottom:3px solid #512635;padding-bottom:15px;display:flex;justify-content:space-between;gap:12px}.owner-document .meta{font-size:11px;color:#65727c;margin-top:12px}.owner-document table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}.owner-document th{background:#f0e9ec;color:#512635}.owner-document th,.owner-document td{padding:7px 5px;border-bottom:1px solid #dfe3e6;text-align:right;overflow-wrap:anywhere}.owner-document th:first-child,.owner-document td:first-child{text-align:left}.owner-document tr{break-inside:avoid;page-break-inside:avoid}.owner-document thead{display:table-header-group}.owner-document .total{padding:13px;background:#f0e9ec;margin-top:14px;border-left:4px solid #512635;display:flex;justify-content:space-between;font-size:16px;font-weight:bold;break-inside:avoid}.owner-document .note{font-size:10px;color:#65727c;margin:10px 0}.owner-document .signatures{display:flex;justify-content:space-between;gap:24px;margin-top:32px;break-inside:avoid}.owner-document .signature{width:44%;border-top:1px solid #87909a;padding-top:8px;font-size:11px}.owner-document footer{margin-top:22px;border-top:1px solid #dfe3e6;padding-top:8px;font-size:9px;color:#65727c}`;
   const header=`<div class="head"><div><h1>${ownerEscape(appSettings.shopName)}</h1><h2>${monthly?'MONTHLY':'DAILY'} OWNER REPORT</h2></div><div style="text-align:right;font-size:11px"><b>${monthly?'Month':'Date'}</b><br>${ownerEscape(period)}<br>Currency: SAR</div></div><div class="meta">Report ID: OWN-${ownerEscape(period)} · ${monthly?rows.length+' saved days':'Daily statement · Form figures'} </div>`;
-  return `<div class="owner-document"><style>${css}.owner-document td,.owner-document p,.owner-document span{color:#24313d!important}.owner-document th{color:#512635!important}.owner-document{color-scheme:only light}</style>${header}${ownerMonthClosingHTML(rows)}</div>`;
+  return `<div class="owner-document"><style>${css}.owner-document td,.owner-document p,.owner-document span{color:#24313d!important}.owner-document th{color:#512635!important}.owner-document{color-scheme:only light;max-width:100%}.owner-document .head{flex-wrap:wrap}.owner-document th:last-child,.owner-document td:last-child{white-space:nowrap}.owner-document .head>div:last-child{font-size:10px!important}</style>${header}${ownerCompactDayTableHTML(rows)}${ownerMonthClosingHTML(rows)}</div>`;
 
 }
 function showOwnerDocument(rows,period,monthly){
   if(monthly)ownerPDFSnapshot={month:period,rows:JSON.parse(JSON.stringify(rows))};
   document.getElementById('pdf-report-content').innerHTML=buildOwnerDocument(rows,period,monthly);
-  if(monthly) document.querySelector('#pdf-report-content .owner-document').style.minWidth='620px';
+  document.querySelector('#pdf-report-content .owner-document').style.minWidth='0';
   document.getElementById('pdf-report-content').style.overflow=monthly?'auto':'';
   document.getElementById('pdf-report-content').dataset.ownerFilename=`Owner-${monthly?'Monthly':'Daily'}-${period}.pdf`;
   reportTextForShare=`${appSettings.shopName}\n${monthly?'Monthly':'Daily'} Owner Report: ${period}\nGross sale: ${ownerMoney(rows.reduce((n,r)=>n+Number(r.sale||0),0))} SAR\nFinal cash: ${ownerMoney(rows.reduce((n,r)=>n+Number(r.totalCash||0),0))} SAR`;
@@ -1816,7 +1819,21 @@ function buildOwnerMonthlyPDF(jsPDF,rows,month,shopName){
     text(section,14,42,11,true);text('All amounts in SAR',196,42,8,false,'right');
   }
   function newPage(section){pdf.addPage();header(section);}
-  header('Monthly shop summary');
+  header('Daily statement - one line per date');
+  const columns=[14,46,78,106,136,166,196];
+  const names=['Date','Sale','ATM','Expenses','Additions','Final Cash'];
+  function tableHead(y){
+    pdf.setFillColor(240,233,236);pdf.rect(14,y-5,182,8,'F');
+    names.forEach((name,i)=>text(name,i?columns[i+1]-2:16,y,8,true,i?'right':'left'));
+  }
+  let tableY=54;tableHead(tableY);tableY+=9;
+  rows.forEach(r=>{
+    if(tableY>270){newPage('Daily statement - continued');tableY=54;tableHead(tableY);tableY+=9;}
+    const d=ownerStepData(r),values=[r.date,Number(r.sale||0),Number(r.atm||0),d.expenses,d.additions,d.final];
+    values.forEach((value,i)=>text(i?money(value):value,i?columns[i+1]-2:16,tableY,8,false,i?'right':'left'));
+    pdf.setDrawColor(224,227,229);pdf.line(14,tableY+3,196,tableY+3);tableY+=6.5;
+  });
+  newPage('Monthly shop summary');
   const closing=ownerMonthClosing(rows);
   text(`${rows.length} saved days | Period: ${month}`,14,50,9);
   let endY=60;
@@ -5767,6 +5784,7 @@ function removeWebsiteOwnerImage(){
 </style>
 </body>
 </html>
+
 
 
 
