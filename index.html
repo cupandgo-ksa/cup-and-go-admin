@@ -998,9 +998,9 @@ input,select,textarea{max-width:100%;}
       <button class="btn" style="padding:4px 10px; border-radius:10px;" onclick="closeModal('modal-owner-monthly'); openModal('modal-owner');">✕</button>
     </div>
     <div class="modal-body">
-      <input type="month" id="owner-month-filter" onchange="renderMonthlyOwnerReport()" style="width:100%; padding:10px; border-radius:12px; background:rgba(255,255,255,0.08); border:1px solid var(--glass-border); color:#fff; font-weight:bold; margin-bottom:15px;">
+      <input type="month" id="owner-month-filter" onchange="loadMonthlyOwnerReport()" style="width:100%; padding:10px; border-radius:12px; background:rgba(255,255,255,0.08); border:1px solid var(--glass-border); color:#fff; font-weight:bold; margin-bottom:15px;">
       
-            <div id="owner-monthly-result" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; font-size:13px; line-height:1.8;">
+            <div id="owner-archive-status" style="font-size:12px;margin-bottom:12px;color:var(--muted);" role="status"></div><div id="owner-monthly-result" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; font-size:13px; line-height:1.8;">
          Select a month to view totals.
       </div>
       <div class="cng-owner-archive-head">
@@ -1239,7 +1239,7 @@ input,select,textarea{max-width:100%;}
 
 <div id="order-detail-modal" class="modal"><div class="modal-box" style="max-width:350px;"><div class="modal-body" style="padding:15px; color:#000;"><div class="invoice-wrap" id="receipt-content"><div style="text-align:center;margin-bottom:12px;"><h3 class="dyn-shopname" style="font-size:18px;font-weight:900;text-transform:uppercase;margin:0;">Cup And Go</h3><p style="font-size:10px;line-height:1.4;margin:4px 0;">Hafar Al Batin - Saudi Arabia<br>0554998306</p><p style="font-size:12px;font-weight:bold;margin-top:8px;border-top:1px solid #000;padding-top:5px;">Simplified Tax Invoice</p></div><div style="border-bottom:1px dashed #000;padding-bottom:8px;margin-bottom:10px;font-size:11px;line-height:1.6;"><div style="display:flex;justify-content:space-between;"><span>Inv: <b id="rcpt-inv"></b></span></div><div style="display:flex;justify-content:space-between;"><span>Date: <span id="rcpt-date"></span></span></div><div style="display:flex;justify-content:space-between;"><span>Cashier: <span id="rcpt-cashier-print"></span></span></div></div><table style="width:100%;font-size:11px;margin-bottom:10px;border-bottom:1px solid #000;"><thead><tr style="border-bottom:1px solid #000;"><th style="padding:4px 0;color:#000;">Item</th><th style="text-align:center;color:#000;">Qty</th><th style="text-align:right;color:#000;">Amt</th></tr></thead><tbody id="rcpt-items"></tbody></table><div style="font-size:11px;font-weight:bold;display:flex;justify-content:space-between;padding:5px 0;"><span>Total:</span><span><span id="rcpt-due" style="font-size:14px;"></span> <span class="dyn-currency" style="font-size:9px;">SR</span></span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:4px;color:#333;"><span id="rcpt-cash-paid">CASH: 0.00</span><span id="rcpt-card-paid">CARD: 0.00</span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:4px;color:#333;"><span id="rcpt-change">METHOD: </span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:6px;border-top:1px dashed #000;padding-top:4px;"><span>💰 Paid:</span><span id="rcpt-paid">0.00</span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:6px;color:var(--green);"><span>🔄 Return:</span><span id="rcpt-return">0.00</span></div><div style="text-align:center; margin-top:10px; font-size:16px; letter-spacing:3px;">|||||| ||||| |||||||</div><div style="text-align:center; margin-top:15px; padding-top:10px; border-top:1px dashed #000;"><p style="font-size:12px; font-weight:bold; margin-bottom:4px; margin-top:0;">Thank you!</p></div></div></div><div class="modal-footer"><button class="btn btn-primary" style="flex:1;font-size:12px;" onclick="printContent('receipt-content')">🖨️ Print</button><button class="btn btn-success" style="flex:1;font-size:12px;" onclick="shareTextReceipt()">📤 Share</button><button class="btn" style="flex:1;background:rgba(229,193,88,0.2);color:#B89730;font-size:12px;" onclick="downloadReceiptPDF()">📥 PDF</button><button class="btn" style="flex:1;background:rgba(255,255,255,0.1);color:var(--text);font-size:12px;" onclick="closeModal('order-detail-modal')">Close</button></div></div></div>
 
-<div id="report-preview-modal" class="modal"><div class="modal-box" style="max-width:400px; width:95%;"><div class="modal-body" style="background:var(--brand-bg); padding:15px;"><div id="pdf-report-content" style="background:#fff; color:#000; font-family:monospace; font-size:12px; line-height:1.5; width:100%; padding:15px; border-radius:12px;"></div></div><div class="modal-footer"><button class="btn btn-primary" style="flex:1;font-size:12px;" onclick="printContent('pdf-report-content')">🖨️ Print</button><button class="btn btn-success" style="flex:1;font-size:12px;" onclick="shareTextReport()">📤 Share</button><button class="btn" style="flex:1;background:rgba(229,193,88,0.2);color:var(--orange);font-size:12px;" onclick="executeReportDownload()">📥 PDF</button><button class="btn" style="flex:1;background:rgba(255,255,255,0.1);color:var(--text);font-size:12px;" onclick="closeModal('report-preview-modal')">Close</button></div></div></div>
+<div id="report-preview-modal" class="modal"><div class="modal-box" style="max-width:400px; width:95%;"><div class="modal-body" style="background:var(--brand-bg); padding:15px;"><div id="pdf-report-content" style="background:#fff; color:#000; font-family:Arial,sans-serif; font-size:12px; line-height:1.5; width:100%; padding:0; overflow:auto; border-radius:12px;"></div></div><div class="modal-footer"><button class="btn btn-primary" style="flex:1;font-size:12px;" onclick="printContent('pdf-report-content')">🖨️ Print</button><button class="btn btn-success" style="flex:1;font-size:12px;" onclick="shareTextReport()">📤 Share</button><button class="btn" style="flex:1;background:rgba(229,193,88,0.2);color:var(--orange);font-size:12px;" onclick="executeReportDownload()">📥 PDF</button><button class="btn" style="flex:1;background:rgba(255,255,255,0.1);color:var(--text);font-size:12px;" onclick="closeModal('report-preview-modal')">Close</button></div></div></div>
 
 <script>
 // ======= FIREBASE CONFIG =======
@@ -1473,7 +1473,8 @@ let heldOrders = JSON.parse(localStorage.getItem('cng_held')) || [];
 let stockItemHeaders = JSON.parse(localStorage.getItem('cng_stock_items')) || ["Brownies", "Marshmallow", "Crunchy Caramel", "Brownies Caramel", "Cookies New York", "Magic Bar", "Chocolate", "Tiramisu", "Pake Cream Caramel"];
 let stockRecords = JSON.parse(localStorage.getItem('cng_stock_records')) || {};
 let freeItems = JSON.parse(localStorage.getItem('cng_free_items')) || [];
-let ownerReports = JSON.parse(localStorage.getItem('cng_owner_reports')) || [];
+let ownerReports = [];
+try { ownerReports = JSON.parse(localStorage.getItem('cng_owner_reports') || '[]') || []; } catch(e) {}
 
 // ======= LED MATRIX SETTINGS =======
 let ledMatrixSettings = JSON.parse(localStorage.getItem('cng_led_matrix')) || {
@@ -1609,6 +1610,164 @@ function cngBranchLoaded(branch){
 db.ref('/settings').on('value',s=>{if(s.val()){appSettings={...appSettings,...s.val()};try{localStorage.setItem('cng_settings',JSON.stringify(appSettings));}catch(e){}applySettingsToUI();}cngBranchLoaded('settings');},()=>updateSyncStatus('offline'));
 db.ref('/products').on('value',s=>{products=parseFirebaseArray(s.val());try{localStorage.setItem('cng_products',JSON.stringify(products));}catch(e){}initUI();updateCart();cngBranchLoaded('products');},()=>updateSyncStatus('offline'));
 db.ref('/ledMatrix').on('value',s=>{if(s.val())ledMatrixSettings=s.val();updateLedMatrix();cngBranchLoaded('ledMatrix');},()=>updateSyncStatus('offline'));
+
+// Persistent per-date archive; no retention cutoff or array overwrite.
+const ownerValidDate=d=>/^\d{4}-\d{2}-\d{2}$/.test(String(d||''));
+const ownerToday=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Riyadh',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+const ownerArchiveDB=new Promise((resolve,reject)=>{
+  const q=indexedDB.open('cng-owner-archive',1);
+  q.onupgradeneeded=()=>{['reports','pending'].forEach(n=>q.result.createObjectStore(n,{keyPath:'date'}));};
+  q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);
+});
+ownerArchiveDB.catch(()=>{});
+async function ownerStore(store,method,value){
+  const database=await ownerArchiveDB;
+  return new Promise((resolve,reject)=>{
+    const tx=database.transaction(store,['put','delete'].includes(method)?'readwrite':'readonly');
+    const q=tx.objectStore(store)[method](value);let result;
+    q.onsuccess=()=>result=q.result;
+    tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('Storage interrupted'));
+  });
+}
+async function ownerRemovePending(r){
+  const database=await ownerArchiveDB;
+  return new Promise((resolve,reject)=>{
+    const tx=database.transaction('pending','readwrite');const store=tx.objectStore('pending');let removed=false;
+    const q=store.get(r.date);
+    q.onsuccess=()=>{if(JSON.stringify(q.result)===JSON.stringify(r)){store.delete(r.date);removed=true;}};
+    tx.oncomplete=()=>resolve(removed);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);
+  });
+}
+function cacheOwnerReports(){
+  // Only a small compatibility cache. Full history lives in the date archive.
+  try{localStorage.setItem('cng_owner_reports',JSON.stringify(ownerReports.slice(-62)));}catch(e){}
+}
+function mergeOwnerReports(rows){
+  const all=new Map(ownerReports.filter(r=>r&&ownerValidDate(r.date)).map(r=>[r.date,r]));
+  rows.filter(r=>r&&ownerValidDate(r.date)).forEach(r=>all.set(r.date,r));
+  ownerReports=Array.from(all.values()).sort((a,b)=>a.date.localeCompare(b.date));
+  cacheOwnerReports();
+}
+let ownerFlushTask=null;
+async function flushOwnerReports(){
+  if(!navigator.onLine || !cngCloudAuthorized) return false;
+  if(ownerFlushTask) return ownerFlushTask;
+  ownerFlushTask=(async()=>{
+    try{
+      let rows=await ownerStore('pending','getAll');
+      while(rows.length){
+        for(const r of rows){
+          const result=await db.ref('/ownerReportsByDate/'+r.date).transaction(current=>{
+            if(current && Number(current.updatedAt||current.timestamp||0)>Number(r.updatedAt||r.timestamp||0)) return;
+            return r;
+          });
+          const actual=result.snapshot.val()||r;
+          // Do not erase a new edit made while the old upload was running.
+          const removed=await ownerRemovePending(r);
+          if(removed){
+            await ownerStore('reports','put',actual);mergeOwnerReports([actual]);
+          }
+        }
+        rows=await ownerStore('pending','getAll');
+      }
+      return true;
+    }catch(e){console.warn('Owner report upload pending',e);return false;}
+  })();
+  try{return await ownerFlushTask;}finally{ownerFlushTask=null;}
+}
+// Preserve existing local reports first; migrate legacy rows without replacing cloud days.
+const ownerOriginalRows=ownerReports.filter(r=>r&&ownerValidDate(r.date));
+const ownerLocalMigration=Promise.all(ownerReports.filter(r=>r&&ownerValidDate(r.date)).map(async r=>{
+  const existing=await ownerStore('reports','get',r.date);
+  if(!existing) await ownerStore('reports','put',r);
+}));
+ownerLocalMigration.catch(()=>{});
+let ownerLegacyRead=null;
+const ownerLegacyMonths=new Map();
+async function migrateOwnerLegacy(month='all'){
+  if(!ownerLegacyRead) ownerLegacyRead=(async()=>{
+    await ownerLocalMigration;
+    const legacy=await db.ref('/ownerReports').once('value');
+    return [...parseFirebaseArray(legacy.val()),...ownerOriginalRows];
+  })().catch(e=>{ownerLegacyRead=null;throw e;});
+  if(!ownerLegacyMonths.has(month)) ownerLegacyMonths.set(month,(async()=>{
+    const rows=await ownerLegacyRead;
+    for(const r of rows){
+      if(!r || !ownerValidDate(r.date) || month!=='all' && !r.date.startsWith(month)) continue;
+      await db.ref('/ownerReportsByDate/'+r.date).transaction(current=>current || r);
+    }
+  })().catch(e=>{ownerLegacyMonths.delete(month);throw e;}));
+  return ownerLegacyMonths.get(month);
+}
+let ownerMonthRequest=0;
+let ownerCompleteMonth='';
+async function loadMonthlyOwnerReport(){
+  const month=document.getElementById('owner-month-filter').value;
+  if(!/^\d{4}-\d{2}$/.test(month))return false;
+  const request=++ownerMonthRequest;
+  ownerCompleteMonth='';
+  const status=document.getElementById('owner-archive-status');
+  if(status)status.textContent='Loading saved reports…';
+  try{
+    await ownerLocalMigration;
+    const range=IDBKeyRange.bound(month+'-01',month+'-31');
+    const cached=await ownerStore('reports','getAll',range);
+    const pending=await ownerStore('pending','getAll',range);
+    mergeOwnerReports([...cached,...pending]);
+    if(!navigator.onLine || !cngCloudAuthorized)throw Error('Connect and sign in to load the complete month. Device copies are shown below.');
+    await migrateOwnerLegacy(month);
+    if(!await flushOwnerReports())throw Error('Some reports are waiting to upload. Retry before exporting.');
+    const snapshot=await db.ref('/ownerReportsByDate').orderByKey().startAt(month+'-01').endAt(month+'-31').once('value');
+    const rows=[];snapshot.forEach(child=>{if(ownerValidDate(child.key))rows.push({...child.val(),date:child.key});});
+    // Pending edits retain priority over an older read.
+    const unsynced=await ownerStore('pending','getAll',range);
+    const merged=new Map(rows.map(r=>[r.date,r]));unsynced.forEach(r=>merged.set(r.date,r));
+    await Promise.all(Array.from(merged.values()).map(r=>ownerStore('reports','put',r)));
+    mergeOwnerReports(Array.from(merged.values()));
+    if(request!==ownerMonthRequest || document.getElementById('owner-month-filter').value!==month)return false;
+    ownerCompleteMonth=unsynced.length?'':month;
+    status.textContent=unsynced.length?'New edits are waiting to upload. Reload before exporting.':`Cloud archive loaded: ${month}. No automatic deletion of old reports.`;
+    renderMonthlyOwnerReport();return ownerCompleteMonth===month;
+  }catch(e){
+    if(request===ownerMonthRequest){if(status)status.textContent=e.message||'Cloud unavailable. Device copies shown; month may be incomplete.';renderMonthlyOwnerReport();}
+    return false;
+  }
+}
+window.addEventListener('online',()=>flushOwnerReports());
+cngAuth.onAuthStateChanged(user=>{if(cngIsAdminAuthUser(user))setTimeout(()=>flushOwnerReports(),0);});
+
+const ownerEscape=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ownerMoney=n=>Number(n||0).toFixed(2);
+function buildOwnerDocument(rows,period,monthly){
+  const sum=k=>rows.reduce((n,r)=>n+Number(r[k]||0),0);
+  const detail=[['Water','water'],['Lemon','lemon'],['Nana','nana'],['Extra sales','more'],['Plastic cups','plastic'],['Small cups','cupSmall'],['Big cups','cupBig']];
+  const css=`.owner-document{font-family:Arial,sans-serif;color:#24313d;background:#fff;line-height:1.45;font-size:12px;padding:24px;box-sizing:border-box;text-align:left;direction:ltr}.owner-document *{box-sizing:border-box}.owner-document h1{font-size:27px;margin:0;color:#512635}.owner-document h2{font-size:14px;letter-spacing:1px;margin:5px 0 0}.owner-document h3{font-size:13px;margin:20px 0 8px}.owner-document .head{border-bottom:3px solid #512635;padding-bottom:15px;display:flex;justify-content:space-between;gap:12px}.owner-document .meta{font-size:11px;color:#65727c;margin-top:12px}.owner-document table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}.owner-document th{background:#f0e9ec;color:#512635}.owner-document th,.owner-document td{padding:7px 5px;border-bottom:1px solid #dfe3e6;text-align:right;overflow-wrap:anywhere}.owner-document th:first-child,.owner-document td:first-child{text-align:left}.owner-document tr{break-inside:avoid;page-break-inside:avoid}.owner-document thead{display:table-header-group}.owner-document .total{padding:13px;background:#f0e9ec;margin-top:14px;border-left:4px solid #512635;display:flex;justify-content:space-between;font-size:16px;font-weight:bold;break-inside:avoid}.owner-document .note{font-size:10px;color:#65727c;margin:10px 0}.owner-document .signatures{display:flex;justify-content:space-between;gap:24px;margin-top:32px;break-inside:avoid}.owner-document .signature{width:44%;border-top:1px solid #87909a;padding-top:8px;font-size:11px}.owner-document footer{margin-top:22px;border-top:1px solid #dfe3e6;padding-top:8px;font-size:9px;color:#65727c}`;
+  const header=`<div class="head"><div><h1>${ownerEscape(appSettings.shopName)}</h1><h2>${monthly?'MONTHLY':'DAILY'} OWNER REPORT</h2></div><div style="text-align:right;font-size:11px"><b>${monthly?'Month':'Date'}</b><br>${ownerEscape(period)}<br>Currency: SAR</div></div><div class="meta">Report ID: OWN-${ownerEscape(period)} · ${monthly?rows.length+' saved days':'Daily statement · Form figures'} </div>`;
+  const dailyTable=monthly?`<h3>Daily statement</h3><table><thead><tr>${['Date','Sale','ATM','Expenses','Additions','Final cash'].map(t=>`<th>${t}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr><td>${ownerEscape(r.date)}</td>${['sale','atm','totalExp'].map(k=>`<td>${ownerMoney(r[k])}</td>`).join('')}<td>${ownerMoney(Number(r.more||0)+Number(r.plastic||0)+Number(r.cupSmall||0)+Number(r.cupBig||0))}</td><td><b>${ownerMoney(r.totalCash)}</b></td></tr>`).join('')}<tr style="font-weight:bold;background:#f7f8f9"><td>Total</td><td>${ownerMoney(sum('sale'))}</td><td>${ownerMoney(sum('atm'))}</td><td>${ownerMoney(sum('totalExp'))}</td><td>${ownerMoney(sum('more')+sum('plastic')+sum('cupSmall')+sum('cupBig'))}</td><td>${ownerMoney(sum('totalCash'))}</td></tr></tbody></table>`:'';
+  const summary=[['Gross sales',sum('sale')],['ATM / card payments',sum('atm')],['Total expenses',sum('totalExp')],['Cash after expenses',sum('sale')-sum('atm')-sum('totalExp')],['Total additions',sum('more')+sum('plastic')+sum('cupSmall')+sum('cupBig')]];
+  return `<div class="owner-document"><style>${css}</style>${header}${dailyTable}<h3>Financial summary</h3><table><thead><tr><th>Description</th><th>Amount (SAR)</th></tr></thead><tbody>${summary.map(([t,n])=>`<tr><td>${t}</td><td>${ownerMoney(n)}</td></tr>`).join('')}</tbody></table><h3>Expense and addition breakdown</h3><table><tbody>${detail.map(([t,k])=>`<tr><td>${t}</td><td>${ownerMoney(sum(k))}</td></tr>`).join('')}</tbody></table><div class="total"><span>FINAL CASH IN HAND</span><span>${ownerMoney(sum('totalCash'))} SAR</span></div><p class="note">Final cash = Sales − ATM − Expenses + Extra sales + Plastic cups + Small cups + Big cups.</p><div class="signatures"><div class="signature">Prepared by / Signature</div><div class="signature">Owner approval / Signature</div></div><footer>${ownerEscape(appSettings.shopName)} · Owner financial statement · ${monthly?'Includes saved daily reports only. Missing days are not treated as zero.':'Verify and save daily figures to archive this report.'}</footer></div>`;
+}
+function showOwnerDocument(rows,period,monthly){
+  document.getElementById('pdf-report-content').innerHTML=buildOwnerDocument(rows,period,monthly);
+  if(monthly) document.querySelector('#pdf-report-content .owner-document').style.minWidth='620px';
+  document.getElementById('pdf-report-content').dataset.ownerFilename=`Owner-${monthly?'Monthly':'Daily'}-${period}.pdf`;
+  reportTextForShare=`${appSettings.shopName}\n${monthly?'Monthly':'Daily'} Owner Report: ${period}\nGross sale: ${ownerMoney(rows.reduce((n,r)=>n+Number(r.sale||0),0))} SAR\nFinal cash: ${ownerMoney(rows.reduce((n,r)=>n+Number(r.totalCash||0),0))} SAR`;
+  openModal('report-preview-modal');
+}
+async function downloadOwnerDocument(){
+  if(typeof html2pdf!=='function')return showToast('PDF service unavailable. Use Print to save as PDF.');
+  const source=document.getElementById('pdf-report-content');
+  const staging=document.createElement('div');
+  staging.style.cssText='width:718px;background:#fff;';
+  const host=document.createElement('div');host.style.cssText='position:absolute;left:-10000px;top:0;';
+  staging.innerHTML=source.innerHTML;host.appendChild(staging);document.body.appendChild(host);
+  try{
+    await html2pdf().set({margin:[12,10,12,10],filename:source.dataset.ownerFilename||'Owner-Report.pdf',image:{type:'jpeg',quality:.97},html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff',windowWidth:800},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['css','legacy'],avoid:['tr','.head','.total','.signatures']}}).from(staging).toPdf().get('pdf').then(pdf=>{
+      const count=pdf.internal.getNumberOfPages();
+      for(let i=1;i<=count;i++){pdf.setPage(i);pdf.setFontSize(8);pdf.setTextColor(100);pdf.text(`Page ${i} of ${count}`,190,290,{align:'right'});}
+    }).save();
+  }catch(e){console.error(e);showToast('PDF download failed. Try Print / Save as PDF.');}finally{host.remove();}
+}
 
 // ===== OWNER REPORT PERMANENT DAILY ARCHIVE =====
 // Canonical cloud path: /ownerReportsByDate/YYYY-MM-DD
@@ -1796,7 +1955,7 @@ function printContent(elementId) {
       html,body{background:#fff!important;color:#000!important}
       body{font-family:Arial,"Courier New",monospace;margin:0;padding:10px}
       *{box-sizing:border-box;direction:ltr!important}
-      .print-shell{max-width:420px;margin:0 auto}
+      .print-shell{max-width:420px;margin:0 auto}.print-shell:has(.owner-document){max-width:none}@page{size:A4 portrait}tr{break-inside:avoid}thead{display:table-header-group}
       img{max-width:100%}
       button{display:none!important}
     </style>
@@ -1854,7 +2013,8 @@ window.downloadReceiptPDF = function() {
   html2pdf().set(opt).from(el).save(); 
 }
 
-window.executeReportDownload = function() { 
+window.executeReportDownload = function() {
+  if(document.querySelector('#pdf-report-content .owner-document')) return downloadOwnerDocument(); 
   let el = document.getElementById('pdf-report-content'); 
   let opt = {
     margin: 0.2,
@@ -2216,15 +2376,13 @@ function copyOwnerReport() {
 }
 
 function generateOwnerPDF() {
-  let report = generateOwnerReportHTML();
-  let html = `<div style="font-family:'Courier New',monospace;background:#fff;color:#000;padding:15px 20px;max-width:450px;margin:auto;line-height:1.6;font-size:13px;white-space:pre-wrap;">${report}</div>`;
-  document.getElementById('pdf-report-content').innerHTML = html;
-  reportTextForShare = report;
-  openModal('report-preview-modal');
+  const date=document.getElementById('ow-date').value || ownerToday();
+  const r={...calcOwnerReport(),date};
+  showOwnerDocument([r],date,false);
 }
 
 // ======= SAVE & MONTHLY OWNER REPORT FUNCTIONS =======
-function saveOwnerReport() {
+async function saveOwnerReport() {
   let d = document.getElementById('ow-date').value;
   if (!d) {
     const now = new Date();
@@ -2253,36 +2411,20 @@ function saveOwnerReport() {
     timestamp: Date.now()
   };
 
-  const idx = ownerReports.findIndex(r => r && r.date === d);
-  if(idx >= 0) ownerReports[idx] = reportData;
-  else ownerReports.push(reportData);
-
-  ownerReports.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
-  localStorage.setItem('cng_owner_reports', JSON.stringify(ownerReports));
-
-  const note=document.getElementById('cng-owner-saved-note');
-  if(note){
-    note.textContent=`✅ Saved report for ${d}. You can open it again anytime.`;
-    note.classList.add('show');
-  }
-
-  if(navigator.onLine) {
-    // Save this exact date independently so previous days can never be replaced.
-    db.ref('/ownerReportsByDate/' + d).set(reportData)
-      .then(() => db.ref('/ownerReports').set(ownerReports))
-      .then(() => {
-        updateSyncStatus('synced');
-        showToast("✅ Daily Owner Report Saved!");
-      })
-      .catch(err => {
-        console.log('Owner report save error:',err);
-        showToast("⚠️ Saved on this device. Cloud sync pending.");
-      });
-  } else {
-    showToast("📴 Saved on this device. Will sync when online.");
+  try {
+    await ownerStore('pending', 'put', reportData);
+    await ownerStore('reports', 'put', reportData);
+    mergeOwnerReports([reportData]);
+    const note=document.getElementById('cng-owner-saved-note');
+    if(note){note.textContent=`Saved on this device: ${d}. Cloud upload pending.`;note.classList.add('show');}
+    const synced=await flushOwnerReports();
+    if(note && synced) note.textContent=`Cloud saved: ${d}. Available on your other devices.`;
+    showToast(synced ? '✅ Daily report saved to cloud' : '📴 Saved on this device. Cloud upload pending.');
+  } catch(err) {
+    console.error(err);
+    showToast('❌ Report was not saved. Device storage unavailable; keep this form open and retry.');
   }
 }
-
 
 function setOwnerReportFields(r) {
   const map = {
@@ -2296,41 +2438,31 @@ function setOwnerReportFields(r) {
   calcOwnerReport();
 }
 
-function loadOwnerReportByDate(date) {
-  if(!date) return;
-  const local = ownerReports.find(r => r && r.date === date);
+let ownerDateRequest=0;
+async function loadOwnerReportByDate(date) {
+  if(!ownerValidDate(date)) return;
+  const request=++ownerDateRequest;
+  let r=ownerReports.find(x=>x.date===date);
+  setOwnerReportFields(r);
   const note=document.getElementById('cng-owner-saved-note');
-
-  if(local) {
-    setOwnerReportFields(local);
-    if(note){
-      note.textContent=`📂 Saved report loaded: ${date}`;
-      note.classList.add('show');
+  if(note){note.textContent=r ? `Saved report: ${date}` : `Checking saved report: ${date}`;note.classList.add('show');}
+  const fieldIds=['ow-sale','ow-atm','ow-water','ow-lemon','ow-nana','ow-more','ow-plastic','ow-cup-big','ow-cup-small'];
+  const signature=()=>fieldIds.map(id=>document.getElementById(id).value).join('|');
+  const initial=signature();
+  try {
+    const cached=await ownerStore('reports','get',date);
+    const pending=await ownerStore('pending','get',date);
+    r=pending||cached||r;
+    if(navigator.onLine && cngCloudAuthorized){
+      await migrateOwnerLegacy(date.slice(0,7));
+      const snap=await db.ref('/ownerReportsByDate/'+date).once('value');
+      r=pending||snap.val()||r;
     }
-  } else {
-    setOwnerReportFields(null);
-    if(note){
-      note.textContent=`🆕 No saved report for ${date}. Enter today's figures and tap Save Daily.`;
-      note.classList.add('show');
-    }
-  }
-
-  if(navigator.onLine) {
-    db.ref('/ownerReportsByDate/' + date).once('value').then(s => {
-      const r=s.val();
-      if(!r) return;
-      const idx=ownerReports.findIndex(x=>x&&x.date===date);
-      if(idx>=0) ownerReports[idx]={...r,date};
-      else ownerReports.push({...r,date});
-      ownerReports.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
-      localStorage.setItem('cng_owner_reports',JSON.stringify(ownerReports));
-      setOwnerReportFields({...r,date});
-      if(note){
-        note.textContent=`☁️ Cloud report loaded: ${date}`;
-        note.classList.add('show');
-      }
-    }).catch(()=>{});
-  }
+    if(r){mergeOwnerReports([r]);await ownerStore('reports','put',r);}
+    if(request!==ownerDateRequest || document.getElementById('ow-date').value!==date || signature()!==initial) return;
+    setOwnerReportFields(r);
+    if(note) note.textContent=r ? `Saved report loaded: ${date}` : `No saved report for ${date}. Enter figures and tap Save Daily.`;
+  } catch(e) {if(request===ownerDateRequest && note)note.textContent='Cloud unavailable. Showing device copy; retry when connected.';}
 }
 
 function openSavedOwnerReport(date) {
@@ -2346,7 +2478,7 @@ function viewMonthlyOwnerReport() {
    let now = new Date();
    let monthStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
    document.getElementById('owner-month-filter').value = monthStr;
-   renderMonthlyOwnerReport();
+   loadMonthlyOwnerReport();
    setTimeout(() => openModal('modal-owner-monthly'), 200);
 }
 
@@ -2418,7 +2550,8 @@ function getMonthlyOwnerData() {
           filtered:filtered.sort((a,b)=>String(a.date).localeCompare(String(b.date)))};
 }
 
-function sendMonthlyOwnerWhatsApp() {
+async function sendMonthlyOwnerWhatsApp() {
+  if(!await loadMonthlyOwnerReport()) return showToast('Connect and load the complete month before sharing.');
   if(!appSettings.ownerPhone) return showToast("❌ Add Owner WhatsApp in Settings!");
   let data = getMonthlyOwnerData();
   if(!data || data.count === 0) return showToast("No data for this month!");
@@ -2428,47 +2561,11 @@ function sendMonthlyOwnerWhatsApp() {
   window.open("https://wa.me/" + appSettings.ownerPhone + "?text=" + encodeURIComponent(txt), '_blank');
 }
 
-function generateMonthlyOwnerPDF() {
-  const data = getMonthlyOwnerData();
-  if(!data || data.count === 0) return showToast("No data for this month!");
-
-  const rows = data.filtered.map(r => `
-    <tr style="border-bottom:1px solid #ddd;">
-      <td style="padding:6px 3px;">${r.date}</td>
-      <td style="padding:6px 3px;text-align:right;">${Number(r.sale||0).toFixed(2)}</td>
-      <td style="padding:6px 3px;text-align:right;">${Number(r.totalExp||0).toFixed(2)}</td>
-      <td style="padding:6px 3px;text-align:right;font-weight:bold;">${Number(r.totalCash||0).toFixed(2)}</td>
-    </tr>`).join('');
-
-  const html = `
-  <div style="font-family:'Courier New',monospace;background:#fff;color:#000;padding:18px;max-width:520px;margin:auto;border:2px solid #000;border-radius:12px;">
-    <div style="text-align:center;margin-bottom:12px;">
-      <h2 style="margin:0;font-size:24px;text-transform:uppercase;">${appSettings.shopName}</h2>
-      <p style="margin:5px 0;font-size:12px;font-weight:bold;">📊 MONTHLY OWNER REPORT</p>
-      <p style="margin:5px 0;font-size:13px;">Month: ${data.month}</p>
-    </div>
-    <table style="width:100%;font-size:11px;border-collapse:collapse;margin-bottom:14px;">
-      <thead><tr style="border-top:2px solid #000;border-bottom:2px solid #000;">
-        <th style="padding:6px 3px;text-align:left;">Date</th>
-        <th style="padding:6px 3px;text-align:right;">Sale</th>
-        <th style="padding:6px 3px;text-align:right;">Exp.</th>
-        <th style="padding:6px 3px;text-align:right;">Cash</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-    <table style="width:100%;font-size:13px;border-collapse:collapse;">
-      <tr><td>Gross Sale</td><td style="text-align:right;font-weight:bold;">${data.tSale.toFixed(2)} SR</td></tr>
-      <tr><td>Total ATM</td><td style="text-align:right;font-weight:bold;">${data.tAtm.toFixed(2)} SR</td></tr>
-      <tr><td>Total Expenses</td><td style="text-align:right;font-weight:bold;">${data.tExp.toFixed(2)} SR</td></tr>
-      <tr><td>More</td><td style="text-align:right;font-weight:bold;">${data.tMore.toFixed(2)} SR</td></tr>
-      <tr style="border-top:2px dashed #000;"><td style="padding-top:8px;font-weight:900;">TOTAL CASH</td><td style="padding-top:8px;text-align:right;font-size:16px;font-weight:900;">${data.tCash.toFixed(2)} SR</td></tr>
-    </table>
-    <div style="text-align:center;margin-top:12px;font-size:10px;color:#555;">Generated from ${data.count} saved daily reports.</div>
-  </div>`;
-
-  document.getElementById('pdf-report-content').innerHTML = html;
-  reportTextForShare = `Monthly Owner Report ${data.month}: ${data.tCash.toFixed(2)} SR cash from ${data.count} daily reports.`;
-  openModal('report-preview-modal');
+async function generateMonthlyOwnerPDF() {
+  if(!await loadMonthlyOwnerReport()) return showToast('Connect and load the complete month before exporting.');
+  const data=getMonthlyOwnerData();
+  if(!data || !data.count) return showToast('No saved reports for this month.');
+  showOwnerDocument(data.filtered,data.month,true);
 }
 
 // ======= RETURN CALCULATION =======
@@ -3653,7 +3750,7 @@ function saveData() {
   localStorage.setItem('cng_stock_items',JSON.stringify(stockItemHeaders));
   localStorage.setItem('cng_stock_records',JSON.stringify(stockRecords));
   localStorage.setItem('cng_free_items',JSON.stringify(freeItems));
-  localStorage.setItem('cng_owner_reports',JSON.stringify(ownerReports));
+  cacheOwnerReports();
     
   if(navigator.onLine) {
     syncAllDataToFirebase();
@@ -3661,10 +3758,22 @@ function saveData() {
 }
 
 // ======= BACKUP & RESTORE =======
-function backupAllData() {
+async function backupAllData() {
+  try {
+    await ownerLocalMigration;
+    const archive=await ownerStore('reports','getAll');
+    mergeOwnerReports(archive);
+    if(navigator.onLine && cngCloudAuthorized){
+      await migrateOwnerLegacy();await flushOwnerReports();
+      const snapshot=await db.ref('/ownerReportsByDate').once('value');
+      const rows=[];snapshot.forEach(child=>{if(ownerValidDate(child.key))rows.push({...child.val(),date:child.key});});
+      mergeOwnerReports([...rows,...await ownerStore('pending','getAll')]);
+    }
+  } catch(e){return showToast('Could not load the report archive for backup. Retry when connected.');}
+
   let imageVault=[];
   try{ imageVault=JSON.parse(localStorage.getItem(IMAGE_VAULT_KEY)||'[]')||[]; }catch(e){}
-  let data={settings:appSettings,products:products,imageVault:imageVault,orders:orders,history:history30Days,dueKhata:dueKhata,stockItemHeaders:stockItemHeaders,stockRecords:stockRecords,freeItems:freeItems,backupDate:new Date().toISOString()};
+  let data={settings:appSettings,products:products,imageVault:imageVault,orders:orders,history:history30Days,dueKhata:dueKhata,stockItemHeaders:stockItemHeaders,stockRecords:stockRecords,freeItems:freeItems,ownerReports:ownerReports,backupDate:new Date().toISOString()};
   let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   let url=URL.createObjectURL(blob); let a=document.createElement('a');
   a.href=url; a.download=`backup_${new Date().toISOString().split('T')[0]}.json`;
@@ -3684,6 +3793,10 @@ function restoreBackup() {
           stockItemHeaders=data.stockItemHeaders||stockItemHeaders;
           stockRecords=data.stockRecords||{};
           freeItems=data.freeItems||[];
+          if(Array.isArray(data.ownerReports)) {
+            mergeOwnerReports(data.ownerReports);
+            data.ownerReports.filter(r=>ownerValidDate(r.date)).forEach(r=>ownerStore('pending','put',r).then(()=>flushOwnerReports()).catch(()=>showToast('Report restore storage failed')));
+          }
           if(Array.isArray(data.imageVault)) localStorage.setItem(IMAGE_VAULT_KEY,JSON.stringify(data.imageVault));
           saveData(); applySettingsToUI(); initUI();
           showToast("✅ Data Restored!");
@@ -5528,7 +5641,6 @@ function removeWebsiteOwnerImage(){
  const previousRetention=enforceCustomerPrivacyRetention;enforceCustomerPrivacyRetention=async function(){await previousRetention();const updates={};customerOrdersCache.forEach(o=>{if(Number(o.contactExpiresAt)>0&&Number(o.contactExpiresAt)<Date.now()){const key=(o.ownerUid||'legacy')+'_'+o.id;updates['customerOrders/'+key+'/deliveryLocation']=null;updates['customerOrders/'+key+'/deliveryAddress']=null;}});if(Object.keys(updates).length)await db.ref('/').update(updates);};
 })();
 </script>
-
 
 <style id="cng-owner-report-visibility-fix-v1">
 /* Restore Owner Report while respecting Admin/Cashier permissions */
