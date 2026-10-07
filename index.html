@@ -1,5 +1,5 @@
-Warning: truncated output (original token count: 100608)
-Total output lines: 5807
+Warning: truncated output (original token count: 100822)
+Total output lines: 5824
 
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
@@ -13,10 +13,7 @@ Total output lines: 5807
 <meta name="apple-mobile-web-app-title" content="Cup And Go">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
 <title>Cup And Go POS Pro - Enterprise Edition</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js">
 
-
-</script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
@@ -2124,7 +2121,23 @@ function printContent(elementId) {
 
 function shareTextReceipt() { if(!activeOrderForShare) return; let txt = `*${appSettings.shopName}*\nInv: #${activeOrderForShare.id}\nDate: ${activeOrderForShare.time}\nCashier: ${activeOrderForShare.cashier}\n\n`; activeOrderForShare.items.forEach(i => { txt += `${i.name} x${i.qty} = ${(i.price*i.qty).toFixed(2)}\n`; }); txt += `\nTotal: ${activeOrderForShare.total}\nPaid: ${activeOrderForShare.paidAmount || activeOrderForShare.total}\nReturn: ${activeOrderForShare.returnAmount || '0.00'}\nMethod: ${activeOrderForShare.method}\n\nThank you! ☕`; if(navigator.share) { navigator.share({text:txt}).catch(e=>{}); } else { navigator.clipboard.writeText(txt); showToast("✅ Bill Copied!"); } }
 function shareTextReport() { if(navigator.share) { navigator.share({text:reportTextForShare}).catch(e=>{}); } else { navigator.clipboard.writeText(reportTextForShare); showToast("✅ Report Copied!"); } }
-window.downloadReceiptPDF = function() { 
+let cngLegacyPDFPromise;
+function cngLoadLegacyPDF(){
+  if(typeof window.html2pdf==='function')return Promise.resolve();
+  if(!cngLegacyPDFPromise)cngLegacyPDFPromise=new Promise((resolve,reject)=>{
+    const script=document.createElement('script');
+    script.src='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+    script.onload=()=>{if(typeof window.html2pdf==='function')resolve();else{cngLegacyPDFPromise=null;script.remove();reject(new Error('PDF unavailable'));}};
+    script.onerror=()=>{cngLegacyPDFPromise=null;script.remove();reject(new Error('PDF unavailable'));};
+    document.head.appendChild(script);
+  });
+  return cngLegacyPDFPromise;
+}
+async function cngPrepareLegacyPDF(){
+  try{await cngLoadLegacyPDF();return true;}catch(e){showToast('❌ PDF could not load. Please try again.');return false;}
+}
+window.downloadReceiptPDF = async function() {
+  if(!await cngPrepareLegacyPDF())return; 
   let el = document.getElementById('receipt-content'); 
   let opt = {
     margin: 0.2,
@@ -2137,8 +2150,9 @@ window.downloadReceiptPDF = function() {
   html2pdf().set(opt).from(el).save(); 
 }
 
-window.executeReportDownload = function() {
-  if(document.querySelector('#pdf-report-content .owner-document')) return downloadOwnerDocument(); 
+window.executeReportDownload = async function() {
+  if(document.querySelector('#pdf-report-content .owner-document')) return downloadOwnerDocument();
+  if(!await cngPrepareLegacyPDF())return; 
   let el = document.getElementById('pdf-report-content'); 
   let opt = {
     margin: 0.2,
@@ -2984,7 +2998,8 @@ function renderStockMonthlyTable() {
   document.getElementById('stock-sheet-table-ui').innerHTML = tableHtml;
 }
 
-function downloadStockPDF() {
+async function downloadStockPDF() {
+  if(!await cngPrepareLegacyPDF())return;
   let content = document.getElementById('stock-sheet-table-ui');
   if(!content) return showToast("No data!");
 
@@ -3155,21 +3170,7 @@ function confirmDuePayment() { let pay=parseFloat(document.getElementById('due-p
 function openCategoryManager() { closeModal('modal-items'); renderCategoryListUI(); setTimeout(()=>openModal('modal-cats'),200); }
 function renderCategoryListUI() { let list=document.getElementById('cat-list-ui'); list.innerHTML=''; appSettings.categories.forEach((cat,idx)=>{ list.innerHTML+=`<div style="display:flex;justify-content:space-between;padding:10px;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);border-radius:10px;margin-bottom:8px;"><span>${cat}</span><button class="btn btn-delete" style="padding:4px 8px;font-size:10px;" onclick="deleteCategoryUI(${idx})">🗑️</button></div>`; }); }
 function addCategoryUI() { let val=document.getElementById('new-cat-name').value.trim(); if(val) { appSettings.categories.push(val); document.getElementById('new-cat-name').value=''; renderCategoryListUI(); saveData(); renderCatBar(); } }
-function deleteCategoryUI(idx) { if(appSettings.categories.length<=1) return showToast("Need 1 category!"); appSettings.categories.splice(idx,1); renderCategoryListUI(); saveData(); renderCatBar(); }
-function productCategory(p) { return String((p && p.category) || 'Other').trim() || 'Other'; }
-function getAllProductCategories() {
-  return [...new Set([...(appSettings.categories || []), ...products.map(productCategory)].filter(Boolean))];
-}
-function renderCatBar() { let bar=document.getElementById('cat-bar'); bar.innerHTML=`<button class="cat-btn ${currentCategory==='All'?'active':''}" onclick="filterCategory('All')">All</button>`; getAllProductCategories().forEach(c=>{ bar.innerHTML+=`<button class="cat-btn ${currentCategory===c?'active':''}" onclick="filterCategory('${c}')">${c}</button>`; }); }
-
-// ======= PERMISSIONS =======
-const permList = [
-  {id:'stock',label:'Stock Receive'},
-  {id:'owner',label:'Owner Report'},
-  {id:'items',label:'Item Mgmt'},
-  {id:'closing',label:'Daily Closing'},
-  {id:'history',label:'History'},
-  {id:'monthly',label…608 tokens truncated…ze:11px;margin-right:5px;" onclick="openCashierPerms(${idx})">⚙️ Perms</button><button class="btn btn-delete" style="padding:4px 8px;font-size:11px;" onclick="removeCashierUI(${idx})">🗑️</button></div></div><div style="display:flex;flex-direction:column;gap:8px;"><input type="text" id="cname-${idx}" value="${c.name}" placeholder="Name" style="width:100%;"><input type="number" id="cpin-${idx}" value="${c.pin || ''}" placeholder="PIN" style="width:100%;"></div></div>`; }); }
+function deleteCategoryUI(idx) { if(appSettings.categories.length<=1) return showToast("Need 1 category!"); appSettings.categories.splice(idx,1); renderCategoryListUI(); sav…822 tokens truncated…" style="padding:4px 8px;font-size:11px;margin-right:5px;" onclick="openCashierPerms(${idx})">⚙️ Perms</button><button class="btn btn-delete" style="padding:4px 8px;font-size:11px;" onclick="removeCashierUI(${idx})">🗑️</button></div></div><div style="display:flex;flex-direction:column;gap:8px;"><input type="text" id="cname-${idx}" value="${c.name}" placeholder="Name" style="width:100%;"><input type="number" id="cpin-${idx}" value="${c.pin || ''}" placeholder="PIN" style="width:100%;"></div></div>`; }); }
 window.addCashierUI = function() { appSettings.cashiers.push({name:'',pin:'',permissions:{}}); renderCashiersUI(); }
 window.removeCashierUI = function(idx) { if(appSettings.cashiers.length<=1) return showToast("❌ 1 cashier required!"); appSettings.cashiers.splice(idx,1); renderCashiersUI(); }
 
@@ -4139,7 +4140,7 @@ if (document.readyState === 'loading') {
 }
 
 // ======= ONLOAD =======
-window.onload = function() {
+document.addEventListener('DOMContentLoaded', function cngStartAdmin() {
   applySettingsToUI();
   initUI();
   updateHistory();
@@ -4161,20 +4162,22 @@ window.onload = function() {
       if(lock) lock.classList.remove('show');
       if(intro){
         intro.style.display='flex'; intro.classList.remove('splash-exit');
-        setTimeout(()=>{ intro.classList.add('splash-exit'); setTimeout(()=>{ intro.style.display='none'; loginAs(currentLoginRole,true); },980); },2500);
+        loginAs(currentLoginRole,true);
+        intro.classList.add('splash-exit');
+        setTimeout(()=>{ intro.style.display='none'; },350);
       }else loginAs(currentLoginRole,true);
     }else{
       currentLoginRole=null;
       sessionStorage.removeItem('cng_role');
       sessionStorage.removeItem('cng_active_cashier');
       clearRememberedLogin();
-      setTimeout(()=>openLockScreen(),1200);
+      openLockScreen();
     }
-  }).catch(()=>setTimeout(()=>openLockScreen(),1200));
+  }).catch(()=>openLockScreen());
 
   setTimeout(generateQRCode,600);
   setTimeout(()=>{ if(navigator.onLine && cngCloudAuthorized) updateSyncStatus('synced'); else if(!navigator.onLine) updateSyncStatus('offline'); },5000);
-};
+}, {once:true});
 
 console.log('☕ Cup And Go POS Pro v13.0 - Full Sync Edition');
 console.log('✅ LED Font Fixed! 20+ Stylish Fonts Added!');
@@ -4974,11 +4977,11 @@ setTimeout(()=>{const last=Number(localStorage.getItem('cng_privacy_cleanup_at')
     openModal('customer-history-detail-modal');
   };
 
-  window.downloadCustomerHistoryPDF = function(){
+  window.downloadCustomerHistoryPDF = async function(){
     const el=document.getElementById('customer-history-receipt');
     const o=window.cngCustomerHistorySelected;
     if(!el||!o) return showToast('❌ Open an order first');
-    if(typeof html2pdf!=='function') return showToast('❌ PDF service not available');
+    if(!await cngPrepareLegacyPDF())return;
     const filename='Online_Order_'+String(o.id||Date.now()).replace(/[^\w-]/g,'_')+'.pdf';
     html2pdf().set({
       margin:0.22,
