@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 100648)
-Total output lines: 5810
-
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -3168,7 +3165,20 @@ function renderCatBar() { let bar=document.getElementById('cat-bar'); bar.innerH
 // ======= PERMISSIONS =======
 const permList = [
   {id:'stock',label:'Stock Receive'},
-  {id…648 tokens truncated…ze:11px;margin-right:5px;" onclick="openCashierPerms(${idx})">⚙️ Perms</button><button class="btn btn-delete" style="padding:4px 8px;font-size:11px;" onclick="removeCashierUI(${idx})">🗑️</button></div></div><div style="display:flex;flex-direction:column;gap:8px;"><input type="text" id="cname-${idx}" value="${c.name}" placeholder="Name" style="width:100%;"><input type="number" id="cpin-${idx}" value="${c.pin || ''}" placeholder="PIN" style="width:100%;"></div></div>`; }); }
+  {id:'owner',label:'Owner Report'},
+  {id:'items',label:'Item Mgmt'},
+  {id:'closing',label:'Daily Closing'},
+  {id:'history',label:'History'},
+  {id:'monthly',label:'Monthly Report'},
+  {id:'settings',label:'Settings'},
+  {id:'free',label:'Free Items'}
+];
+let currentPermIdx=null;
+function openCashierPerms(idx) { closeModal('modal-security'); currentPermIdx=idx; let c=appSettings.cashiers[idx]; if(!c.permissions) c.permissions={}; let html=`<p style="margin-bottom:15px;color:var(--muted);font-size:12px;">Modules for: <b style="color:var(--orange);">${c.name}</b></p>`; permList.forEach(p=>{ let isChecked=c.permissions[p.id]?'checked':''; html+=`<div style="display:flex;justify-content:space-between;margin-bottom:12px;background:rgba(255,255,255,0.05);padding:12px;border-radius:12px;align-items:center;"><span style="font-weight:700;font-size:13px;">${p.label}</span><input type="checkbox" id="perm-${p.id}" ${isChecked} style="width:20px;height:20px;accent-color:var(--orange);"></div>`; }); document.getElementById('perms-body').innerHTML=html; setTimeout(()=>openModal('modal-perms'),250); }
+function closeCashierPerms() { closeModal('modal-perms'); setTimeout(()=>openModal('modal-security'),250); }
+function saveCashierPerms() { let c=appSettings.cashiers[currentPermIdx]; c.permissions={}; permList.forEach(p=>{ c.permissions[p.id]=document.getElementById('perm-'+p.id).checked; }); saveData(); closeModal('modal-perms'); showToast("Permissions Saved!"); setTimeout(()=>openModal('modal-security'),250); }
+function applyPermissionsUI(role, cashierName) { if(role==='admin') { permList.forEach(p=>{ let el=document.getElementById('admin-card-'+p.id); if(el) el.style.display='block'; }); } else { let cData=appSettings.cashiers.find(x=>x.name===cashierName); let perms=(cData&&cData.permissions)?cData.permissions:{}; permList.forEach(p=>{ let el=document.getElementById('admin-card-'+p.id); if(el) el.style.display=perms[p.id]?'block':'none'; }); } document.getElementById('admin-card-about').style.display='block'; }
+function renderCashiersUI() { let cDiv=document.getElementById('cashiers-container'); if(!cDiv) return; cDiv.innerHTML=''; appSettings.cashiers.forEach((c,idx)=>{ cDiv.innerHTML+=`<div style="background:rgba(0,0,0,0.25);border:1px solid var(--glass-border);border-radius:14px;padding:12px;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:11px;color:var(--orange);font-weight:800;">👤 Cashier ${idx+1}</span><div><button class="btn btn-edit" style="padding:4px 8px;font-size:11px;margin-right:5px;" onclick="openCashierPerms(${idx})">⚙️ Perms</button><button class="btn btn-delete" style="padding:4px 8px;font-size:11px;" onclick="removeCashierUI(${idx})">🗑️</button></div></div><div style="display:flex;flex-direction:column;gap:8px;"><input type="text" id="cname-${idx}" value="${c.name}" placeholder="Name" style="width:100%;"><input type="number" id="cpin-${idx}" value="${c.pin || ''}" placeholder="PIN" style="width:100%;"></div></div>`; }); }
 window.addCashierUI = function() { appSettings.cashiers.push({name:'',pin:'',permissions:{}}); renderCashiersUI(); }
 window.removeCashierUI = function(idx) { if(appSettings.cashiers.length<=1) return showToast("❌ 1 cashier required!"); appSettings.cashiers.splice(idx,1); renderCashiersUI(); }
 
