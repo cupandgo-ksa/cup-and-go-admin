@@ -998,7 +998,11 @@ input,select,textarea{max-width:100%;}
       <button class="btn" style="padding:4px 10px; border-radius:10px;" onclick="closeModal('modal-owner-monthly'); openModal('modal-owner');">✕</button>
     </div>
     <div class="modal-body">
-      <input type="month" id="owner-month-filter" onchange="loadMonthlyOwnerReport()" style="width:100%; padding:10px; border-radius:12px; background:rgba(255,255,255,0.08); border:1px solid var(--glass-border); color:#fff; font-weight:bold; margin-bottom:15px;">
+      <input type="hidden" id="owner-month-filter">
+      <div style="display:flex;gap:10px;margin-bottom:15px;direction:ltr;color-scheme:dark">
+        <label style="flex:1;min-width:0;font-size:12px;color:var(--text)">Month<select id="owner-month-select" aria-label="Report month" onchange="setOwnerArchiveMonth()" style="display:block;width:100%;margin-top:6px;padding:12px;background:#24191e;color:#fff;border:1px solid var(--glass-border);border-radius:12px;font:inherit;color-scheme:dark"><option value="01" style="background:#24191e;color:#fff">January</option><option value="02" style="background:#24191e;color:#fff">February</option><option value="03" style="background:#24191e;color:#fff">March</option><option value="04" style="background:#24191e;color:#fff">April</option><option value="05" style="background:#24191e;color:#fff">May</option><option value="06" style="background:#24191e;color:#fff">June</option><option value="07" style="background:#24191e;color:#fff">July</option><option value="08" style="background:#24191e;color:#fff">August</option><option value="09" style="background:#24191e;color:#fff">September</option><option value="10" style="background:#24191e;color:#fff">October</option><option value="11" style="background:#24191e;color:#fff">November</option><option value="12" style="background:#24191e;color:#fff">December</option></select></label>
+        <label style="width:105px;font-size:12px;color:var(--text)">Year<input id="owner-year-select" aria-label="Report year" type="number" inputmode="numeric" min="1" max="9999" step="1" onchange="setOwnerArchiveMonth()" style="display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:12px;background:#24191e;color:#fff;border:1px solid var(--glass-border);border-radius:12px;font:inherit;color-scheme:dark"></label>
+      </div>
       
             <div id="owner-archive-status" style="font-size:12px;margin-bottom:12px;color:var(--muted);" role="status"></div><div id="owner-monthly-result" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; font-size:13px; line-height:1.8;">
          Select a month to view totals.
@@ -1239,7 +1243,7 @@ input,select,textarea{max-width:100%;}
 
 <div id="order-detail-modal" class="modal"><div class="modal-box" style="max-width:350px;"><div class="modal-body" style="padding:15px; color:#000;"><div class="invoice-wrap" id="receipt-content"><div style="text-align:center;margin-bottom:12px;"><h3 class="dyn-shopname" style="font-size:18px;font-weight:900;text-transform:uppercase;margin:0;">Cup And Go</h3><p style="font-size:10px;line-height:1.4;margin:4px 0;">Hafar Al Batin - Saudi Arabia<br>0554998306</p><p style="font-size:12px;font-weight:bold;margin-top:8px;border-top:1px solid #000;padding-top:5px;">Simplified Tax Invoice</p></div><div style="border-bottom:1px dashed #000;padding-bottom:8px;margin-bottom:10px;font-size:11px;line-height:1.6;"><div style="display:flex;justify-content:space-between;"><span>Inv: <b id="rcpt-inv"></b></span></div><div style="display:flex;justify-content:space-between;"><span>Date: <span id="rcpt-date"></span></span></div><div style="display:flex;justify-content:space-between;"><span>Cashier: <span id="rcpt-cashier-print"></span></span></div></div><table style="width:100%;font-size:11px;margin-bottom:10px;border-bottom:1px solid #000;"><thead><tr style="border-bottom:1px solid #000;"><th style="padding:4px 0;color:#000;">Item</th><th style="text-align:center;color:#000;">Qty</th><th style="text-align:right;color:#000;">Amt</th></tr></thead><tbody id="rcpt-items"></tbody></table><div style="font-size:11px;font-weight:bold;display:flex;justify-content:space-between;padding:5px 0;"><span>Total:</span><span><span id="rcpt-due" style="font-size:14px;"></span> <span class="dyn-currency" style="font-size:9px;">SR</span></span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:4px;color:#333;"><span id="rcpt-cash-paid">CASH: 0.00</span><span id="rcpt-card-paid">CARD: 0.00</span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:4px;color:#333;"><span id="rcpt-change">METHOD: </span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:6px;border-top:1px dashed #000;padding-top:4px;"><span>💰 Paid:</span><span id="rcpt-paid">0.00</span></div><div style="font-size:10px;display:flex;justify-content:space-between;margin-bottom:6px;color:var(--green);"><span>🔄 Return:</span><span id="rcpt-return">0.00</span></div><div style="text-align:center; margin-top:10px; font-size:16px; letter-spacing:3px;">|||||| ||||| |||||||</div><div style="text-align:center; margin-top:15px; padding-top:10px; border-top:1px dashed #000;"><p style="font-size:12px; font-weight:bold; margin-bottom:4px; margin-top:0;">Thank you!</p></div></div></div><div class="modal-footer"><button class="btn btn-primary" style="flex:1;font-size:12px;" onclick="printContent('receipt-content')">🖨️ Print</button><button class="btn btn-success" style="flex:1;font-size:12px;" onclick="shareTextReceipt()">📤 Share</button><button class="btn" style="flex:1;background:rgba(229,193,88,0.2);color:#B89730;font-size:12px;" onclick="downloadReceiptPDF()">📥 PDF</button><button class="btn" style="flex:1;background:rgba(255,255,255,0.1);color:var(--text);font-size:12px;" onclick="closeModal('order-detail-modal')">Close</button></div></div></div>
 
-<div id="report-preview-modal" class="modal"><div class="modal-box" style="max-width:400px; width:95%;"><div class="modal-body" style="background:var(--brand-bg); padding:15px;"><div id="pdf-report-content" style="background:#fff; color:#000; font-family:Arial,sans-serif; font-size:12px; line-height:1.5; width:100%; padding:0; overflow:auto; border-radius:12px;"></div></div><div class="modal-footer"><button class="btn btn-primary" style="flex:1;font-size:12px;" onclick="printContent('pdf-report-content')">🖨️ Print</button><button class="btn btn-success" style="flex:1;font-size:12px;" onclick="shareTextReport()">📤 Share</button><button class="btn" style="flex:1;background:rgba(229,193,88,0.2);color:var(--orange);font-size:12px;" onclick="executeReportDownload()">📥 PDF</button><button class="btn" style="flex:1;background:rgba(255,255,255,0.1);color:var(--text);font-size:12px;" onclick="closeModal('report-preview-modal')">Close</button></div></div></div>
+<div id="report-preview-modal" class="modal"><div class="modal-box" style="max-width:400px; width:95%;"><div class="modal-body" style="background:var(--brand-bg); padding:15px;"><div id="pdf-report-content" style="background:#fff; color:#000; font-family:monospace; font-size:12px; line-height:1.5; width:100%; padding:15px; border-radius:12px;"></div></div><div class="modal-footer"><button class="btn btn-primary" style="flex:1;font-size:12px;" onclick="printContent('pdf-report-content')">🖨️ Print</button><button class="btn btn-success" style="flex:1;font-size:12px;" onclick="shareTextReport()">📤 Share</button><button class="btn" style="flex:1;background:rgba(229,193,88,0.15);color:var(--orange);font-size:12px;" onclick="copyReportPreview()">📋 Copy</button><button class="btn" style="flex:1;background:rgba(229,193,88,0.2);color:var(--orange);font-size:12px;" onclick="executeReportDownload()">📥 PDF</button><button class="btn" style="flex:1;background:rgba(255,255,255,0.1);color:var(--text);font-size:12px;" onclick="closeModal('report-preview-modal')">Close</button></div></div></div>
 
 <script>
 // ======= FIREBASE CONFIG =======
@@ -1750,6 +1754,7 @@ function buildOwnerDocument(rows,period,monthly){
 function showOwnerDocument(rows,period,monthly){
   document.getElementById('pdf-report-content').innerHTML=buildOwnerDocument(rows,period,monthly);
   if(monthly) document.querySelector('#pdf-report-content .owner-document').style.minWidth='620px';
+  document.getElementById('pdf-report-content').style.overflow=monthly?'auto':'';
   document.getElementById('pdf-report-content').dataset.ownerFilename=`Owner-${monthly?'Monthly':'Daily'}-${period}.pdf`;
   reportTextForShare=`${appSettings.shopName}\n${monthly?'Monthly':'Daily'} Owner Report: ${period}\nGross sale: ${ownerMoney(rows.reduce((n,r)=>n+Number(r.sale||0),0))} SAR\nFinal cash: ${ownerMoney(rows.reduce((n,r)=>n+Number(r.totalCash||0),0))} SAR`;
   openModal('report-preview-modal');
@@ -2375,10 +2380,36 @@ function copyOwnerReport() {
   });
 }
 
+async function copyReportPreview() {
+  const text=reportTextForShare;
+  try {
+    if(!navigator.clipboard || !navigator.clipboard.writeText) throw Error('Clipboard unavailable');
+    await navigator.clipboard.writeText(text);
+  } catch(e) {
+    const area=document.createElement('textarea');area.value=text;
+    area.style.cssText='position:fixed;top:0;left:0;opacity:0;';document.body.appendChild(area);
+    area.select();area.setSelectionRange(0,text.length);
+    const copied=document.execCommand('copy');area.remove();
+    if(!copied)return showToast('Copy unavailable. Use Share instead.');
+  }
+  showToast('✅ Full report copied!');
+}
 function generateOwnerPDF() {
-  const date=document.getElementById('ow-date').value || ownerToday();
-  const r={...calcOwnerReport(),date};
-  showOwnerDocument([r],date,false);
+  const report=generateOwnerReportHTML();
+  const el=document.getElementById('pdf-report-content');
+  el.innerHTML=`<div class="owner-daily-paper" style="font-family:'Courier New',monospace;background:#fff;color:#000;padding:15px 20px;max-width:450px;margin:auto;line-height:1.6;font-size:13px;white-space:pre-wrap;text-align:left;direction:ltr;color-scheme:only light;">${ownerEscape(report)}</div>`;
+  reportTextForShare=report;
+  delete el.dataset.ownerFilename;
+  el.style.overflow='';
+  openModal('report-preview-modal');
+}
+
+function setOwnerArchiveMonth() {
+  const year=Number(document.getElementById('owner-year-select').value);
+  const month=document.getElementById('owner-month-select').value;
+  if(!Number.isInteger(year) || year<1 || year>9999) return showToast('Enter a year from 1 to 9999');
+  document.getElementById('owner-month-filter').value=String(year).padStart(4,'0')+'-'+month;
+  loadMonthlyOwnerReport();
 }
 
 // ======= SAVE & MONTHLY OWNER REPORT FUNCTIONS =======
@@ -2478,6 +2509,8 @@ function viewMonthlyOwnerReport() {
    let now = new Date();
    let monthStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
    document.getElementById('owner-month-filter').value = monthStr;
+   document.getElementById('owner-month-select').value=monthStr.slice(5);
+   document.getElementById('owner-year-select').value=now.getFullYear();
    loadMonthlyOwnerReport();
    setTimeout(() => openModal('modal-owner-monthly'), 200);
 }
@@ -5682,5 +5715,6 @@ function removeWebsiteOwnerImage(){
 </style>
 </body>
 </html>
+
 
 
