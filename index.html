@@ -152,7 +152,13 @@ table { width: 100%; border-collapse: collapse; } th, td { padding: 14px 10px; t
 .stock-table th { background: rgba(229,193,88,0.15); color: var(--orange); font-size: 10px; }
 .stock-table th:first-child, .stock-table td:first-child { position: sticky; left: 0; z-index: 2; background: #fafafa; color: #000; font-weight: bold; }
 .stock-table th:first-child { background: #e0e0e0 !important; z-index: 3; color: var(--orange); }
-
+#modal-stock-sheet .modal-box { height: calc(100vh - 24px); height: calc(100dvh - 24px); max-height: 90vh; min-height: 0; }
+#modal-stock-sheet .modal-body { min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+#modal-stock-sheet .modal-footer { flex-shrink: 0; }
+#stock-print-wrapper { max-height: none !important; min-height: 0; overflow-x: auto !important; overflow-y: visible !important; -webkit-overflow-scrolling: touch; }
+#stock-sheet-table-ui { min-width: max-content; }
+#stock-sheet-table-ui > div { max-height: none !important; overflow-x: visible !important; overflow-y: visible !important; }
+#stock-sheet-table-ui .stock-table { min-width: max-content; }
 .led-matrix-container {
   background: #0a0a0a !important;
   border-radius: 16px;
@@ -2065,6 +2071,7 @@ function updateStatusUI() {
 // ======= PRINT & SHARE =======
 function printContent(elementId) {
   if(elementId==='pdf-report-content' && document.querySelector('#pdf-report-content .owner-document'))return printOwnerMonthlyDocument();
+  if(elementId==='stock-print-wrapper')return printStockPDF();
   const content = document.getElementById(elementId);
   if(!content) return showToast("Nothing to print!");
 
@@ -3009,133 +3016,129 @@ function renderStockMonthlyTable() {
   document.getElementById('stock-sheet-table-ui').innerHTML = tableHtml;
 }
 
-function downloadStockPDF() {
-  let content = document.getElementById('stock-sheet-table-ui');
-  if(!content) return showToast("No data!");
-
-  // ১. এইচটিএমএল (HTML) কপি করে ভেতরের লিমিটগুলো মুছে দেওয়া হচ্ছে
-  let cleanHTML = content.innerHTML;
-  cleanHTML = cleanHTML.replace(/max-height:420px/g, 'max-height:none');
-  cleanHTML = cleanHTML.replace(/overflow-y:auto/g, 'overflow:visible');
-  cleanHTML = cleanHTML.replace(/overflow-x:auto/g, 'overflow:visible');
-
-  // ২. পিডিএফের জন্য স্পেশাল স্টাইল (sticky পজিশন বন্ধ করা হলো যেন ডেটা না কাটে)
-  let style = `
-  <style>
-    body { font-family: monospace; background: #1a1a2e; margin: 0; padding: 15px; color: #fff; }
-    div { max-height: none !important; overflow: visible !important; }
-    .stock-table { width: 100%; border-collapse: collapse; text-align: center; }
-    .stock-table th, .stock-table td { 
-        border: 1px solid #555 !important; 
-        padding: 6px 4px; 
-        position: static !important; /* এই লাইনটাই ডেটা কাটার হাত থেকে বাঁচাবে */
-    }
-    thead tr { position: static !important; }
-    tr { page-break-inside: avoid !important; }
-  
-/* ===== FINAL MOBILE HOME CLEANUP ===== */
-#page-home{padding-top:4px!important;}
-#page-home .led-matrix-container{margin-top:0!important;margin-bottom:10px!important;}
-#page-home .customer-control-grid{gap:6px!important;margin:0 0 10px!important;}
-#page-home .customer-control-card{min-height:76px!important;padding:9px 3px!important;border-radius:18px!important;}
-#page-home .customer-control-card .cc-icon{font-size:21px!important;margin-bottom:4px!important;}
-#page-home .customer-control-card .cc-title{font-size:9px!important;line-height:1.1!important;}
-#page-home .customer-control-card .cc-count{font-size:8px!important;margin-top:4px!important;}
-#page-home .home-qr-card{padding:12px!important;margin-top:0!important;}
-#page-home .home-qr-card>div{flex-wrap:nowrap!important;align-items:center!important;}
-#qr-container{width:126px!important;height:126px!important;flex:0 0 126px!important;}
-#qr-container canvas,#qr-container img{width:126px!important;height:126px!important;}
-@media(max-width:390px){
-  #page-home .customer-control-grid{gap:4px!important;}
-  #page-home .customer-control-card{min-height:70px!important;padding:7px 2px!important;border-radius:15px!important;}
-  #page-home .customer-control-card .cc-icon{font-size:19px!important;}
-  #page-home .customer-control-card .cc-title{font-size:8px!important;}
-  #page-home .customer-control-card .cc-count{font-size:7px!important;}
-  #qr-container{width:112px!important;height:112px!important;flex-basis:112px!important;}
-  #qr-container canvas,#qr-container img{width:112px!important;height:112px!important;}
+function stockPdfLabel(value, fallback='-') {
+  const text=String(value==null?'':value).replace(/[\r\n]+/g,' ').trim();
+  const ascii=text.replace(/[^\x20-\x7E]/g,'').trim();
+  return ascii||fallback;
 }
-</style>`;
 
-  // ৩. পিডিএফের জন্য 1050px চওড়া একটি কন্টেইনার বানানো হলো
-  let fullHtmlString = `<html><head><meta charset="UTF-8">${style}
-<style id="final-matched-product-image-display">
-/* FINAL: Customer/Admin matched product-image frame. No crop, no forced zoom. */
-.admin-product-img-wrap{
-  width:100%!important;
-  height:auto!important;
-  aspect-ratio:4/3!important;
-  overflow:hidden!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  background:#f1f2f4!important;
-  border-radius:12px!important;
-}
-.admin-product-img{
-  width:100%!important;
-  height:100%!important;
-  object-fit:contain!important;
-  object-position:center!important;
-  display:block!important;
-  margin:0!important;
-  padding:0!important;
-  background:#f1f2f4!important;
-  image-rendering:auto!important;
-  -webkit-transform:translateZ(0);
-  transform:translateZ(0);
-  backface-visibility:hidden;
-}
-</style>
+function buildStockMonthlyPDF(jsPDF, monthValue, shopName) {
+  const parts=String(monthValue||'').split('-').map(Number);
+  const year=parts[0], month=parts[1];
+  if(!Number.isInteger(year)||!Number.isInteger(month)||month<1||month>12) throw Error('Invalid stock report month');
+  const headers=(Array.isArray(stockItemHeaders)?stockItemHeaders:[]).map(String).filter(Boolean);
+  if(!headers.length) throw Error('No stock items configured');
+  const daysInMonth=new Date(year,month,0).getDate();
+  const records=stockRecords||{};
+  const rows=[];
+  const totals={};headers.forEach(h=>totals[h]=0);
+  let grandTotal=0;
+  for(let day=1;day<=daysInMonth;day++){
+    const dateKey=`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const data=records[dateKey]||{};
+    const values=headers.map(h=>{
+      const qty=Number(data[h]||0);
+      if(qty>0){totals[h]+=qty;grandTotal+=qty;}
+      return qty>0?qty:'-';
+    });
+    rows.push({day,values});
+  }
 
+  const pdf=new jsPDF({unit:'mm',format:'a4',orientation:'landscape',compress:true});
+  const pageW=297,pageH=210,margin=10,contentW=pageW-margin*2,dayW=18;
+  const dark=[26,26,46],gold=[241,196,15],ink=[20,20,20],muted=[105,105,105];
+  const label=stockPdfLabel(shopName,'CUP AND GO');
+  const maxItemsPerPage=Math.max(1,Math.floor((contentW-dayW)/28));
+  const chunks=[];
+  for(let i=0;i<headers.length;i+=maxItemsPerPage)chunks.push(headers.slice(i,i+maxItemsPerPage));
 
+  function text(value,x,y,size=8,bold=false,color=ink,align='left'){
+    pdf.setFont('helvetica',bold?'bold':'normal');
+    pdf.setFontSize(size);pdf.setTextColor(...color);
+    pdf.text(String(value),x,y,{align});
+  }
+  function cell(x,y,w,h,value,fill,textColor=ink,bold=false,size=7,align='center'){
+    pdf.setFillColor(...fill);pdf.setDrawColor(185,185,185);pdf.setLineWidth(.2);pdf.rect(x,y,w,h,'FD');
+    const lines=pdf.splitTextToSize(String(value),Math.max(4,w-2)).slice(0,2);
+    const lineHeight=Math.min(3.2,h/Math.max(1,lines.length));
+    const start=y+(h-(lines.length*lineHeight))/2+lineHeight-.8;
+    lines.forEach((line,index)=>text(line,align==='right'?x+w-1:x+w/2,start+index*lineHeight,Math.min(size,8),bold,textColor,align));
+  }
+  function pageTop(chunk,index){
+    pdf.setFillColor(...dark);pdf.rect(0,0,pageW,22,'F');
+    text(label,margin,9,14,true,gold);
+    text('MONTHLY STOCK REPORT',margin,16,8,true,[255,255,255]);
+    text(`${monthValue}  ·  Part ${index+1}/${chunks.length}`,pageW-margin,11,8,true,[255,255,255],'right');
+    text('Quantities received during the selected month',pageW-margin,17,7,false,[210,210,210],'right');
+  }
 
-
-
-
-
-
-<style id="cng-owner-archive-css">
-.cng-owner-archive-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0 9px}
-.cng-owner-archive-head h4{margin:0;font-size:12px;color:var(--orange)}
-.cng-owner-days{display:flex;flex-direction:column;gap:8px;margin-top:10px}
-.cng-owner-day{
-  width:100%;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;
-  text-align:left;padding:11px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.045);color:var(--text);cursor:pointer
-}
-.cng-owner-day:active{transform:scale(.985)}
-.cng-owner-day-date{font-size:11px;font-weight:900;color:#fff}
-.cng-owner-day-meta{font-size:9px;color:var(--muted);margin-top:3px;line-height:1.45}
-.cng-owner-day-cash{font-size:12px;font-weight:900;color:var(--green);white-space:nowrap}
-.cng-owner-saved-note{
-  display:none;margin:8px 0 12px;padding:9px 10px;border-radius:12px;
-  background:rgba(0,230,118,.09);border:1px solid rgba(0,230,118,.24);
-  color:#9af2bd;font-size:10px;line-height:1.45
-}
-.cng-owner-saved-note.show{display:block}
-#owner-monthly-result{margin-bottom:12px}
-#owner-monthly-days-empty{text-align:center;color:var(--muted);font-size:10px;padding:12px}
-</style>
-
-</head><body><div style="width: 1050px; margin: auto;">${cleanHTML}</div></body></html>`;
-
-  let opt = {
-    margin:       [0.3, 0.3, 0.3, 0.3],
-    filename:     `Monthly_Stock_${document.getElementById('stock-sheet-month').value}.pdf`,
-    image:        { type: 'jpeg', quality: 1.0 },
-    html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#1a1a2e' },
-    jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' },
-    pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-  };
-
-  showToast("⏳ PDF Download Starting...");
-
-  // ৪. কোনো টেম্পরারি স্ক্রিন ছাড়াই সরাসরি স্ট্রিং থেকে পিডিএফ তৈরি হচ্ছে
-  html2pdf().set(opt).from(fullHtmlString).save().then(() => {
-    showToast("✅ Full Stock PDF Downloaded!");
-  }).catch(err => {
-    showToast("❌ PDF Error!");
+  chunks.forEach((chunk,chunkIndex)=>{
+    if(chunkIndex>0)pdf.addPage();
+    pageTop(chunk,chunkIndex);
+    const colW=(contentW-dayW)/chunk.length;
+    const headerH=11,rowH=4.6,totalH=7,grandH=7;
+    let y=27;
+    cell(margin,y,dayW,headerH,'DAY',dark,[255,255,255],true,7);
+    chunk.forEach((name,index)=>cell(margin+dayW+index*colW,y,colW,headerH,stockPdfLabel(name),dark,[255,255,255],true,7));
+    y+=headerH;
+    rows.forEach((row,rowIndex)=>{
+      if(y+rowH+totalH+grandH>pageH-12){
+        pdf.addPage();pageTop(chunk,chunkIndex);y=27;
+        cell(margin,y,dayW,headerH,'DAY',dark,[255,255,255],true,7);
+        chunk.forEach((name,index)=>cell(margin+dayW+index*colW,y,colW,headerH,stockPdfLabel(name),dark,[255,255,255],true,7));
+        y+=headerH;
+      }
+      const fill=rowIndex%2?[250,250,250]:[255,255,255];
+      cell(margin,y,dayW,rowH,row.day,fill,ink,true,7);
+      chunk.forEach((name,index)=>{
+        const value=row.values[headers.indexOf(name)];
+        cell(margin+dayW+index*colW,y,colW,rowH,value,fill,value==='-'?muted:[26,115,232],value!=='-',7);
+      });
+      y+=rowH;
+    });
+    if(y+totalH+grandH>pageH-12){pdf.addPage();pageTop(chunk,chunkIndex);y=27;cell(margin,y,dayW,headerH,'DAY',dark,[255,255,255],true,7);chunk.forEach((name,index)=>cell(margin+dayW+index*colW,y,colW,headerH,stockPdfLabel(name),dark,[255,255,255],true,7));y+=headerH;}
+    cell(margin,y,dayW,totalH,'TOTAL',[255,243,240],ink,true,7);
+    chunk.forEach((name,index)=>cell(margin+dayW+index*colW,y,colW,totalH,totals[name]||0,[255,243,240],[217,83,79],true,8));
+    y+=totalH;
+    pdf.setFillColor(...dark);pdf.setDrawColor(...dark);pdf.rect(margin,y,contentW,grandH,'FD');
+    text(`GRAND TOTAL: ${grandTotal} units`,pageW/2,y+4.8,9,true,gold,'center');
   });
+  const pages=pdf.internal.getNumberOfPages();
+  for(let page=1;page<=pages;page++){
+    pdf.setPage(page);text(`Stock Report | ${monthValue}`,margin,pageH-5,7,false,muted);text(`Page ${page} of ${pages}`,pageW-margin,pageH-5,7,false,muted,'right');
+  }
+  pdf.setProperties({title:`Monthly Stock Report ${monthValue}`,subject:'Monthly stock quantities received',creator:'Cup And Go Admin'});
+  return pdf;
+}
+
+async function downloadStockPDF(){
+  const month=document.getElementById('stock-sheet-month')?.value;
+  if(!month)return showToast('Select a month first');
+  try{
+    showToast('⏳ Preparing stock PDF…');
+    const jsPDF=await ownerPDFLibrary();
+    const pdf=buildStockMonthlyPDF(jsPDF,month,appSettings.shopName);
+    pdf.save(`Monthly_Stock_${month}.pdf`);
+    showToast('✅ Stock PDF downloaded');
+  }catch(error){console.error(error);showToast('❌ Stock PDF could not be created. Please retry.');}
+}
+
+async function printStockPDF(){
+  const month=document.getElementById('stock-sheet-month')?.value;
+  if(!month)return showToast('Select a month first');
+  const target=window.open('','_blank');
+  try{
+    const jsPDF=await ownerPDFLibrary();
+    const pdf=buildStockMonthlyPDF(jsPDF,month,appSettings.shopName);
+    if(target){
+      pdf.autoPrint();
+      const url=URL.createObjectURL(pdf.output('blob'));target.location.href=url;
+      setTimeout(()=>URL.revokeObjectURL(url),120000);
+    }else{
+      pdf.save(`Monthly_Stock_${month}.pdf`);
+      showToast('✅ PDF downloaded because print preview was blocked');
+    }
+  }catch(error){if(target)target.close();console.error(error);showToast('❌ Stock PDF could not be prepared.');}
 }
 
 function sendStockWhatsApp() {
@@ -5824,11 +5827,6 @@ function removeWebsiteOwnerImage(){
 </style>
 </body>
 </html>
-
-
-
-
-
 
 
 
