@@ -3105,52 +3105,33 @@ function buildStockMonthlyPDF(jsPDF, monthValue, shopName) {
     if(chunkIndex>0)pdf.addPage();
     pageTop(chunk,chunkIndex);
     const colW=(contentW-dayW)/chunk.length;
-    const headerH=9,rowH=3.6,totalH=6,grandH=6;
-    let y=25;
-    cell(margin,y,dayW,headerH,'DAY',dark,[255,255,255],true,6.5);
-    chunk.forEach((name,index)=>cell(margin+dayW+index*colW,y,colW,headerH,stockPdfLabel(name),dark,[255,255,255],true,6.5));
+    const headerH=11,rowH=4.6,totalH=7,grandH=7;
+    let y=27;
+    cell(margin,y,dayW,headerH,'DAY',dark,[255,255,255],true,7);
+    chunk.forEach((name,index)=>cell(margin+dayW+index*colW,y,colW,headerH,stockPdfLabel(name),dark,[255,255,255],true,7));
     y+=headerH;
     rows.forEach((row,rowIndex)=>{
       if(y+rowH+totalH+grandH>pageH-12){
         pdf.addPage();pageTop(chunk,chunkIndex);y=27;
-        cell(margin,y,dayW,headerH,'DAY',dark,[255,255,255],true,6.5);
-        chunk.forEach((name,index)=>cell(margin+dayW+index*colW,y,colW,headerH,stockPdfLabel(name),dark,[255,255,255],true,6.5));
+        cell(margin,y,dayW,headerH,'DAY',dark,[255,255,255],true,7);
+        chunk.forEach((name,index)=>cell(margin+dayW+index*colW,y,colW,headerH,stockPdfLabel(name),dark,[255,255,255],true,7));
         y+=headerH;
       }
       const fill=rowIndex%2?[250,250,250]:[255,255,255];
-      cell(margin,y,dayW,rowH,row.day,fill,ink,true,6);
+      cell(margin,y,dayW,rowH,row.day,fill,ink,true,7);
       chunk.forEach((name,index)=>{
         const value=row.values[headers.indexOf(name)];
-        cell(margin+dayW+index*colW,y,colW,rowH,value,fill,value==='-'?muted:[26,115,232],value!=='-',6);
+        cell(margin+dayW+index*colW,y,colW,rowH,value,fill,value==='-'?muted:[26,115,232],value!=='-',7);
       });
       y+=rowH;
     });
-    if(y+totalH+grandH>pageH-12){pdf.addPage();pageTop(chunk,chunkIndex);y=25;cell(margin,y,dayW,headerH,'DAY',dark,[255,255,255],true,6.5);chunk.forEach((name,index)=>cell(margin+dayW+index*colW,y,colW,headerH,stockPdfLabel(name),dark,[255,255,255],true,6.5));y+=headerH;}
-    cell(margin,y,dayW,totalH,'TOTAL',[255,243,240],ink,true,6.5);
-    chunk.forEach((name,index)=>cell(margin+dayW+index*colW,y,colW,totalH,totals[name]||0,[255,243,240],[217,83,79],true,7));
+    if(y+totalH+grandH>pageH-12){pdf.addPage();pageTop(chunk,chunkIndex);y=27;cell(margin,y,dayW,headerH,'DAY',dark,[255,255,255],true,7);chunk.forEach((name,index)=>cell(margin+dayW+index*colW,y,colW,headerH,stockPdfLabel(name),dark,[255,255,255],true,7));y+=headerH;}
+    cell(margin,y,dayW,totalH,'TOTAL',[255,243,240],ink,true,7);
+    chunk.forEach((name,index)=>cell(margin+dayW+index*colW,y,colW,totalH,totals[name]||0,[255,243,240],[217,83,79],true,8));
     y+=totalH;
     pdf.setFillColor(...dark);pdf.setDrawColor(...dark);pdf.rect(margin,y,contentW,grandH,'FD');
     text(`GRAND TOTAL: ${grandTotal} units`,pageW/2,y+4.8,9,true,gold,'center');
 
-    if(chunkIndex===0){
-      const summaryColumns=3,chipH=6,chipGap=2,chipW=(contentW-16)/summaryColumns,chipRows=Math.ceil(headers.length/summaryColumns);
-      const panelX=margin,panelY=y+4,panelH=14+chipRows*(chipH+chipGap)+12;
-      pdf.setFillColor(...dark);pdf.setDrawColor(...gold);pdf.setLineWidth(.8);pdf.roundedRect(panelX,panelY,contentW,panelH,3,3,'FD');
-      text('ITEM WISE TOTAL:',panelX+6,panelY+7,8,true,gold);
-      headers.forEach((name,index)=>{
-        const col=index%summaryColumns,row=Math.floor(index/summaryColumns);
-        const x=panelX+6+col*(chipW+chipGap),cy=panelY+10+row*(chipH+chipGap);
-        pdf.setFillColor(...dark);pdf.setDrawColor(...gold);pdf.setLineWidth(.3);pdf.roundedRect(x,cy,chipW,chipH,2,2,'FD');
-        text(stockPdfLabel(name),x+3,cy+4.1,5.8,true,gold,'left');
-        text(`${totals[name]||0} pcs`,x+chipW-3,cy+4.1,6,true,[255,255,255],'right');
-      });
-      const dividerY=panelY+10+chipRows*(chipH+chipGap)+3;
-      pdf.setDrawColor(95,95,95);pdf.setLineDashPattern([1.5,1.5],0);pdf.line(panelX+6,dividerY,panelX+contentW-6,dividerY);pdf.setLineDashPattern([],0);
-      const statsY=dividerY+6;
-      text(`TOTAL DAYS: ${daysInMonth}`,panelX+6,statsY,6,true,[255,255,255],'left');
-      text(`TOTAL ITEMS: ${headers.length}`,pageW/2,statsY,6,true,[255,255,255],'center');
-      text(`GRAND TOTAL: ${grandTotal} units`,panelX+contentW-6,statsY,7,true,gold,'right');
-    }
   });
   const pages=pdf.internal.getNumberOfPages();
   for(let page=1;page<=pages;page++){
