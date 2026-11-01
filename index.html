@@ -3133,31 +3133,37 @@ function buildStockMonthlyPDF(jsPDF, monthValue, shopName) {
     text(`GRAND TOTAL: ${grandTotal} units`,pageW/2,y+4.8,9,true,gold,'center');
   });
 
-  function summaryHeader(){
+  function summaryHeader(part,total){
     pdf.setFillColor(255,255,255);pdf.rect(0,0,pageW,pageH,'F');
     pdf.setFillColor(...dark);pdf.rect(0,0,pageW,22,'F');
     text(label,margin,9,14,true,gold);
     text('MONTHLY TOTAL SUMMARY',margin,16,8,true,[255,255,255]);
-    text(monthValue,pageW-margin,11,8,true,[255,255,255],'right');
-    text('Complete item-wise quantity breakdown',pageW-margin,17,7,false,[210,210,210],'right');
+    text(`${monthValue}${total>1?`  ·  Part ${part}/${total}`:''}`,pageW-margin,11,8,true,[255,255,255],'right');
+    text('Same item-wise total design as the stock sheet',pageW-margin,17,7,false,[210,210,210],'right');
   }
-  pdf.addPage();summaryHeader();
-  let summaryY=32,summaryRow=0;
-  text('ITEM-WISE TOTAL RECEIVED',margin,summaryY,11,true,dark);summaryY+=7;
-  const summaryW=(contentW-8)/2,summaryH=10;
-  for(let index=0;index<headers.length;index+=2){
-    if(summaryY+summaryH>175){pdf.addPage();summaryHeader();summaryY=32;text('ITEM-WISE TOTAL RECEIVED (CONTINUED)',margin,summaryY,11,true,dark);summaryY+=7;summaryRow=0;}
-    const left=headers[index],right=headers[index+1];
-    const rowY=summaryY+summaryRow*12;
-    cell(margin,rowY,summaryW,summaryH,`${stockPdfLabel(left)}: ${totals[left]||0} pcs`,[245,245,245],ink,true,9,'left');
-    if(right)cell(margin+summaryW+8,rowY,summaryW,summaryH,`${stockPdfLabel(right)}: ${totals[right]||0} pcs`,[245,245,245],ink,true,9,'left');
-    summaryRow++;
+  const summaryColumns=3,summaryBatch=18,summaryPages=Math.max(1,Math.ceil(headers.length/summaryBatch));
+  for(let batchStart=0;batchStart<headers.length;batchStart+=summaryBatch){
+    const part=Math.floor(batchStart/summaryBatch)+1;
+    pdf.addPage();summaryHeader(part,summaryPages);
+    const batch=headers.slice(batchStart,batchStart+summaryBatch);
+    const chipW=(contentW-16)/summaryColumns,chipH=10,chipGap=4,chipRows=Math.ceil(batch.length/summaryColumns);
+    const panelX=margin,panelY=30,panelH=24+chipRows*(chipH+chipGap)+22;
+    pdf.setFillColor(...dark);pdf.setDrawColor(...gold);pdf.setLineWidth(.8);pdf.roundedRect(panelX,panelY,contentW,panelH,4,4,'FD');
+    text('ITEM WISE TOTAL:',panelX+8,panelY+12,11,true,gold);
+    batch.forEach((name,index)=>{
+      const col=index%summaryColumns,row=Math.floor(index/summaryColumns);
+      const x=panelX+8+col*(chipW+chipGap),y=panelY+18+row*(chipH+chipGap);
+      pdf.setFillColor(...dark);pdf.setDrawColor(...gold);pdf.setLineWidth(.35);pdf.roundedRect(x,y,chipW,chipH,3,3,'FD');
+      text(stockPdfLabel(name),x+5,y+6.5,7.5,true,gold,'left');
+      text(`${totals[name]||0} pcs`,x+chipW-5,y+6.5,8,true,[255,255,255],'right');
+    });
+    const dividerY=panelY+18+chipRows*(chipH+chipGap)+5;
+    pdf.setDrawColor(95,95,95);pdf.setLineDashPattern([2,2],0);pdf.line(panelX+8,dividerY,panelX+contentW-8,dividerY);pdf.setLineDashPattern([],0);
+    const statsY=dividerY+10;
+    text(`TOTAL DAYS: ${daysInMonth}`,panelX+8,statsY,8,true,[255,255,255],'left');
+    text(`TOTAL ITEMS: ${headers.length}`,pageW/2,statsY,8,true,[255,255,255],'center');
+    text(`GRAND TOTAL: ${grandTotal} units`,panelX+contentW-8,statsY,10,true,gold,'right');
   }
-  let summaryTotalY=summaryY+summaryRow*12+8;
-  if(summaryTotalY+28>pageH-12){pdf.addPage();summaryHeader();summaryTotalY=38;}
-  pdf.setFillColor(...dark);pdf.setDrawColor(...dark);pdf.rect(margin,summaryTotalY,contentW,25,'FD');
-  text(`GRAND TOTAL RECEIVED: ${grandTotal} PCS`,pageW/2,summaryTotalY+10,15,true,gold,'center');
-  text(`Active days: ${activeDays}  |  Items tracked: ${headers.length}  |  Period: ${monthValue}`,pageW/2,summaryTotalY+18,8,true,[255,255,255],'center');
   const pages=pdf.internal.getNumberOfPages();
   for(let page=1;page<=pages;page++){
     pdf.setPage(page);text(`Stock Report | ${monthValue}`,margin,pageH-5,7,false,muted);text(`Page ${page} of ${pages}`,pageW-margin,pageH-5,7,false,muted,'right');
@@ -5882,5 +5888,4 @@ function removeWebsiteOwnerImage(){
 </style>
 </body>
 </html>
-
 
