@@ -158,7 +158,17 @@ table { width: 100%; border-collapse: collapse; } th, td { padding: 14px 10px; t
 #stock-print-wrapper { max-height: none !important; min-height: 0; overflow-x: auto !important; overflow-y: visible !important; -webkit-overflow-scrolling: touch; }
 #stock-sheet-table-ui { min-width: max-content; }
 #stock-sheet-table-ui > div { max-height: none !important; overflow-x: visible !important; overflow-y: visible !important; }
-#stock-sheet-table-ui .stock-table { min-width: max-content; }
+#stock-sheet-table-ui .stock-table { width: max-content; min-width: 100%; table-layout: auto; }
+#stock-sheet-table-ui .stock-table th:first-child,
+#stock-sheet-table-ui .stock-table td:first-child { width: 56px !important; min-width: 56px !important; max-width: 56px !important; padding-left: 4px !important; padding-right: 4px !important; white-space: nowrap; }
+#stock-sheet-table-ui .stock-table th:not(:first-child),
+#stock-sheet-table-ui .stock-table td:not(:first-child) { min-width: 78px; }
+#stock-sheet-table-ui .stock-table thead tr { position: sticky !important; top: 0 !important; z-index: 20 !important; }
+#stock-sheet-table-ui .stock-table thead th { position: sticky !important; top: 0 !important; z-index: 21 !important; }
+#stock-sheet-table-ui .stock-table thead th:first-child { left: 0 !important; z-index: 40 !important; background: #2c3e50 !important; }
+#stock-sheet-table-ui .stock-table tbody td:first-child { left: 0 !important; z-index: 15 !important; background: #f0f0f0 !important; }
+#stock-sheet-table-ui .stock-table tbody tr:last-child td:first-child { z-index: 16 !important; }
+.stock-lifetime-note { margin: -2px 0 10px; padding: 8px 10px; border: 1px solid rgba(229,193,88,.28); border-radius: 10px; color: var(--orange2); background: rgba(229,193,88,.08); font-size: 10px; line-height: 1.4; }
 .led-matrix-container {
   background: #0a0a0a !important;
   border-radius: 16px;
@@ -2983,7 +2993,22 @@ function renderStockItemsMgmtList() { let list = document.getElementById('stock-
 function addStockItemHeader() { let inp=document.getElementById('new-stock-item-name'); let name=inp.value.trim(); if(name && !stockItemHeaders.includes(name)) { stockItemHeaders.push(name); inp.value=''; renderStockItemsMgmtList(); saveData(); showToast("Item Added!"); } }
 function deleteStockItemHeader(idx) { stockItemHeaders.splice(idx,1); renderStockItemsMgmtList(); saveData(); }
 
-function openMonthlyStockSheet() { closeModal('modal-stock'); let now=new Date(); document.getElementById('stock-sheet-month').value=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,'0'); renderStockMonthlyTable(); setTimeout(()=>openModal('modal-stock-sheet'),200); }
+function openMonthlyStockSheet() {
+  closeModal('modal-stock');
+  const monthInput=document.getElementById('stock-sheet-month');
+  if(monthInput){
+    const now=new Date();
+    monthInput.value=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,'0');
+    if(!document.getElementById('stock-lifetime-note')){
+      const note=document.createElement('div');
+      note.id='stock-lifetime-note';note.className='stock-lifetime-note';
+      note.textContent='📚 Lifetime archive: choose any month to view all saved stock entries for that month.';
+      monthInput.insertAdjacentElement('afterend',note);
+    }
+  }
+  renderStockMonthlyTable();
+  setTimeout(()=>openModal('modal-stock-sheet'),200);
+}
 
 function renderStockMonthlyTable() {
   let mVal = document.getElementById('stock-sheet-month').value;
@@ -5827,8 +5852,6 @@ function removeWebsiteOwnerImage(){
 </style>
 </body>
 </html>
-
-
 
 
 
