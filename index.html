@@ -1597,7 +1597,7 @@ function syncAllDataToFirebase() {
   updateSyncStatus('syncing');
   // IMPORTANT: use update(), not set(), so customer-only realtime branches
   // (/customerNotifications and /customerOrderHistory) are never deleted by an admin sync.
-  db.ref('/').update({settings:appSettings, publicSettings:cngBuildPublicSettings(), products:products, ledMatrix:ledMatrixSettings, lastUpdated:Date.now()
+  db.ref('/').update({settings:appSettings, publicSettings:cngBuildPublicSettings(), products:products, ledMatrix:ledMatrixSettings, stockItemHeaders:stockItemHeaders, stockRecords:stockRecords, lastUpdated:Date.now()
   }).then(() => { updateSyncStatus('synced'); if(!isFirstLoad) showToast('✅ Data Synced to Cloud!'); })
   .catch((err) => { updateSyncStatus('error',err); console.log('Sync error:', err); });
 }
@@ -1613,11 +1613,13 @@ function parseFirebaseArray(item) {
 const cngInitialBranches=new Set();
 function cngBranchLoaded(branch){
   cngInitialBranches.add(branch);
-  if(cngInitialBranches.size===3){firebaseInitialSnapshotLoaded=true;isFirstLoad=false;updateSyncStatus('synced');if(pendingCloudSync){pendingCloudSync=false;syncAllDataToFirebase();}}
+  if(cngInitialBranches.size===5){firebaseInitialSnapshotLoaded=true;isFirstLoad=false;updateSyncStatus('synced');if(pendingCloudSync){pendingCloudSync=false;syncAllDataToFirebase();}}
 }
 db.ref('/settings').on('value',s=>{if(s.val()){appSettings={...appSettings,...s.val()};try{localStorage.setItem('cng_settings',JSON.stringify(appSettings));}catch(e){}applySettingsToUI();}cngBranchLoaded('settings');},error=>updateSyncStatus('error',error));
 db.ref('/products').on('value',s=>{products=parseFirebaseArray(s.val());try{localStorage.setItem('cng_products',JSON.stringify(products));}catch(e){}initUI();updateCart();cngBranchLoaded('products');},error=>updateSyncStatus('error',error));
 db.ref('/ledMatrix').on('value',s=>{if(s.val())ledMatrixSettings=s.val();updateLedMatrix();cngBranchLoaded('ledMatrix');},error=>updateSyncStatus('error',error));
+db.ref('/stockItemHeaders').on('value',s=>{const value=s.val();if(value!==null){stockItemHeaders=parseFirebaseArray(value).map(String).filter(Boolean);try{localStorage.setItem('cng_stock_items',JSON.stringify(stockItemHeaders));}catch(e){}}cngBranchLoaded('stockItemHeaders');},error=>updateSyncStatus('error',error));
+db.ref('/stockRecords').on('value',s=>{const value=s.val();if(value!==null&&typeof value==='object'){stockRecords=value;try{localStorage.setItem('cng_stock_records',JSON.stringify(stockRecords));}catch(e){}}cngBranchLoaded('stockRecords');},error=>updateSyncStatus('error',error));
 
 cngRawDb.ref('/.info/connected').on('value',snapshot=>{
   cngCloudLinkConnected=snapshot.val()===true;
@@ -2954,7 +2956,7 @@ function loadStockForSelectedDate() {
   let filteredItems = stockItemHeaders.filter(item => item.toLowerCase().includes(searchQuery));
   let lowStockCount = 0, totalItems = 0;
   let threshold = appSettings.stockThreshold || 5;
-  filteredItems.forEach((item, idx) => {
+  filteredItems.forEach((item) => {
     let actualIdx = stockItemHeaders.indexOf(item);
     let val = dayData[item] !== undefined ? dayData[item] : '';
     if(val !== '' && parseInt(val) > 0) totalItems++;
@@ -2963,7 +2965,7 @@ function loadStockForSelectedDate() {
     let lowStockClass = isLow ? 'border:2px solid var(--red); background:rgba(255,59,48,0.15);' : '';
     container.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:8px 12px; border-radius:12px; ${lowStockClass} background:rgba(255,255,255,0.05);" id="stock-row-${actualIdx}">
       <span style="font-size:12px; font-weight:700; color:#fff; flex:1;">${item} ${isLow ? '⚠️' : ''}</span>
-      <input type="number" id="stock-in-${actualIdx}" value="" placeholder="0" style="width:75px; padding:6px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); color:var(--orange); font-weight:bold; text-align:center;">
+      <input type="number" id="stock-in-${actualIdx}" data-stock-input="1" data-stock-index="${actualIdx}" value="${val !== '' ? String(val) : ''}" placeholder="0" min="0" step="1" style="width:75px; padding:6px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); color:var(--orange); font-weight:bold; text-align:center;">
     </div>`;
   });
   let summary = document.getElementById('stock-summary');
@@ -2977,18 +2979,27 @@ function saveDailyStockEntry() {
   let dateInputVal = document.getElementById('stock-date-input').value;
   if(!dateInputVal) return showToast("Select Date first!");
   let selectedDate = getStandardDateStr(dateInputVal);
-  if(!stockRecords[selectedDate]) stockRecords[selectedDate] = {};
+  const originalDay={...(stockRecords[selectedDate]||{})};
+  const nextDay={...originalDay};
   let hasAnyData = false, errors = [];
-  stockItemHeaders.forEach((item, idx) => {
-    let el = document.getElementById('stock-in-' + idx);
-    if(!el) return;
-    let val = parseInt(el.value);
-    if(el.value.trim() !== '' && (isNaN(val) || val < 0)) { errors.push(item); return; }
-    if(val > 0) { stockRecords[selectedDate][item] = val; hasAnyData = true; } else { delete stockRecords[selectedDate][item]; }
+  document.querySelectorAll('#stock-items-inputs-container [data-stock-input="1"]').forEach(el => {
+    const idx=Number(el.dataset.stockIndex), item=stockItemHeaders[idx];
+    if(!item)return;
+    const raw=el.value.trim();
+    if(raw!=='' && (!/^\d+$/.test(raw) || Number(raw)<0)){errors.push(item);return;}
+    if(raw==='') delete nextDay[item];
+    else if(Number(raw)>0) nextDay[item]=Number(raw);
+    else delete nextDay[item];
   });
   if(errors.length > 0) { showToast(`❌ Invalid: ${errors.join(', ')}`); return; }
-  if(!hasAnyData) { showToast("⚠️ No valid data!"); return; }
-  saveData(); showToast(`✅ Saved for ${selectedDate}`); loadStockForSelectedDate();
+  Object.values(nextDay).forEach(value=>{if(Number(value)>0)hasAnyData=true;});
+  stockRecords[selectedDate]=nextDay;
+  if(!hasAnyData) delete stockRecords[selectedDate];
+  saveData();
+  if(navigator.onLine && firebaseInitialSnapshotLoaded){
+    db.ref('/stockRecords/'+selectedDate).set(hasAnyData?nextDay:null).catch(err=>updateSyncStatus('error',err));
+  }
+  showToast(`✅ Saved for ${selectedDate}. You can edit this date anytime.`); loadStockForSelectedDate();
 }
 
 function openStockItemModal() { closeModal('modal-stock'); renderStockItemsMgmtList(); setTimeout(()=>openModal('modal-stock-items-mgmt'),200); }
