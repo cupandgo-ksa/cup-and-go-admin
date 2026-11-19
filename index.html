@@ -2223,6 +2223,8 @@ window.executeReportDownload = function() {
 function openAdminModal(type) {
   if(type === 'stock') { initStockReceiveUI(); openModal('modal-stock'); }
   else if(type === 'owner') {
+    // After clearing local data, re-load the full cloud archive automatically.
+    loadOwnerArchive();
     const dEl=document.getElementById('ow-date');
     if(dEl && !dEl.value){
       const n=new Date();
