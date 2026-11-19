@@ -1655,8 +1655,9 @@ async function ownerRemovePending(r){
   });
 }
 function cacheOwnerReports(){
-  // Only a small compatibility cache. Full history lives in the date archive.
-  try{localStorage.setItem('cng_owner_reports',JSON.stringify(ownerReports.slice(-62)));}catch(e){}
+  // Keep the FULL history here too: no cap, so old months never disappear
+  // from this device even before the cloud archive loads.
+  try{localStorage.setItem('cng_owner_reports',JSON.stringify(ownerReports));}catch(e){}
 }
 function mergeOwnerReports(rows){
   const all=new Map(ownerReports.filter(r=>r&&ownerValidDate(r.date)).map(r=>[r.date,r]));
@@ -1690,6 +1691,26 @@ async function flushOwnerReports(){
     }catch(e){console.warn('Owner report upload pending',e);return false;}
   })();
   try{return await ownerFlushTask;}finally{ownerFlushTask=null;}
+}
+// Load the complete owner-report archive once per session, so any month or
+// day can be viewed without opening the monthly modal first. This also
+// repairs devices whose local copy was trimmed in the past: the cloud copy
+// backfills every missing day. Reports are never deleted.
+let ownerArchiveLoaded=false;
+async function loadOwnerArchive(){
+  if(ownerArchiveLoaded||!navigator.onLine||!cngCloudAuthorized) return false;
+  ownerArchiveLoaded=true;
+  try{
+    await ownerLocalMigration;
+    const archive=await ownerStore('reports','getAll');
+    mergeOwnerReports(archive);
+    await migrateOwnerLegacy();
+    await flushOwnerReports();
+    const snapshot=await db.ref('/ownerReportsByDate').once('value');
+    const rows=[];snapshot.forEach(child=>{if(ownerValidDate(child.key))rows.push({...child.val(),date:child.key});});
+    mergeOwnerReports([...rows,...await ownerStore('pending','getAll')]);
+    return true;
+  }catch(e){ownerArchiveLoaded=false;console.warn('Owner archive load pending',e);return false;}
 }
 // Preserve existing local reports first; migrate legacy rows without replacing cloud days.
 const ownerOriginalRows=ownerReports.filter(r=>r&&ownerValidDate(r.date));
@@ -1749,8 +1770,8 @@ async function loadMonthlyOwnerReport(){
     return false;
   }
 }
-window.addEventListener('online',()=>flushOwnerReports());
-cngAuth.onAuthStateChanged(user=>{if(cngIsAdminAuthUser(user))setTimeout(()=>flushOwnerReports(),0);});
+window.addEventListener('online',()=>{flushOwnerReports();loadOwnerArchive();});
+cngAuth.onAuthStateChanged(user=>{if(cngIsAdminAuthUser(user))setTimeout(()=>{flushOwnerReports();loadOwnerArchive();},0);});
 
 const ownerEscape=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ownerMoney=n=>Number(n||0).toFixed(2);
@@ -2687,7 +2708,9 @@ function renderMonthlyOwnerReport() {
   const rows=ownerReports.filter(r=>r&&r.date&&r.date.startsWith(month));
   const el=document.getElementById('owner-monthly-result');
   if(!el)return;
-  if(!rows.length){el.textContent=`No saved reports for ${month}`;return;}
+  if(!rows.length){el.innerHTML=`<p class="note">No saved reports for ${ownerEscape(month)}. Reports are never deleted — if you expected some here, check the month above and your connection, then reopen this view.</p>`;return;}
+  const days=rows.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  const dayRows=days.map(r=>{const d=ownerStepData(r);return `<button type="button" onclick="openSavedOwnerReport('${ownerEscape(r.date)}')" style="display:flex;width:100%;justify-content:space-between;align-items:center;gap:8px;padding:11px 12px;margin-top:8px;border-radius:12px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);color:var(--text);font:inherit;text-align:left;cursor:pointer"><span>📅 ${ownerEscape(r.date)}</span><span>Final cash: <b>${ownerMoney(d.final)} SAR</b></span><span style="color:var(--orange)">›</span></button>`;}).join('');
   el.innerHTML=`<style>
     .owner-month-summary{color:var(--text);font-size:12px;line-height:1.6}
     .owner-month-summary h3{margin:18px 0 8px;color:var(--orange);font-size:14px}
@@ -2696,7 +2719,7 @@ function renderMonthlyOwnerReport() {
     .owner-month-summary th:first-child,.owner-month-summary td:first-child{text-align:left}
     .owner-month-summary th{font-size:10px;color:var(--muted)!important}
     .owner-month-summary .note{font-size:10px;color:var(--muted)}
-  </style><div class="owner-month-summary" dir="ltr">${ownerMonthClosingHTML(rows)}</div>`;
+  </style><div class="owner-month-summary" dir="ltr">${ownerMonthClosingHTML(rows)}</div><div class="owner-month-summary"><h3>Saved days — tap a day to open its report</h3>${dayRows}<p class="note">${days.length} saved day(s) in ${ownerEscape(month)}. Reports are never deleted; pick any month above to view it.</p></div>`;
 }
 
 function getMonthlyOwnerData() {
