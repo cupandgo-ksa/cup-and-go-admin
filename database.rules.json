@@ -29,6 +29,10 @@
       ".read": true,
       ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))"
     },
+    "menuPopup": {
+      ".read": true,
+      ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))"
+    },
     "website": {
       ".write": "auth != null && ((auth.token.email === 'islamiclibrary2.0@gmail.com' && auth.token.email_verified === true && auth.token.firebase.sign_in_provider === 'google.com') || (auth.token.email === 'pos-admin@cupandgoksa.com' && auth.token.firebase.sign_in_provider === 'password'))",
       "config": {
