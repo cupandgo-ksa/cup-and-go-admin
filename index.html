@@ -3289,7 +3289,8 @@ function optimizeImageForHosting(file, purpose='image') {
       'menu-product-card': {w:900, h:1125, q:0.82, format:'image/webp', ext:'webp'},
       'menu-product-hd': {w:1800, h:1800, q:0.86, format:'image/jpeg', ext:'jpg'},
       'promo-banner': {w:1600, h:900, q:0.80},
-      'customer-intro': {w:1080, h:1600, q:0.80}
+      'customer-intro': {w:1080, h:1600, q:0.80},
+      'menu-popup': {w:900, h:900, q:0.82}
     };
     const cfg = presets[purpose] || {w:1400, h:1400, q:0.82};
     const objectUrl = URL.createObjectURL(file);
@@ -4765,6 +4766,25 @@ async function removeIntroAdImage(){
 }
 
 // ======= SMALL MENU POPUP CARDS (popup1 / popup2) — separate from the Intro Ad =======
+/* Popup photos show at 340px on the card, so a big original only slows the
+   menu down (and can fail on iPhone). Downscale to max 900px on the longest
+   side, JPEG 0.82; keep PNG only when the source really has transparency.
+   Used for the data-URL fallback; the ImgBB path downscales the same way
+   via the 'menu-popup' preset in optimizeImageForHosting. */
+async function compressMenuPopupImage(file){
+  const src=await readFileAsDataURL(file);
+  const img=await new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('Invalid image'));im.src=src;});
+  const scale=Math.min(1,900/(img.naturalWidth||1),900/(img.naturalHeight||1));
+  const w=Math.max(1,Math.round(img.naturalWidth*scale)),h=Math.max(1,Math.round(img.naturalHeight*scale));
+  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);
+  if(String(file.type||'').toLowerCase()==='image/png'){
+    try{const d=ctx.getImageData(0,0,w,h).data;for(let i=3;i<d.length;i+=16){if(d[i]<255)return canvas.toDataURL('image/png');}}catch(e){}
+  }
+  const flat=document.createElement('canvas');flat.width=w;flat.height=h;
+  const fctx=flat.getContext('2d');fctx.fillStyle='#ffffff';fctx.fillRect(0,0,w,h);fctx.drawImage(canvas,0,0);
+  return flat.toDataURL('image/jpeg',0.82);
+}
 async function handleMenuPopupFile(event,slot){
   const f=event.target.files?.[0];if(!f)return;
   try{
@@ -4772,7 +4792,7 @@ async function handleMenuPopupFile(event,slot){
     showToast('⏳ Uploading popup photo...');
     let media='';
     try{media=await uploadImageToImgBB(f,'menu-popup');rememberHostedImage(media,f,'menu-popup');}
-    catch(hostError){media=await readFileAsDataURL(f);}
+    catch(hostError){media=await compressMenuPopupImage(f);}
     const oldCfgSnap=await db.ref('/menuPopup/'+slot+'/config').once('value');
     const oldCfg=oldCfgSnap.val()||{};
     const config={...oldCfg,enabled:true,mediaType:'image',titleAr:document.getElementById('cc-'+slot+'-title')?.value.trim()||oldCfg.titleAr||'',price:parseFloat(document.getElementById('cc-'+slot+'-price')?.value||oldCfg.price||0)||0,itemName:document.getElementById('cc-'+slot+'-item')?.value.trim()||oldCfg.itemName||'',delaySeconds:Math.max(3,Math.min(20,parseInt(document.getElementById('cc-'+slot+'-delay')?.value||oldCfg.delaySeconds||5))),id:oldCfg.id||(slot+'-'+Date.now()),updatedAt:Date.now()};
