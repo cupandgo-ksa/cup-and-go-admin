@@ -4545,8 +4545,24 @@ function renderCustomerControl(mode){
     body.innerHTML=`<div class="cc-section"><h4>📢 Send Notification</h4><div class="cc-field"><label>Title</label><input id="cc-notif-title" placeholder="New Offer"></div><div class="cc-field"><label>Message</label><textarea id="cc-notif-message" placeholder="Write your offer or announcement..."></textarea></div><button class="cc-send" onclick="sendCustomerNotification()">🚀 SEND NOW</button><div class="cc-note">Customer app will receive this in real time.</div><div class="cc-note" style="margin-top:8px;">⚠️ Late-order warning automatically uses the waiting-time value below.</div></div>
     <div class="cc-section"><h4>🎨 Customer App Controls</h4><div class="cc-row"><div class="cc-field"><label>Order Waiting Time / Late Warning (minutes)</label><input id="cc-wait-time" type="number" min="1" max="180" value="15"></div><div class="cc-field"><label>Shop Location</label><input id="cc-location" value="${escCC(appSettings.location||'')}"></div></div><button class="cc-send" onclick="saveCustomerAppControls()">💾 SAVE CUSTOMER SETTINGS</button></div>
     <div class="cc-section"><h4>🖼️ Customer Home Banners</h4><div class="cc-note" style="margin-bottom:10px;">Upload up to 3 photos directly from your phone. No image link needed. Photos are compressed automatically for fast loading.</div><label class="cc-send" style="display:block;text-align:center;cursor:pointer;">📷 CHOOSE UP TO 3 PHOTOS<input type="file" accept="image/*" multiple style="display:none;" onchange="handlePromoBannerFiles(event)"></label><div id="cc-banner-preview" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;"></div></div>
-    <div class="cc-section"><h4>🎬 Launch Intro Ad</h4><div class="cc-note" style="margin-bottom:10px;">Shown after the Cup And Go shop intro. Choose a photo or a short video.</div><div class="cc-row"><div class="cc-field"><label>Show Intro Ad</label><select id="cc-intro-enabled"><option value="yes" ${appSettings.introAd?.enabled?'selected':''}>ON</option><option value="no" ${!appSettings.introAd?.enabled?'selected':''}>OFF</option></select></div><div class="cc-field"><label>Photo Duration (seconds)</label><input id="cc-intro-duration" type="number" min="2" max="10" value="${parseInt(appSettings.introAd?.duration||4)}"></div></div><label class="cc-send" style="display:block;text-align:center;cursor:pointer;">🎞️ UPLOAD PHOTO OR VIDEO<input type="file" accept="image/*,video/mp4,video/webm,video/quicktime" style="display:none;" onchange="handleIntroAdFile(event)"></label><div class="cc-note" style="margin-top:8px;">For video on all phones, MP4 (H.264) is best. Keep video under 4 MB.</div><div id="cc-intro-preview" style="margin-top:10px;"></div><button class="cc-send" style="margin-top:10px;background:rgba(255,255,255,.08);color:#fff;" onclick="saveIntroAdSettings()">💾 SAVE INTRO SETTINGS</button></div>`;
-    setTimeout(()=>{renderPromoBannerPreview();renderIntroPreview();},0);
+    <div class="cc-section"><h4>🎬 Launch Intro Ad</h4><div class="cc-note" style="margin-bottom:10px;">Shown after the Cup And Go shop intro. Choose a photo or a short video.</div><div class="cc-row"><div class="cc-field"><label>Show Intro Ad</label><select id="cc-intro-enabled"><option value="yes" ${appSettings.introAd?.enabled?'selected':''}>ON</option><option value="no" ${!appSettings.introAd?.enabled?'selected':''}>OFF</option></select></div><div class="cc-field"><label>Photo Duration (seconds)</label><input id="cc-intro-duration" type="number" min="2" max="10" value="${parseInt(appSettings.introAd?.duration||4)}"></div></div><label class="cc-send" style="display:block;text-align:center;cursor:pointer;">🎞️ UPLOAD PHOTO OR VIDEO<input type="file" accept="image/*,video/mp4,video/webm,video/quicktime" style="display:none;" onchange="handleIntroAdFile(event)"></label><div class="cc-note" style="margin-top:8px;">For video on all phones, MP4 (H.264) is best. Keep video under 4 MB.</div><div id="cc-intro-preview" style="margin-top:10px;"></div><button class="cc-send" style="margin-top:10px;background:rgba(255,255,255,.08);color:#fff;" onclick="saveIntroAdSettings()">💾 SAVE INTRO SETTINGS</button></div>
+    <div class="cc-section"><h4>🪟 Menu Popups (small, centred)</h4><div class="cc-note" style="margin-bottom:10px;">Small centred popup cards on the customer menu, shown once a day a few seconds after the menu opens. Add up to 2 — Popup 1 shows first, Popup 2 shows after it is closed.</div>
+    <h4 style="margin:6px 0;">Popup 1</h4>
+    <div class="cc-row"><div class="cc-field"><label>Show Popup 1</label><select id="cc-popup1-enabled"><option value="yes" ${appSettings.menuPopup?.popup1?.enabled?'selected':''}>ON</option><option value="no" ${!appSettings.menuPopup?.popup1?.enabled?'selected':''}>OFF</option></select></div><div class="cc-field"><label>Delay (seconds)</label><input id="cc-popup1-delay" type="number" min="3" max="20" value="${parseInt(appSettings.menuPopup?.popup1?.delaySeconds||5)}"></div></div>
+    <div class="cc-field"><label>Title (Arabic)</label><input id="cc-popup1-title" placeholder="مثال: هوت شوكولات بوكس" value="${escCC(appSettings.menuPopup?.popup1?.titleAr||'')}"></div>
+    <div class="cc-row"><div class="cc-field"><label>Price (SAR)</label><input id="cc-popup1-price" type="number" min="0" step="0.01" value="${appSettings.menuPopup?.popup1?.price??''}"></div><div class="cc-field"><label>Menu item name (optional)</label><input id="cc-popup1-item" placeholder="Hot Chocolate Box" value="${escCC(appSettings.menuPopup?.popup1?.itemName||'')}"></div></div>
+    <label class="cc-send" style="display:block;text-align:center;cursor:pointer;">🖼️ UPLOAD POPUP 1 PHOTO<input type="file" accept="image/*" style="display:none;" onchange="handleMenuPopupFile(event,'popup1')"></label>
+    <div id="cc-popup1-preview" style="margin-top:10px;"></div>
+    <div style="display:flex;gap:8px;margin-top:10px;"><button class="cc-send" style="flex:1;background:rgba(255,255,255,.08);color:#fff;" onclick="saveMenuPopupSettings('popup1')">💾 SAVE POPUP 1</button><button class="cc-send" style="flex:1;background:rgba(255,59,48,.18);color:#ff6b6b;" onclick="removeMenuPopup('popup1')">🗑️ REMOVE</button></div>
+    <h4 style="margin:14px 0 6px;">Popup 2</h4>
+    <div class="cc-row"><div class="cc-field"><label>Show Popup 2</label><select id="cc-popup2-enabled"><option value="yes" ${appSettings.menuPopup?.popup2?.enabled?'selected':''}>ON</option><option value="no" ${!appSettings.menuPopup?.popup2?.enabled?'selected':''}>OFF</option></select></div><div class="cc-field"><label>Delay (seconds)</label><input id="cc-popup2-delay" type="number" min="3" max="20" value="${parseInt(appSettings.menuPopup?.popup2?.delaySeconds||5)}"></div></div>
+    <div class="cc-field"><label>Title (Arabic)</label><input id="cc-popup2-title" placeholder="مثال: بوكس القهوة" value="${escCC(appSettings.menuPopup?.popup2?.titleAr||'')}"></div>
+    <div class="cc-row"><div class="cc-field"><label>Price (SAR)</label><input id="cc-popup2-price" type="number" min="0" step="0.01" value="${appSettings.menuPopup?.popup2?.price??''}"></div><div class="cc-field"><label>Menu item name (optional)</label><input id="cc-popup2-item" placeholder="Coffee Box" value="${escCC(appSettings.menuPopup?.popup2?.itemName||'')}"></div></div>
+    <label class="cc-send" style="display:block;text-align:center;cursor:pointer;">🖼️ UPLOAD POPUP 2 PHOTO<input type="file" accept="image/*" style="display:none;" onchange="handleMenuPopupFile(event,'popup2')"></label>
+    <div id="cc-popup2-preview" style="margin-top:10px;"></div>
+    <div style="display:flex;gap:8px;margin-top:10px;"><button class="cc-send" style="flex:1;background:rgba(255,255,255,.08);color:#fff;" onclick="saveMenuPopupSettings('popup2')">💾 SAVE POPUP 2</button><button class="cc-send" style="flex:1;background:rgba(255,59,48,.18);color:#ff6b6b;" onclick="removeMenuPopup('popup2')">🗑️ REMOVE</button></div>
+    </div>`;
+    setTimeout(()=>{renderPromoBannerPreview();renderIntroPreview();renderMenuPopupPreview('popup1');renderMenuPopupPreview('popup2');},0);
   } else if(mode==='pending') body.innerHTML=renderOrderRows(customerOrdersCache.filter(o=>customerOrderStatus(o)==='pending'),'pending');
   else if(mode==='active') body.innerHTML=renderOrderRows(customerOrdersCache.filter(o=>['active','processing','accepted','ready'].includes(customerOrderStatus(o))),'active');
   else body.innerHTML=`<div class="cc-note" style="margin-bottom:10px;">🔒 Full mobile and car details are removed automatically after Complete/Cancel. History keeps only the last 4 digits.</div>`+renderOrderRows(customerOrderHistoryCache,'history');
@@ -4746,6 +4762,72 @@ async function removeIntroAdImage(){
     showToast('❌ Could not remove intro ad');
     showIntroSavePopup('❌ Could not remove Intro Ad');
   }
+}
+
+// ======= SMALL MENU POPUP CARDS (popup1 / popup2) — separate from the Intro Ad =======
+async function handleMenuPopupFile(event,slot){
+  const f=event.target.files?.[0];if(!f)return;
+  try{
+    if(!(f.type||'').startsWith('image/')){showToast('❌ Choose a photo');event.target.value='';return;}
+    showToast('⏳ Uploading popup photo...');
+    let media='';
+    try{media=await uploadImageToImgBB(f,'menu-popup');rememberHostedImage(media,f,'menu-popup');}
+    catch(hostError){media=await readFileAsDataURL(f);}
+    const oldCfgSnap=await db.ref('/menuPopup/'+slot+'/config').once('value');
+    const oldCfg=oldCfgSnap.val()||{};
+    const config={...oldCfg,enabled:true,mediaType:'image',titleAr:document.getElementById('cc-'+slot+'-title')?.value.trim()||oldCfg.titleAr||'',price:parseFloat(document.getElementById('cc-'+slot+'-price')?.value||oldCfg.price||0)||0,itemName:document.getElementById('cc-'+slot+'-item')?.value.trim()||oldCfg.itemName||'',delaySeconds:Math.max(3,Math.min(20,parseInt(document.getElementById('cc-'+slot+'-delay')?.value||oldCfg.delaySeconds||5))),id:oldCfg.id||(slot+'-'+Date.now()),updatedAt:Date.now()};
+    await db.ref('/menuPopup/'+slot+'/media').set(media);
+    await db.ref('/menuPopup/'+slot+'/config').set(config);
+    appSettings.menuPopup={...(appSettings.menuPopup||{}),[slot]:{...config}};
+    localStorage.setItem('cng_settings',JSON.stringify(appSettings));
+    await db.ref('/settings/menuPopup/'+slot).set(appSettings.menuPopup[slot]);
+    renderMenuPopupPreview(slot);
+    showToast('✅ Menu popup photo saved');
+    showIntroSavePopup('✅ Menu Popup saved and ON');
+  }catch(e){console.error(e);showToast('❌ Could not upload popup photo');showIntroSavePopup('❌ Popup photo upload failed');}
+  event.target.value='';
+}
+
+async function saveMenuPopupSettings(slot){
+  try{
+    const enabled=document.getElementById('cc-'+slot+'-enabled')?.value==='yes';
+    const delaySeconds=Math.max(3,Math.min(20,parseInt(document.getElementById('cc-'+slot+'-delay')?.value||5)));
+    const titleAr=document.getElementById('cc-'+slot+'-title')?.value.trim()||'';
+    const price=parseFloat(document.getElementById('cc-'+slot+'-price')?.value||0)||0;
+    const itemName=document.getElementById('cc-'+slot+'-item')?.value.trim()||'';
+    const oldCfgSnap=await db.ref('/menuPopup/'+slot+'/config').once('value');
+    const oldCfg=oldCfgSnap.val()||{};
+    const config={...oldCfg,enabled,mediaType:'image',titleAr,price,itemName,delaySeconds,id:oldCfg.id||(slot+'-'+Date.now()),updatedAt:Date.now()};
+    await db.ref('/menuPopup/'+slot+'/config').set(config);
+    appSettings.menuPopup={...(appSettings.menuPopup||{}),[slot]:{...config}};
+    localStorage.setItem('cng_settings',JSON.stringify(appSettings));
+    await db.ref('/settings/menuPopup/'+slot).set(appSettings.menuPopup[slot]);
+    showToast('✅ Menu popup settings saved');
+    showIntroSavePopup(enabled?'✅ Menu Popup saved and ON':'✅ Menu Popup saved and OFF');
+  }catch(e){console.error(e);showToast('❌ Could not save popup settings');showIntroSavePopup('❌ Popup settings save failed');}
+}
+
+async function removeMenuPopup(slot){
+  try{
+    await db.ref('/menuPopup/'+slot).remove();
+    appSettings.menuPopup={...(appSettings.menuPopup||{}),[slot]:{enabled:false,mediaType:'image',titleAr:'',price:0,itemName:'',delaySeconds:5,id:'',updatedAt:Date.now()}};
+    localStorage.setItem('cng_settings',JSON.stringify(appSettings));
+    await db.ref('/settings/menuPopup/'+slot).set(appSettings.menuPopup[slot]);
+    renderMenuPopupPreview(slot);
+    const s=document.getElementById('cc-'+slot+'-enabled');if(s)s.value='no';
+    showToast('✅ Menu popup removed');
+    showIntroSavePopup('✅ Menu Popup removed');
+  }catch(e){console.error(e);showToast('❌ Could not remove popup');showIntroSavePopup('❌ Could not remove Menu Popup');}
+}
+
+async function renderMenuPopupPreview(slot){
+  const el=document.getElementById('cc-'+slot+'-preview');if(!el)return;
+  try{
+    const cfg=(await db.ref('/menuPopup/'+slot+'/config').once('value')).val()||{};
+    const media=(await db.ref('/menuPopup/'+slot+'/media').once('value')).val()||'';
+    if(!cfg||!media){el.innerHTML='<div style="text-align:center;color:var(--muted);font-size:10px;padding:10px;">No popup photo selected</div>';return;}
+    el.innerHTML=`<div style="position:relative;max-width:220px;margin:auto;border-radius:16px;overflow:hidden;border:1px solid var(--glass-border);"><img src="${media}" style="width:100%;display:block;aspect-ratio:4/5;object-fit:contain;background:#f1f2f4;"><div style="padding:8px 10px;background:rgba(0,0,0,.35);"><div style="font-weight:800;font-size:12px;">${escCC(cfg.titleAr||'')}</div><div style="color:#efc84c;font-weight:800;font-size:12px;">${cfg.price?Number(cfg.price).toFixed(2)+' ﷼':''}</div></div><button onclick="removeMenuPopup('${slot}')" style="position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.72);color:#fff;">✕</button></div>`;
+  }catch(e){el.innerHTML='<div style="text-align:center;color:var(--muted);font-size:10px;padding:10px;">Could not load popup preview</div>';}
 }
 
 // Privacy retention: finished online orders never keep full contact details.
